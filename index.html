@@ -237,10 +237,23 @@ h3{color:var(--accent)}
 [data-skin="wizard"] .hero h1{color:#7ff0d0}
 [data-skin="heist"] .hero h1{color:#ffffff;text-shadow:0 2px 0 #000}
 .why .w.best{border-color:var(--accent)}
+#sig{text-align:center;padding:6px 16px 22px;font-size:12.5px;letter-spacing:.02em}
+#sig a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted)}
+#sig a:hover{color:var(--accent);border-color:var(--accent)}
+#pz{position:fixed;top:12px;right:12px;z-index:50;font-family:var(--display);font-weight:800;font-size:14px;padding:9px 14px;border-radius:999px;border:2px solid var(--accent);background:var(--card);color:var(--ink);cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+#pz::before{content:"";display:inline-block;width:3px;height:11px;border-left:3px solid currentColor;border-right:3px solid currentColor;margin-right:7px;vertical-align:-1px}
+#pzm{position:fixed;inset:0;z-index:60;background:rgba(5,8,15,.6);display:grid;place-items:center;padding:16px}
+#pzm[hidden],#pz[hidden]{display:none}
+#pzm .box{background:var(--card);color:var(--ink);border:2px solid var(--accent);border-radius:16px;padding:20px;width:min(380px,100%);display:grid;gap:10px;animation:pop .25s ease-out}
+#pzm .btn{width:100%}
+.resumed{font-size:14px;color:var(--accent);font-weight:700}
 </style>
 </head>
 <body>
 <div id="app" aria-live="polite"></div>
+<footer id="sig"><a href="https://github.com/ravigajul/claude-quest" target="_blank" rel="noopener">By Ravi Gajul, built with Claude</a></footer>
+<button id="pz" type="button" hidden aria-label="Pause the level">Pause</button>
+<div id="pzm" hidden role="dialog" aria-modal="true" aria-labelledby="pzt"></div>
 <script>
 (function(){
 "use strict";
@@ -715,11 +728,11 @@ function applyTheme(){
 function progressOf(k){var st=k===S.theme?S.stars:(S.saves&&S.saves[k]&&S.saves[k].stars)||{};var c=k===S.theme?S.cards:(S.saves&&S.saves[k]&&S.saves[k].cards)||{};
   var t=0;for(var x in st)t+=st[x];return{stars:t,cards:Object.keys(c).length,started:Object.keys(st).length>0};}
 function switchTo(k){
-  if(S.theme&&THEMES[S.theme]){S.saves=S.saves||{};S.saves[S.theme]={stars:S.stars,cards:S.cards,met:S.met,bloopers:S.bloopers};}
+  if(S.theme&&THEMES[S.theme]){S.saves=S.saves||{};S.saves[S.theme]={stars:S.stars,cards:S.cards,met:S.met,bloopers:S.bloopers,paused:S.paused||{}};}
   var sv=(S.saves&&S.saves[k])||{stars:{},cards:{},met:{},bloopers:[]};
-  S.stars=sv.stars;S.cards=sv.cards;S.met=sv.met;S.bloopers=sv.bloopers;S.theme=k;S.tab="play";save();applyTheme();home();}
+  S.stars=sv.stars;S.cards=sv.cards;S.met=sv.met;S.bloopers=sv.bloopers;S.paused=sv.paused||{};S.theme=k;S.tab="play";save();applyTheme();home();}
 function themePicker(){
-  clear();app.className="wide picker";document.documentElement.setAttribute("data-skin","picker");var cur=S.theme&&THEMES[S.theme]?S.theme:null;
+  leaveLevel();clear();app.className="wide picker";document.documentElement.setAttribute("data-skin","picker");var cur=S.theme&&THEMES[S.theme]?S.theme:null;
   if(cur)app.append(h("button",{class:"link",type:"button",onclick:function(){applyTheme();home();},style:"justify-self:start"},"← Back to "+THEMES[cur].tag));
   app.append(h("div",null,h("h3",null,"Claude Quest"),h("h1",null,cur?"Switch world":"Choose your world"),h("p",{class:"muted"},"Every world teaches the same skills, with its own story. Each world keeps its own progress, so you can switch anytime and pick up where you left off.")));
   var heistArt=function(){var a=h("div",{class:"art"});["N","D","L"].forEach(function(c,i){a.append(h("span",{style:"left:"+(22+i*80)+"px;rotate:"+[-5,4,-3][i]+"deg"},c));});
@@ -758,7 +771,7 @@ function unlocked(id){return id===0||(S.stars[id-1]||0)>=1;}
 
 /* ---------- home ---------- */
 function home(){
-  clear();app.className="wide";app.append(header());
+  leaveLevel();clear();app.className="wide";app.append(header());
   if(S.tab==="toolkit")return toolkit();
   if(S.tab==="bestiary")return bestiary();
   var saved=(S.stars[5]||0)>=1;
@@ -786,7 +799,7 @@ function home(){
     h("p",{class:"muted"},"A fan-made game, not affiliated with or endorsed by Anthropic."),
     (function(){var box=h("div",null);var go=h("button",{class:"link",type:"button",style:"justify-self:start"},"Restart this world from the beginning");
       go.addEventListener("click",function(){box.textContent="";box.append(h("p",null,"This clears your stars, cards and bloopers in "+THEMES[S.theme].tag+" only. Your other worlds keep their progress."),
-        h("div",{class:"row"},h("button",{class:"btn alt",type:"button",onclick:home},"Keep playing"),h("button",{class:"btn",type:"button",onclick:function(){S.stars={};S.cards={};S.met={};S.bloopers=[];save();home();}},"Yes, restart")));});
+        h("div",{class:"row"},h("button",{class:"btn alt",type:"button",onclick:home},"Keep playing"),h("button",{class:"btn",type:"button",onclick:function(){S.stars={};S.cards={};S.met={};S.bloopers=[];S.paused={};save();home();}},"Yes, restart")));});
       box.append(go);return box;})()));
   app.append(h("p",{class:"foot"},"Plays offline. No sign-up, no tokens. Claude's answers here are examples written by Claude to show typical behavior."));
 }
@@ -812,8 +825,31 @@ function shareCard(){var txt=shareText();var status=h("span",{class:"muted"},"")
   return h("div",{class:"card"},h("h3",null,"Share your run"),h("div",{class:"share"},txt),
     h("div",{class:"row"},h("button",{class:"btn alt",type:"button",onclick:function(){try{navigator.clipboard.writeText(txt).then(function(){status.textContent="Copied.";},function(){status.textContent="Select the text above to copy it.";});}catch(e){status.textContent="Select the text above to copy it.";}}},"Copy result")),status);}
 
+
+/* ---------- pause, save, restart, end ---------- */
+var CUR=null;var pzBtn=document.getElementById("pz"),pzM=document.getElementById("pzm");
+function paused(L){return S.paused&&S.paused[L.id]||null;}
+function checkpoint(L,st){S.paused=S.paused||{};S.paused[L.id]=st;CUR={L:L};save();}
+function clearPause(L){if(S.paused&&S.paused[L.id]){delete S.paused[L.id];save();}}
+function inLevel(L){CUR={L:L};pzBtn.hidden=false;closePause();}
+function leaveLevel(){CUR=null;pzBtn.hidden=true;closePause();}
+function closePause(){pzM.hidden=true;pzM.textContent="";}
+function openPause(){if(!CUR)return;var L=CUR.L;var has=!!paused(L);pzM.textContent="";
+  pzM.append(h("div",{class:"box"},h("h3",{id:"pzt"},"Paused"),h("h2",null,"Level "+L.id+": "+L.title),
+    h("p",{class:"muted"},has?"Your progress in this level is saved. Pick up where you left off anytime.":"Nothing to save yet on this screen."),
+    h("button",{class:"btn",type:"button",onclick:closePause},"Resume"),
+    h("button",{class:"btn alt",type:"button",onclick:function(){leaveLevel();home();}},has?"Save and go home":"Go home"),
+    h("button",{class:"btn alt",type:"button",onclick:function(){clearPause(L);closePause();start(L);}},"Restart this level"),
+    h("button",{class:"btn alt",type:"button",onclick:function(){clearPause(L);leaveLevel();home();}},"End level without saving")));
+  pzM.hidden=false;var f=pzM.querySelector(".btn");if(f)f.focus();}
+pzBtn.addEventListener("click",openPause);
+pzM.addEventListener("click",function(e){if(e.target===pzM)closePause();});
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&CUR){if(pzM.hidden)openPause();else closePause();}});
+function resumedNote(P){return P?h("p",{class:"resumed"},"Picked up where you left off. Pause to restart."):null;}
+
 /* ---------- level screens ---------- */
 function start(L){
+  inLevel(L);
   if(L.enemy&&L.enemy!=="twist")S.met[L.enemy]=true;save();
   if(L.type==="Predict")return predict(L);
   if(L.type==="Spot the bug"||L.type==="Saboteur")return spot(L);
@@ -823,7 +859,8 @@ function start(L){
   build(L);
 }
 function intro(L){
-  return [h("button",{class:"link",type:"button",onclick:home,style:"justify-self:start"},"← Office"),
+  return [h("button",{class:"link",type:"button",onclick:home,style:"justify-self:start"},"← Home (progress saved)"),
+    resumedNote(paused(L)),
     h("div",null,h("h3",null,"Level "+L.id+" · "+L.type),h("h2",null,L.title)),
     clientBubble(L,L.brief),
     L.enemy?h("div",{class:"card"},enemyChip(L.enemy,"Beat it to earn stars.",true)):null];
@@ -831,7 +868,7 @@ function intro(L){
 
 /* BUILD */
 function build(L){
-  clear();var sel=L.slots.map(function(sl){return sl.opts.length===1?0:null;});var hint=false;
+  clear();var P=paused(L);var sel=P&&P.sel?P.sel.slice():L.slots.map(function(sl){return sl.opts.length===1?0:null;});var hint=!!(P&&P.hint);
   intro(L).forEach(function(x){add(app,x);});
   if(L.input)app.append(h("p",{class:"muted"},"Input: "+L.input));
   var prev=h("div",{class:"preview"});var run=h("button",{class:"btn",type:"button"},"Run it");
@@ -839,11 +876,11 @@ function build(L){
     prev.textContent=parts.length?parts.join("\n"):"Your prompt appears here as you pick cards.";run.disabled=sel.some(function(v){return v==null;});}
   var box=h("div",{class:"card"});
   L.slots.forEach(function(sl,i){var opts=h("div",{class:"opts",role:"group","aria-label":sl.name});
-    sl.opts.forEach(function(o,j){var b=h("button",{class:"opt",type:"button","aria-pressed":sel[i]===j?"true":"false",disabled:sl.opts.length===1,onclick:function(){sel[i]=j;Array.from(opts.children).forEach(function(c,k){c.setAttribute("aria-pressed",k===j?"true":"false");});refresh();}},o.t);opts.append(b);});
+    sl.opts.forEach(function(o,j){var b=h("button",{class:"opt",type:"button","aria-pressed":sel[i]===j?"true":"false",disabled:sl.opts.length===1,onclick:function(){sel[i]=j;Array.from(opts.children).forEach(function(c,k){c.setAttribute("aria-pressed",k===j?"true":"false");});refresh();checkpoint(L,{sel:sel.slice(),hint:hint});}},o.t);opts.append(b);});
     box.append(h("div",{class:"slot"},h("label",null,sl.name),opts));});
   app.append(box);app.append(h("h3",null,"Your prompt"));app.append(prev);
-  if(L.hint){var hb=h("button",{class:"link",type:"button",style:"justify-self:start"},"Need a hint? (caps this round at 2 stars)");
-    hb.addEventListener("click",function(){hint=true;hb.replaceWith(h("p",{class:"muted"},"Hint: "+L.hint));});app.append(hb);}
+  if(L.hint){if(hint)app.append(h("p",{class:"muted"},"Hint: "+L.hint));else{var hb=h("button",{class:"link",type:"button",style:"justify-self:start"},"Need a hint? (caps this round at 2 stars)");
+    hb.addEventListener("click",function(){hint=true;checkpoint(L,{sel:sel.slice(),hint:true});hb.replaceWith(h("p",{class:"muted"},"Hint: "+L.hint));});app.append(hb);}}
   run.addEventListener("click",function(){sfx("run");reveal(L,sel,hint);});app.append(run);refresh();
 }
 function reveal(L,sel,hint){
@@ -861,6 +898,7 @@ function reveal(L,sel,hint){
   app.append(after);
 }
 function finish(L,n,el,detail,blooper){
+  clearPause(L);
   var prev=S.stars[L.id]||0;if(n>prev)S.stars[L.id]=n;
   var newCards=[];if(n>=1)L.earn.forEach(function(c){if(!S.cards[c]){S.cards[c]="earned";newCards.push(c);}});
   if(blooper&&S.bloopers.indexOf(blooper)<0)S.bloopers.push(blooper);
@@ -884,11 +922,11 @@ function finish(L,n,el,detail,blooper){
 
 /* PREDICT */
 function predict(L){
-  clear();var r=0,score=0,log=[];
+  clear();var P=paused(L);var r=P?P.r:0,score=P?P.score:0,log=P?P.log.slice():[];
   intro(L).forEach(function(x){add(app,x);});
   var area=h("div",{style:"display:grid;gap:14px"});app.append(area);
   function round(){
-    area.textContent="";var R=L.rounds[r];var pick=null,bet=null;
+    area.textContent="";var R=L.rounds[r];var pick=null,bet=null;checkpoint(L,{r:r,score:score,log:log.slice()});
     var lock=h("button",{class:"btn",type:"button",disabled:true},"Lock it in");
     function chk(){lock.disabled=pick==null||bet==null;}
     var opts=h("div",{class:"opts"});R.opts.forEach(function(o,j){opts.append(h("button",{class:"opt",type:"button","aria-pressed":"false",onclick:function(){pick=j;Array.from(opts.children).forEach(function(c,k){c.setAttribute("aria-pressed",k===j?"true":"false");});chk();}},o));});
@@ -920,11 +958,11 @@ function claudeStatic(t){return h("div",{class:"bubble"},h("div",{class:"avatar 
 
 /* SPOT THE BUG */
 function spot(L){
-  clear();var flags=L.lines.map(function(){return false;});
+  clear();var P=paused(L);var flags=P&&P.flags?P.flags.slice():L.lines.map(function(){return false;});
   intro(L).forEach(function(x){add(app,x);});
   var list=h("div",{class:"opts"});
-  L.lines.forEach(function(ln,i){list.append(h("button",{class:"tline",type:"button","aria-pressed":"false",onclick:function(e){flags[i]=!flags[i];e.currentTarget.setAttribute("aria-pressed",flags[i]?"true":"false");cnt.textContent=flags.filter(Boolean).length+" flagged";}},h("span",{class:"n"},i+1),h("span",null,ln.t)));});
-  var cnt=h("span",{class:"muted"},"0 flagged");
+  L.lines.forEach(function(ln,i){list.append(h("button",{class:"tline",type:"button","aria-pressed":flags[i]?"true":"false",onclick:function(e){flags[i]=!flags[i];e.currentTarget.setAttribute("aria-pressed",flags[i]?"true":"false");cnt.textContent=flags.filter(Boolean).length+" flagged";checkpoint(L,{flags:flags.slice()});}},h("span",{class:"n"},i+1),h("span",null,ln.t)));});
+  var cnt=h("span",{class:"muted"},flags.filter(Boolean).length+" flagged");
   var go=h("button",{class:"btn",type:"button"},(L.checkLabel||"Check the template"));
   app.append(h("div",{class:"card"},h("h3",null,L.spotLabel||"Dana's template. Tap the lines that break it."),list,cnt),go);
   go.addEventListener("click",function(){
@@ -955,19 +993,19 @@ function spot(L){
 
 /* RESCUE: steer a chat that went wrong */
 function rescue(L){
-  clear();var t=0,pts=0,log=[],blooper=null;
+  clear();var P=paused(L);var t=P?P.t:0,pts=P?P.pts:0,picks=P?P.picks.slice():[],blooper=P?P.blooper:null;var log=picks.map(function(x){return{T:L.turns[x[0]],o:L.turns[x[0]].opts[x[1]]};});
   intro(L).forEach(function(x){add(app,x);});
   var area=h("div",{style:"display:grid;gap:12px"});app.append(area);
   function userBubble(txt){return h("div",{class:"bubble",style:"flex-direction:row-reverse"},h("div",{class:"avatar"},L.client[0]),h("div",{class:"msg",style:"border-radius:14px 4px 14px 14px"},h("small",null,L.client),txt));}
   function turn(){
-    area.textContent="";var T=L.turns[t];
+    area.textContent="";var T=L.turns[t];checkpoint(L,{t:t,pts:pts,picks:picks.slice(),blooper:blooper});
     area.append(h("h3",null,"The chat so far"));
     T.chat.forEach(function(m){area.append(m.u?userBubble(m.t):claudeStatic(m.t));});
     if(T.note)area.append(h("p",{class:"verdict no"},T.note));
     var opts=h("div",{class:"opts"});
     T.opts.forEach(function(o,j){opts.append(h("button",{class:"opt",type:"button",onclick:function(){choose(j);}},o.t));});
     area.append(h("div",{class:"card"},h("p",{style:"font-weight:700"},T.q),opts));
-    function choose(j){var o=T.opts[j];pts+=o.p;log.push({T:T,o:o});if(o.blooper)blooper=o.blooper;sfx("run");
+    function choose(j){var o=T.opts[j];pts+=o.p;log.push({T:T,o:o});picks.push([t,j]);if(o.blooper)blooper=o.blooper;sfx("run");
       area.textContent="";area.append(h("h3",null,"You send"),userBubble(o.t),h("h3",null,"Claude replies"));
       var after=h("div",{style:"display:grid;gap:12px"});
       area.append(claudeBubble(o.reply,function(){var best=T.opts.reduce(function(a,b){return b.p>a.p?b:a;});
@@ -986,15 +1024,15 @@ function rescue(L){
 
 /* PICK THE TOOL: sort jobs into the right place */
 function pickTool(L){
-  clear();var k=0,right=0,log=[];
+  clear();var P=paused(L);var k=P?P.k:0,right=P?P.right:0,picks=P?P.picks.slice():[];var log=picks.map(function(x){return{I:L.items[x[0]],j:x[1],ok:x[1]===L.items[x[0]].a};});
   intro(L).forEach(function(x){add(app,x);});
   var area=h("div",{style:"display:grid;gap:12px"});app.append(area);
   function item(){
-    area.textContent="";var I=L.items[k];
+    area.textContent="";var I=L.items[k];checkpoint(L,{k:k,right:right,picks:picks.slice()});
     var tools=h("div",{class:"grid2"});
     L.tools.forEach(function(tn,j){tools.append(h("button",{class:"tcard",type:"button","aria-pressed":"false",onclick:function(){pick(j);}},h("b",null,tn)));});
     area.append(h("div",{class:"card"},h("h3",null,"Job "+(k+1)),h("p",{style:"font-size:18px;font-weight:700"},I.t),h("p",{class:"muted"},"Where should this live?"),tools));
-    function pick(j){var ok=j===I.a;if(ok)right++;log.push({I:I,j:j,ok:ok});sfx(ok?"good":"bad");if(!ok)buzz(50);
+    function pick(j){var ok=j===I.a;if(ok)right++;log.push({I:I,j:j,ok:ok});picks.push([k,j]);sfx(ok?"good":"bad");if(!ok)buzz(50);
       area.textContent="";
       area.append(h("div",{class:"card "+(ok?"pop":"shake")},h("p",{class:"verdict "+(ok?"ok":"no"),style:"font-size:20px;font-family:var(--display)"},ok?"Right place.":"Hmm. "+L.tools[j]+"?"),
         ok?null:h("p",null,I.oops),h("p",null,h("b",null,"Best: "+L.tools[I.a]+". "),I.why)),
@@ -1009,6 +1047,7 @@ function pickTool(L){
 
 /* BOSS */
 function boss(L){
+  var P=paused(L);if(P&&P.hand)return fight(L,P.hand.slice(),P);
   clear();intro(L).forEach(function(x){add(app,x);});
   var have=Object.keys(S.cards).filter(function(c){return CARDS[c];});
   app.append(h("div",{class:"card"},h("p",null,L.scout)));
@@ -1020,10 +1059,11 @@ function boss(L){
   app.append(h("h3",null,"Your loadout"),grid,cnt,go);
   go.addEventListener("click",function(){fight(L,chosen.slice());});
 }
-function fight(L,hand){
-  var w=0,score=0,plays=[];var hp=100;
+function fight(L,hand,P){
+  var w=P?P.w:0,score=P?P.score:0,hp=P?P.hp:100;var plays=P?P.plays.map(function(p){return{id:p[0],q:p[1],w:L.waves[p[2]]};}):[];
   function wave(){
-    clear();var W=L.waves[w];
+    clear();var W=L.waves[w];checkpoint(L,{w:w,score:score,hp:hp,hand:hand.slice(),plays:plays.map(function(p){return[p.id,p.q,L.waves.indexOf(p.w)];})});
+    if(P&&w===P.w)app.append(resumedNote(P));
     app.append(h("div",null,h("h3",null,"Level "+L.id+" · Wave "+(w+1)),h("h2",null,W.label)));
     var bar=h("div",{class:"hp"},h("i",{style:"width:"+hp+"%"}));var real=!!ENEMIES[W.foe];if(real){S.met[W.foe]=true;save();}
     var mon=monsterEl(real?W.foe:null,true,real?null:"#7b5cd6");
