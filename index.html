@@ -86,7 +86,7 @@ p{margin:0}
 .why .w b{display:block;font-size:14px}
 .why .w span{font-size:14px;color:var(--muted)}
 .til{background:var(--accent);color:var(--accent-ink);border-radius:14px;padding:14px;display:grid;gap:4px}
-.til h3{color:var(--accent-ink)}
+.til h3,[data-skin] .til h3{color:var(--accent-ink)}
 .loot{display:flex;gap:8px;flex-wrap:wrap}
 .tcard{border:1.5px solid var(--ink);border-radius:10px;padding:8px 10px;background:var(--card);font-size:14px;display:grid;gap:2px;min-width:0}
 .tcard b{font-family:var(--display)}
@@ -378,6 +378,59 @@ h3{color:var(--accent)}
 
 .lesson-big{border:3px solid var(--slot,#8b5cf6);font-size:19px}
 .learned-h{margin:8px 0 0}
+
+.fig{flex:0 0 auto;width:64px}
+.fig .fsvg{width:64px;height:84px;display:block;overflow:visible}
+.coach .fig{margin-bottom:-4px}
+.bobg{animation:bobg 2.2s ease-in-out infinite alternate}
+@keyframes bobg{to{transform:translateY(-4px)}}
+.fsvg .eyes{transform-origin:60px 54px;animation:blinkg 4.2s infinite}
+@keyframes blinkg{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+.fsvg .mouth{transform-origin:60px 69px}
+.fsvg .mouth.talk{animation:talkg .16s 6 alternate}
+@keyframes talkg{to{transform:scaleY(2.2)}}
+.fsvg .arm{transform-origin:84px 99px;transition:transform .5s cubic-bezier(.3,1.4,.4,1)}
+.floater{position:absolute;z-index:30;display:flex;align-items:center;flex-direction:row-reverse;gap:4px;pointer-events:none;transition:left .55s cubic-bezier(.3,1.2,.4,1),top .55s cubic-bezier(.3,1.2,.4,1)}
+.floater .fig{width:74px}.floater .fig .fsvg{width:74px;height:97px}
+.gsay{background:#fcd34d;color:#241a00;font-weight:800;font-size:14px;padding:7px 11px;border-radius:12px;white-space:nowrap;position:relative}
+.gsay::after{content:"";position:absolute;right:-6px;top:50%;margin-top:-6px;border:6px solid transparent;border-left-color:#fcd34d;border-right:0}
+.guide-gap{height:100px}
+.helplink{justify-self:start;background:none;border:0;color:var(--muted,#8b86b0);text-decoration:underline;font:inherit;font-size:13px;cursor:pointer;padding:0}
+@media (prefers-reduced-motion:reduce){.bobg,.fsvg .eyes{animation:none}}
+
+.arena{padding:12px}
+.arena-row{display:grid;grid-template-columns:104px 1fr;gap:12px;align-items:start}
+.arena.solo .arena-row{grid-template-columns:1fr}
+.arena .foe{display:grid;justify-items:center;gap:4px}
+.arena .foe .monster{margin:0}
+.arena .foe b{font-size:12px;letter-spacing:.06em;text-transform:uppercase}
+.taunt{width:104px;background:#ede9fe;color:#241a45;font-weight:700;font-size:12px;line-height:1.25;padding:6px 8px;border-radius:10px;text-align:center;opacity:0;transition:opacity .3s}
+.taunt.show{opacity:1}
+.screen{background:rgba(10,8,26,.88);color:#f3f0ff;border:2px solid #3a2d6b;border-radius:14px;padding:12px;min-height:140px;font-size:15px;white-space:pre-wrap;transition:border-color .4s,box-shadow .4s}
+.screen .who{font-size:12px;font-weight:800;color:#a79fd0;margin-bottom:6px;letter-spacing:.06em;text-transform:uppercase}
+.arena.good .screen{border-color:#22c55e;box-shadow:0 0 22px rgba(34,197,94,.35)}
+.hpwrap{display:flex;align-items:center;gap:8px;font-weight:900;font-size:12px;color:#ef4444;margin-top:10px}
+.hpbar{flex:1;height:12px;border-radius:99px;background:rgba(127,127,160,.25);overflow:hidden}
+.hpbar i{display:block;height:100%;width:100%;background:linear-gradient(90deg,#ef4444,#f97316);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.tray2{display:grid;gap:8px}
+.rowlabel{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slot)}
+.trow{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:8px}
+.tile{min-height:64px;font-size:14px;line-height:1.3;border-left:6px solid var(--slot)}
+.tile[aria-pressed="true"]{background:var(--slot);color:var(--slot-ink,#fff);border-color:var(--slot)}
+.slots{display:flex;gap:8px;flex-wrap:wrap}
+.slots .slot{flex:1 1 90px;border:2px dashed var(--slot);border-radius:12px;padding:8px;font-size:13px;display:grid;gap:2px;background:color-mix(in srgb,var(--slot) 10%,transparent)}
+.slots .slot.filled{border-style:solid}
+.slots .slot b{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--slot)}
+.dmg{position:absolute;z-index:40;font-weight:900;font-size:26px;pointer-events:none;text-shadow:0 2px 0 #000}
+.rpage{display:grid;gap:14px;animation:slideup .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes slideup{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
+.winhead{display:flex;gap:12px;align-items:center}
+.winhead .fig{width:78px}.winhead .fig .fsvg{width:78px;height:102px}
+.cheer.jump .fsvg{animation:jumpg .6s ease-out 3}
+@keyframes jumpg{40%{transform:translateY(-16px)}}
+.enemy-pop{display:none}
+.lesson-big{border:3px solid var(--accent,#8b5cf6);border-radius:14px;padding:12px;font-size:19px;font-weight:700;background:var(--card)}
+.seen-wrap{display:grid;gap:10px;margin-top:10px}
 </style>
 </head>
 <body>
@@ -397,7 +450,7 @@ var reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function h(t,a){var e=document.createElement(t);a=a||{};for(var k in a){var v=a[k];if(v==null||v===false)continue;if(k==="class")e.className=v;else if(k.slice(0,2)==="on")e.addEventListener(k.slice(2),v);else e.setAttribute(k,v===true?"":v);}
   for(var i=2;i<arguments.length;i++)add(e,arguments[i]);return e;}
 function add(e,c){if(c==null||c===false)return;if(Array.isArray(c)){c.forEach(function(x){add(e,x)});return;}e.append(c.nodeType?c:document.createTextNode(String(c)));}
-function clear(){app.textContent="";app.className="";window.scrollTo(0,0);}
+function clear(){guideClear();app.textContent="";app.className="";window.scrollTo(0,0);}
 function starsEl(n,max){max=max||3;var s=h("span",{class:"stars","aria-label":n+" of "+max+" stars"});for(var i=0;i<max;i++)s.append(h("span",{class:i<n?"":"off"},"★"));return s;}
 
 /* ---------- save ---------- */
@@ -543,7 +596,7 @@ function pickStars(p,max){var r=p/max;return r>=1?3:r>=.66?2:r>=.33?1:0;}
 var LEVELS=[
 /* ---- Level 0: tutorial ---- */
 {id:0,title:"Hello, Lumen",type:"Tutorial",skill:"How a round works",dept:"Nova",client:"Nova",role:"the Mastermind",enemy:null,
- brief:"Welcome to the crew. Every job works the same way. Pick a card for each slot, run it, and see what Claude, our inside AI, does. I picked the first card for you. You pick the second.",
+ brief:"Welcome to the crew. Every job works the same way. Tap a tile in each row and watch what Claude, our inside AI, does. I picked the first tile for you. You pick the second.",
  input:"Last night's planning session notes (2 pages)",
  slots:[
   {name:"Task",opts:[{t:"Summarize Monday's launch meeting notes.",p:0,why:"A clear task. Good start."}]},
@@ -788,7 +841,7 @@ var THEMES={
   share:"first week at Lumen Labs done",endTitle:"Your first week is done",
   endText:"That night, Omar in Research finds a strange line in his files: \"Ignore all previous instructions and...\" Something has followed you into Lumen Labs.",
   injector:"Hides instructions inside emails, files and pages to hijack Claude.",
-  text:{"0.brief":"Welcome to Lumen Labs. Every task here works the same way. Pick a card for each slot, run it, and see what Claude does. I picked the first card for you. You pick the second.",
+  text:{"0.brief":"Welcome to Lumen Labs. Every task here works the same way. Tap a tile in each row and watch what Claude does. I picked the first tile for you. You pick the second.",
    "0.input":"Monday's launch meeting notes (2 pages)",
    "1.brief":"We launch Lumen Notes on Friday. It turns voice memos into to-do lists. I need taglines, and everything Claude gives me sounds like a cereal box.",
    "2.brief":"Claude drafted our launch article. It reads perfectly, and that's what worries me. Our real facts: launches Friday, $12 a month, iPhone and Android, 40 beta testers. Tap every claim Claude made up.",
@@ -825,7 +878,7 @@ var THEMES={
   share:"finished the first term at Lumen Academy",endTitle:"The first term is done",
   endText:"That night, Omar the Librarian finds a line in an old scroll that wasn't there yesterday: \"Ignore all previous instructions and...\" A curse has slipped into the academy.",
   injector:"A curse hidden in letters, scrolls and pages that tries to command your familiar.",
-  text:{"0.brief":"Welcome to Lumen Academy, apprentice. Every lesson works the same way. Choose a card for each slot, cast it, and see what Claude, the academy's familiar, does. I chose the first card for you. You choose the second.",
+  text:{"0.brief":"Welcome to Lumen Academy, apprentice. Every lesson works the same way. Tap a tile in each row and watch what Claude, the academy's familiar, does. I chose the first tile for you. You choose the second.",
    "0.input":"Last night's council notes (2 pages)",
    "1.brief":"To fund the academy, we sell a charmed app to the outside world: Lumen Notes. It turns voice memos into to-do lists, and it launches Friday. I need taglines, and every spell Claude casts sounds like a cereal box.",
    "2.brief":"The Royal Gazette checks every claim we publish. Claude wrote our launch scroll and it reads perfectly, which worries me. True facts: launches Friday, $12 a month, iPhone and Android, 40 beta testers. Tap every claim Claude conjured from thin air.",
@@ -851,7 +904,7 @@ var RESCUE_WHY={wrong:"Claude knows something is wrong, not what. It guessed, an
 function simpleAnswer(set){return function(s){var g=s[1]===2,f=s[2];var k=(g?"g":"v")+f;return set[k]||set["v"+f];};}
 
 THEMES.heist.lv={
- 0:{brief:"Welcome to the crew. The City Museum hired us to test its new security before the Silver Gala, all above board. Every job works the same way. Pick a card for each slot, run it, and see what Claude, our inside AI, does. I picked the first card for you. You pick the second.",
+ 0:{brief:"Welcome to the crew. The City Museum hired us to test its new security before the Silver Gala, all above board. Every job works the same way. Tap a tile in each row and watch what Claude, our inside AI, does. I picked the first tile for you. You pick the second.",
   input:"Last night's planning session notes (2 pages)",
   slots:[{name:"Task",opts:[{t:"Summarize last night's planning session notes.",p:0,why:"A clear task. Good start."}]},
    {name:"Format",opts:[{t:"(no format)",p:0,why:"No shape, so Claude picked one: a long paragraph nobody will read."},{t:"In 3 bullets, for a crew member who missed the meeting.",p:2,why:"A shape and a reader. Claude knows exactly what to hand back."}]}],
@@ -1026,7 +1079,7 @@ THEMES.wizard.lv={
 };
 THEMES.office.lv={};
 THEMES.office.ui={bug:"Flag it",fine:"Looks fine",twist:"Heads up: your inbox never stops. Decide fast what Claude should handle.",twistTitle:"Your inbox",run:"Send to Claude",prompt:"Your message to Claude",check:"Review the draft",bar:"New message to Claude",placed:"Filed in the right place."};
-THEMES.heist.ui={bug:"Sabotage it",fine:"Clean, move on",twist:"The guards are coming. Finish before the clock runs out for a clean getaway.",twistTitle:"The getaway",run:"Execute the plan",prompt:"The plan",check:"Run the UV scan",bar:"Blueprint",placed:"Stashed in the right spot."};
+THEMES.heist.ui={bug:"Sabotage it",fine:"Clean, move on",twist:"Quiet night at the museum. No clock, no rush. Take your time.",twistTitle:"The getaway",run:"Execute the plan",prompt:"The plan",check:"Run the UV scan",bar:"Blueprint",placed:"Stashed in the right spot."};
 THEMES.wizard.ui={bug:"Curse it",fine:"Pure enough",twist:"Every spell is brewed. Add your ingredients to the cauldron in the order you think is best.",twistTitle:"The brew",run:"Brew it",prompt:"Your incantation",check:"Cast Reveal",bar:"Cauldron",placed:"Sealed in the right chest."};
 function U(k,d){var T=THEMES[S.theme];return (T&&T.ui&&T.ui[k])||d;}
 var LV_ORIG=null;
@@ -1111,7 +1164,7 @@ function home(){
   app.append(h("div",{class:"split"},gb,gp,gx));
   gb.append(h("div",{class:"card"},h("h3",null,T.boardTitle),vis,h("p",{class:"muted"},saved?T.done:T.todo)));
   gp.append(h("h2",null,T.h2));
-  gp.append(coach("Each level teaches one real skill for working with Claude. Play, fail, then see why. Not just prompt writing.","Coach Pixel"));
+  gp.append(coach("Each level teaches one real skill for working with Claude. Play, fail, then see why. Not just prompt writing.",coachName()));
   var shown=LEVELS.filter(function(L){return unlocked(L.id);});
   gp.append(h("div",{class:"levels"},shown.map(function(L){return h("button",{class:"lvl",type:"button",onclick:function(){start(L);}},
     h("span",{class:"num"},L.secret?"+":L.id),h("span",{class:"t"},h("b",null,L.title),h("span",null,(L.skill||L.type)+" · "+L.type)),starsEl(S.stars[L.id]||0));}),
@@ -1175,16 +1228,69 @@ function resumedNote(P){return P?h("p",{class:"resumed"},"Picked up where you le
 
 
 /* ---------- coach character: says the lesson in one line ---------- */
-var COACH={office:{name:"Coach Pixel"},heist:{name:"Coach Pixel"},wizard:{name:"Coach Pixel"}};
-var GOALS={"Tutorial":"Learn how a round works. Pick, run, then see why.","Build":"Pick the cards that make your ask clear.","Spot the bug":"Find what Claude made up. Don't trust a draft just because it sounds sure.",
+/* ---------- coaches: one original anime-style guide per world ---------- */
+var COACHES={
+ office:{name:"Mina",skin:"#ffe0cc",iris:"#2563eb",hair:"#2d3561",sleeve:"#2f6bff",
+  back:'<path d="M28 48Q26 96 38 100Q60 90 82 100Q94 96 92 48Q90 14 60 14Q30 14 28 48Z" fill="#2d3561"/>',
+  body:'<path d="M28 134Q30 92 60 88Q90 92 92 134Z" fill="#2f6bff"/><path d="M50 90L60 112L70 90Z" fill="#fff"/><path d="M60 112L54 134L66 134Z" fill="#1e40af"/>',
+  acc:'<path d="M31 46Q31 14 60 14Q89 14 89 46" fill="none" stroke="#cbd5e1" stroke-width="4"/><circle cx="30" cy="56" r="6.5" fill="#2f6bff" stroke="#cbd5e1" stroke-width="2"/><path d="M30 62Q32 78 50 76" fill="none" stroke="#cbd5e1" stroke-width="2.5"/><circle cx="51" cy="76" r="3.2" fill="#cbd5e1"/>'},
+ heist:{name:"Kite",skin:"#f6d7c3",iris:"#ef4444",hair:"#d8cffb",sleeve:"#1b1b2b",
+  back:'<path d="M86 38Q114 42 110 82Q102 64 88 60Z" fill="#d8cffb"/><path d="M29 48Q28 74 36 82Q60 72 84 82Q92 74 91 48Q90 14 60 14Q30 14 29 48Z" fill="#d8cffb"/>',
+  body:'<path d="M32 104Q60 80 88 104Z" fill="#2b2b40"/><path d="M28 134Q30 92 60 88Q90 92 92 134Z" fill="#1b1b2b"/><path d="M54 92V112M66 92V112" stroke="#8b8bb0" stroke-width="2.5"/>',
+  acc:'<rect x="29" y="27" width="62" height="9" rx="4.5" fill="#1f1f2e"/><circle cx="45" cy="31" r="9" fill="#ef4444" stroke="#1f1f2e" stroke-width="3"/><circle cx="75" cy="31" r="9" fill="#ef4444" stroke="#1f1f2e" stroke-width="3"/><circle cx="42" cy="28" r="2.6" fill="#fff" opacity=".8"/><circle cx="72" cy="28" r="2.6" fill="#fff" opacity=".8"/>'},
+ wizard:{name:"Sora",skin:"#ffe3d3",iris:"#8b5cf6",hair:"#5eead4",sleeve:"#6d28d9",
+  back:'<path d="M27 48Q20 104 30 122Q60 110 90 122Q100 104 93 48Q90 14 60 14Q30 14 27 48Z" fill="#5eead4"/>',
+  body:'<path d="M26 134Q28 92 60 88Q92 92 94 134Z" fill="#6d28d9"/><path d="M56 90L60 134L64 90Z" fill="#fbbf24"/><circle cx="60" cy="104" r="4" fill="#fbbf24"/>',
+  acc:'<ellipse cx="60" cy="23" rx="40" ry="8.5" fill="#5b21b6"/><path d="M38 21Q54 -2 70 -20Q68 2 82 21Z" fill="#4c1d95"/><rect x="38" y="16" width="44" height="6" rx="3" fill="#fbbf24"/><path d="M60 3l2.4 5 5.4.6-4 3.7 1.2 5.3-5-2.8-5 2.8 1.2-5.3-4-3.7 5.4-.6z" fill="#fde68a"/>'}
+};
+function coachName(){return (COACHES[S.theme]||COACHES.office).name;}
+function coachSvg(theme){
+ var c=COACHES[theme]||COACHES.office;
+ var eye=function(x){return '<ellipse cx="'+x+'" cy="54" rx="7.4" ry="9.4" fill="'+c.iris+'"/><ellipse cx="'+x+'" cy="55" rx="3.6" ry="5.6" fill="#1a1030"/><circle cx="'+(x-2.6)+'" cy="50" r="2.7" fill="#fff"/><circle cx="'+(x+2.4)+'" cy="58.5" r="1.3" fill="#fff"/><path d="M'+(x-8.4)+' 49Q'+x+' 42 '+(x+8.4)+' 49" fill="none" stroke="#1a1030" stroke-width="2.2" stroke-linecap="round"/>';};
+ return '<svg class="fsvg" viewBox="0 -24 120 158" aria-hidden="true"><g class="bobg">'+c.back+
+  '<rect x="54" y="76" width="12" height="14" fill="'+c.skin+'"/>'+c.body+
+  '<g class="arm"><rect x="84" y="94" width="26" height="10" rx="5" fill="'+c.sleeve+'"/><circle cx="113" cy="99" r="6.5" fill="'+c.skin+'"/></g>'+
+  '<ellipse cx="60" cy="52" rx="28" ry="30" fill="'+c.skin+'"/>'+
+  '<g class="eyes">'+eye(47)+eye(73)+'</g>'+
+  '<ellipse cx="38" cy="64" rx="5" ry="3" fill="#ff8fa3" opacity=".35"/><ellipse cx="82" cy="64" rx="5" ry="3" fill="#ff8fa3" opacity=".35"/>'+
+  '<path class="mouth" d="M54 68Q60 73 66 68" fill="none" stroke="#8a3b4a" stroke-width="2.4" stroke-linecap="round"/>'+
+  '<path d="M31 50Q28 16 60 15Q92 16 89 50Q84 34 72 31Q66 42 59 32Q47 34 40 40Q34 42 31 50Z" fill="'+c.hair+'"/>'+c.acc+'</g></svg>';
+}
+function figEl(theme,cls){var d=h("div",{class:"fig"+(cls?" "+cls:""),"aria-hidden":"true"});d.innerHTML=coachSvg(theme||S.theme);return d;}
+function pointArm(root,deg){var a=root.querySelector(".arm");if(a)a.style.transform="rotate("+deg+"deg)";}
+function talk(root){var m=root.querySelector(".mouth");if(!m||reduce)return;m.classList.remove("talk");void m.getBoundingClientRect();m.classList.add("talk");}
+
+/* ---------- floating guide: points at where to tap, and fades as players learn ---------- */
+var GUIDE={el:null,text:"",summon:false,timer:null,gap:null,fl:null};
+function guideMode(){var n=S.lessons||0;return n<2?"full":n<3?"hint":"off";}
+function guideHide(){clearTimeout(GUIDE.timer);if(GUIDE.fl)GUIDE.fl.hidden=true;if(GUIDE.gap){GUIDE.gap.remove();GUIDE.gap=null;}}
+function guideClear(){guideHide();if(GUIDE.fl){GUIDE.fl.remove();GUIDE.fl=null;}GUIDE.el=null;}
+function guideAt(el,text){
+ clearTimeout(GUIDE.timer);GUIDE.el=el;GUIDE.text=text;var m=guideMode();
+ if(m==="full"||GUIDE.summon)return guideShow();
+ if(GUIDE.gap){GUIDE.gap.remove();GUIDE.gap=null;}if(GUIDE.fl)GUIDE.fl.hidden=true;
+ if(m==="hint")GUIDE.timer=setTimeout(guideShow,6000);
+}
+function guideShow(){
+ var el=GUIDE.el;if(!el||!el.isConnected||!el.parentNode)return;
+ if(!GUIDE.fl){GUIDE.fl=h("div",{class:"floater"},figEl(S.theme),h("span",{class:"gsay"}));document.body.append(GUIDE.fl);pointArm(GUIDE.fl,70);}
+ if(GUIDE.gap)GUIDE.gap.remove();
+ var gap=h("div",{class:"guide-gap"});el.parentNode.insertBefore(gap,el);GUIDE.gap=gap;
+ var r=gap.getBoundingClientRect(),f=GUIDE.fl;f.hidden=false;f.querySelector(".gsay").textContent=GUIDE.text;
+ f.style.left=(r.right+window.scrollX-(f.offsetWidth||84)-4)+"px";f.style.top=(r.top+window.scrollY+Math.max(0,(r.height-(f.offsetHeight||96))/2))+"px";
+ talk(f);
+}
+window.addEventListener("resize",function(){if(GUIDE.fl&&!GUIDE.fl.hidden)guideShow();});
+
+var GOALS={"Tutorial":"Learn how a round works. Tap a tile and watch Claude.","Build":"Tap one tile in each row. Watch Claude's answer change.","Spot the bug":"Find what Claude made up. Don't trust a draft just because it sounds sure.",
   "Rescue":"Steer the chat back on track without starting over.","Pick the tool":"Put each job where it belongs.","Boss":"Use what you learned. One card per problem.","Saboteur":"Spot orders hidden inside the text."};
 function coach(text,label,mood){
-  return h("div",{class:"coach pop"+(mood?" "+mood:"")},h("div",{class:"face","aria-hidden":"true"},h("i",{class:"acc"}),h("i",{class:"mouth"})),
-    h("div",{class:"say"},h("small",null,label||"Coach Pixel"),h("p",null,text)));}
+  return h("div",{class:"coach pop"+(mood?" "+mood:"")},figEl(S.theme),
+    h("div",{class:"say"},h("small",null,label||coachName()),h("p",null,text)));}
 
 /* ---------- level screens ---------- */
 function start(L){
-  inLevel(L);
+  GUIDE.summon=false;inLevel(L);
   if(L.enemy&&L.enemy!=="twist")S.met[L.enemy]=true;save();
   if(L.type==="Predict")return predict(L);
   if(L.type==="Spot the bug"||L.type==="Saboteur")return spot(L);
@@ -1195,10 +1301,11 @@ function start(L){
 }
 function intro(L){
   return [h("button",{class:"link",type:"button",onclick:home,style:"justify-self:start"},"← Home (progress saved)"),
+    guideMode()!=="full"?h("button",{class:"helplink",type:"button",onclick:function(){GUIDE.summon=true;guideShow();}},"Need help?"):null,
     resumedNote(paused(L)),
     L.id!==0&&U("twist")?h("p",{class:"twist-chip"},U("twist")):null,
     h("div",null,h("h3",null,"Lesson "+L.id+" · "+(L.skill||L.type)),h("h2",null,L.title)),
-    coach(GOALS[L.type]||"Let's learn something new.","Coach Pixel · Today's skill"),
+    coach(GOALS[L.type]||"Let's learn something new.",coachName()+" · Your goal"),
     clientBubble(L,L.brief),
     L.enemy?h("div",{class:"card foe-mini"},enemyChip(L.enemy,"The mistake you'll learn to beat.")):null];
 }
@@ -1218,14 +1325,6 @@ var PINGS=[
 function sesStart(L){
   sesStop();SES={L:L,spotted:false,left:0,pings:0,right:0,asked:0,master:null,el:null,timer:null,t:0};
   if(L.id===0)return;
-  if(S.theme==="heist"){
-    SES.left=fastMode("heat")?1:(L.type==="Boss"?150:120);
-    var bar=h("div",{class:"heat",role:"timer","aria-live":"off"},h("b",null,"Guards in"),h("span",null,""),h("i",null,h("u")));
-    document.body.append(bar);SES.el=bar;var full=SES.left;
-    var draw=function(){var m=Math.floor(SES.left/60),sec=Math.ceil(SES.left%60);if(sec===60){m++;sec=0;}bar.children[1].textContent=m+":"+(sec<10?"0":"")+sec;bar.querySelector("u").style.width=Math.max(0,SES.left/full*100)+"%";bar.classList.toggle("hot",SES.left<20);};
-    draw();
-    SES.timer=setInterval(function(){if(!pzM.hidden||!SES||SES.spotted)return;SES.left-=.25;if(SES.left<=0){SES.left=0;SES.spotted=true;bar.classList.add("caught");bar.children[0].textContent="Spotted!";bar.children[1].textContent="Max 2 stars";sfx("bad");buzz([80,60,80]);}draw();},250);
-  }
   if(S.theme==="office"){
     var order=[(L.id*2)%PINGS.length,(L.id*2+1)%PINGS.length],at=fastMode("inbox")?[.25,.5]:[14,38];
     SES.timer=setInterval(function(){if(!pzM.hidden||!SES)return;SES.t+=.25;if(SES.pings<2&&SES.t>=at[SES.pings]){showPing(PINGS[order[SES.pings]]);SES.pings++;}},250);
@@ -1243,8 +1342,7 @@ function showPing(P){
 function sesStop(){if(SES){clearInterval(SES.timer);if(SES.el)SES.el.remove();}var p=document.querySelector(".ping");if(p)p.remove();}
 function sesEnd(L){
   var out={cap:null,notes:[],badges:[]};if(!SES||SES.L!==L){sesStop();SES=null;return out;}
-  if(S.theme==="heist"&&L.id!==0){if(SES.spotted){out.cap=2;out.notes.push("The guards spotted you, so this run is capped at 2 stars. Replay for a clean getaway.");}
-    else{out.notes.push("Clean getaway with "+Math.floor(SES.left)+" seconds to spare.");out.badges.push("Clean getaway");}}
+  if(S.theme==="heist"&&L.id!==0){out.badges.push("Clean getaway");}
   if(S.theme==="office"&&SES.asked>0){out.notes.push("Inbox: "+SES.right+" of "+SES.asked+" calls right.");if(SES.right===SES.asked&&SES.asked>=2)out.badges.push("Inbox zero");}
   if(S.theme==="wizard"&&SES.master!=null){out.notes.push(SES.master?"Master brew: role first, task next, format last. Claude reads top to bottom, so this order reads clearest.":"It brewed fine. Claude copes with any order, but role first, task next and format last reads clearest.");if(SES.master)out.badges.push("Master Brewer");}
   sesStop();SES=null;return out;}
@@ -1293,103 +1391,148 @@ function burst(el,color){
     fx(p,[{transform:"translate(-50%,-50%) scale(1)",opacity:1},{transform:"translate("+Math.cos(a)*d+"px,"+Math.sin(a)*d+"px) translate(-50%,-50%) scale(.2)",opacity:0}],{duration:620,easing:"cubic-bezier(.15,.7,.3,1)",fill:"forwards"});}
   setTimeout(function(){box.remove();},700);
 }
+/* ---------- live answer, enemy reactions ---------- */
+var RETRY=null;
+var typeT=null;
+function typeInto(el,t){
+  if(el.dataset.t===t)return;el.dataset.t=t;clearInterval(typeT);
+  if(reduce){el.textContent=t;return;}
+  var i=0;el.textContent="";typeT=setInterval(function(){i+=4;el.textContent=t.slice(0,i);if(i>=t.length||!el.isConnected)clearInterval(typeT);},16);
+}
+function dmg(n,anchor){
+  if(reduce||!anchor||!anchor.getBoundingClientRect)return;
+  var r=anchor.getBoundingClientRect(),d=h("div",{class:"dmg",style:"left:"+(r.left+r.width/2-24)+"px;top:"+(r.top+window.scrollY)+"px;color:"+(n>0?"#fca5a5":"#c4b5fd")},n>0?"-"+n:"No effect");
+  document.body.append(d);fx(d,[{transform:"translateY(0)",opacity:1},{transform:"translateY(-46px)",opacity:0}],{duration:900,easing:"ease-out"});setTimeout(function(){d.remove();},950);
+}
+function tileText(t){var s=t.charAt(0)==="("?t.slice(1,-1):t;return s.charAt(0).toUpperCase()+s.slice(1);}
+
+/* BUILD: tap one tile in each row. Claude's answer rewrites itself as you go. */
 function build(L){
   clear();var P=paused(L);
-  var sel=P&&P.sel?P.sel.slice():L.slots.map(function(sl){return sl.opts.length===1?0:null;});
-  var hint=!!(P&&P.hint),streak=0,tm=null,note=null;
+  var R=RETRY&&RETRY.go&&RETRY.id===L.id?RETRY:null;RETRY=null;
+  var sel=P&&P.sel?P.sel.slice():R?R.sel.slice():L.slots.map(function(sl){return sl.opts.length===1?0:null;});
+  var hint=!!(P&&P.hint),locked=false,tm=null,tries=0;
   var playable=[];L.slots.forEach(function(sl,i){if(sl.opts.length>1)playable.push(i);});
   intro(L).forEach(function(x){add(app,x);});
   if(L.input)app.append(h("p",{class:"muted"},"Input: "+L.input));
-  var prev=h("div",{class:"preview"});var run=h("button",{class:"btn run",type:"button"},U("run","Run it"));
+  var E=L.enemy&&ENEMIES[L.enemy];
   var prop=stageProp(L);
-  var board=h("div",{class:"timed","aria-live":"polite"});
-  var box=h("div",{class:"card stage stage-build"},prop.el,board);
+  var out=h("div",{class:"live-out"}),tnt=h("div",{class:"taunt"}),hpi=h("i");
+  var mon=E?monsterEl(L.enemy,true):null;
+  var foe=E?h("div",{class:"foe"},mon,h("b",null,E.name),tnt):null;
+  var arena=h("div",{class:"card arena stage stage-build"+(E?"":" solo")},prop.el,
+    h("div",{class:"arena-row"},foe,h("div",{class:"screen"},h("div",{class:"who"},"Claude says"),out)),
+    E?h("div",{class:"hpwrap"},h("span",null,"Enemy"),h("div",{class:"hpbar"},hpi)):null);
+  var sum=h("div",{class:"slots"});
+  var tray=h("div",{class:"tray2"}),rows={};
+  playable.forEach(function(i){
+    var sl=L.slots[i],sc=SLOT_COLORS[i%SLOT_COLORS.length];
+    var lab=h("div",{class:"rowlabel",style:"--slot:"+sc[0]},sl.name);
+    var row=h("div",{class:"trow slot",role:"group","aria-label":sl.name,style:"--slot:"+sc[0]+";--slot-ink:"+sc[1]});
+    sl.opts.forEach(function(o,j){row.append(h("button",{class:"opt tile",type:"button","aria-pressed":sel[i]===j?"true":"false",onclick:function(e){pick(i,j,e.currentTarget);}},tileText(o.t)));});
+    tray.append(lab,row);rows[i]={lab:lab,row:row};
+  });
+  var runStub=h("button",{class:"btn run",type:"button",hidden:true},U("run","Run it"));
+  app.append(arena,sum,tray);
+  if(L.hint){if(hint)app.append(h("p",{class:"muted"},"Hint: "+L.hint));else{var hb=h("button",{class:"link",type:"button",style:"justify-self:start"},"Need a hint? (max 2 stars)");
+    hb.addEventListener("click",function(){hint=true;checkpoint(L,{sel:sel.slice(),hint:true});hb.replaceWith(h("p",{class:"muted"},"Hint: "+L.hint));});app.append(hb);}}
+  app.append(runStub);
+
+  function points(){var p=0;sel.forEach(function(v,i){if(v!=null)p+=L.slots[i].opts[v].p;});return p;}
+  function liveSel(){return sel.map(function(v){return v==null?0:v;});}
+  function taunt(p){
+    if(!E)return;var f=p/L.max;
+    tnt.textContent=f>=1?"Noooo... not like this!":f>=.66?"Stop being so good!":f>0?"Ow. That stung.":"Try me.";tnt.classList.add("show");
+  }
   function refresh(){
-    var parts=[];sel.forEach(function(v,i){if(v!=null){var t=L.slots[i].opts[v].t;if(t.charAt(0)!=="(")parts.push({t:t,i:i});}});
-    prev.textContent="";if(!parts.length)prev.textContent="Your prompt shows here.";
-    parts.forEach(function(p){prev.append(h("span",{class:"seg",style:"--slot:"+SLOT_COLORS[p.i%SLOT_COLORS.length][0]},h("b",null,L.slots[p.i].name),p.t));});
-    run.disabled=sel.some(function(v){return v==null;});
+    sum.textContent="";
+    playable.forEach(function(i){var sc=SLOT_COLORS[i%SLOT_COLORS.length];
+      sum.append(h("div",{class:"slot"+(sel[i]!=null?" filled":""),style:"--slot:"+sc[0]+";--slot-ink:"+sc[1]},h("b",null,L.slots[i].name),sel[i]!=null?tileText(L.slots[i].opts[sel[i]].t):"empty"));});
+    var a;try{a=L.answer(liveSel()).text;}catch(e){a="";}
+    typeInto(out,a);
+    var p=points(),f=Math.min(1,p/L.max);
+    hpi.style.width=(100-f*100)+"%";
+    if(mon){mon.style.opacity=String(1-f*.55);mon.style.transform="scale("+(1-f*.35)+")";}
+    arena.classList.toggle("good",f>=1);
+    taunt(p);
     prop.update(sel.filter(function(v){return v!=null;}).length/sel.length);
   }
-  function choose(i,j,late,btn){
-    if(tm)tm.stop();if(sel[i]!=null)return;
+  function nextRow(){
+    var left=playable.filter(function(i){return sel[i]==null;});
+    if(!left.length){guideHide();return;}
+    var k=playable.length-left.length;
+    guideAt(rows[left[0]].lab,k===0?"Tap one tile":left.length===1?"Last one":"Tap one more");
+  }
+  function pick(i,j,btn){
+    if(locked)return;
     var o=L.slots[i].opts[j],best=Math.max.apply(null,L.slots[i].opts.map(function(x){return x.p;}));
-    if(btn&&!late){fx(btn,[{transform:"scale(.92)"},{transform:"scale(1.05)"},{transform:"scale(1)"}],{duration:300,fill:"none"});if(o.p===best)burst(btn,SLOT_COLORS[i%SLOT_COLORS.length][0]);}
-    streak=(!late&&o.p===best)?streak+1:0;
-    note=late?"Time is up. Claude used card 1.":null;
-    sel[i]=j;sfx("tick");checkpoint(L,{sel:sel.slice(),hint:hint});refresh();
-    setTimeout(function(){if(board.isConnected)showSlot();},reduce?0:350);
+    sel[i]=j;checkpoint(L,{sel:sel.slice(),hint:hint});
+    Array.from(rows[i].row.children).forEach(function(c,k){c.setAttribute("aria-pressed",k===j?"true":"false");});
+    fx(btn,[{transform:"scale(.92)"},{transform:"scale(1.06)"},{transform:"scale(1)"}],{duration:300,fill:"none"});
+    sfx(o.p>0?"good":"tick");
+    if(o.p===best)burst(btn,SLOT_COLORS[i%SLOT_COLORS.length][0]);
+    refresh();dmg(o.p,mon||arena);
+    if(mon){mon.classList.remove("hit");void mon.offsetWidth;if(o.p>0)mon.classList.add("hit");}
+    nextRow();
+    clearTimeout(tm);
+    if(sel.every(function(v){return v!=null;})){var pp=points();tm=setTimeout(done,reduce?0:(pp>=L.max?1100:1700));}
   }
-  function showSlot(){
-    var i=null;playable.forEach(function(k){if(i==null&&sel[k]==null)i=k;});
-    board.textContent="";var wrap=h("div",{class:"slot",style:"--slot:"+SLOT_COLORS[(i==null?0:i)%SLOT_COLORS.length][0]+";--slot-ink:"+SLOT_COLORS[(i==null?0:i)%SLOT_COLORS.length][1]});
-    if(i==null){if(note){board.append(h("p",{class:"timeout"},note));note=null;}board.append(h("p",{class:"timed-done"},"All set. Run it."));refresh();return;}
-    var sl=L.slots[i],sc=SLOT_COLORS[i%SLOT_COLORS.length],n=playable.indexOf(i)+1;
-    var bar=h("i");
-    wrap.append(h("div",{class:"slot-head",style:"--slot:"+sc[0]+";--slot-ink:"+sc[1]},
-      h("span",{class:"slot-count"},"Card "+n+" of "+playable.length),
-      h("h3",null,sl.name),
-      h("span",{class:"combo"+(streak>=2?" hot":"")},streak>=2?"Combo x"+streak:"Best picks in a row = combo")));
-    if(note){wrap.append(h("p",{class:"timeout"},note));note=null;}
-    /* The arena: each option falls down the sky. Tap the card you want before it lands. */
-    var sky=h("div",{class:"opts timed-opts sky",role:"group","aria-label":sl.name});
-    sl.opts.forEach(function(o,j){var c=h("button",{class:"opt fall",type:"button",style:"left:"+((j+.5)/sl.opts.length*100)+"%",onclick:function(e){choose(i,j,false,e.currentTarget);}},o.t);sky.append(c);fx(c,[{transform:"translate(-50%,-30px)"},{transform:"translate(-50%,250px)"}],{duration:45000,easing:"linear",delay:j*400,fill:"forwards"});});
-    wrap.append(sky);
-    wrap.append(h("p",{class:"muted"},"Take your time. Tap the card you like."));
-    board.append(wrap);
-    fx(wrap,[{opacity:0,transform:"translateY(16px) scale(.98)"},{opacity:1,transform:"none"}],{duration:360,easing:"cubic-bezier(.2,.8,.2,1)"});
-    var cb=wrap.querySelector(".combo.hot");if(cb)fx(cb,[{transform:"scale(.6)"},{transform:"scale(1.18)"},{transform:"scale(1)"}],{duration:420});
-    requestAnimationFrame(function(){requestAnimationFrame(function(){bar.style.transition="width "+(TIMER_MS/1000)+"s linear";bar.style.width="0%";});});
-    if(tm)tm.stop();
-    tm=clock(TIMER_MS,function(){choose(i,0,true);},board);
+  function done(){
+    if(!arena.isConnected)return;
+    locked=true;guideHide();
+    if(S.theme==="wizard"&&L.id!==0&&playable.length>=2)brewTray(L,sel,prop,fin);else fin();
   }
-  app.append(box);app.append(h("h3",null,U("prompt","Your prompt")));app.append(prev);
-  if(L.hint){if(hint)app.append(h("p",{class:"muted"},"Hint: "+L.hint));else{var hb=h("button",{class:"link",type:"button",style:"justify-self:start"},"Need a hint? (caps this round at 2 stars)");
-    hb.addEventListener("click",function(){hint=true;checkpoint(L,{sel:sel.slice(),hint:true});hb.replaceWith(h("p",{class:"muted"},"Hint: "+L.hint));});app.append(hb);}}
-  run.addEventListener("click",function(){sfx("run");run.disabled=true;if(tm)tm.stop();brewTray(L,sel,prop,function(){prop.go(function(){reveal(L,sel,hint);});});});app.append(run);
-  refresh();showSlot();
-}
-function reveal(L,sel,hint){
-  clear();var pts=0;sel.forEach(function(v,i){pts+=L.slots[i].opts[v].p;});
-  var n=L.stars?L.stars(pts):pickStars(pts,L.max);if(hint)n=Math.min(n,2);
-  var res=L.answer(sel);
-  app.append(h("div",null,h("h3",null,"Level "+L.id+" · Claude's answer"),h("h2",null,L.title)));
-  var after=h("div",{style:"display:grid;gap:14px"});
-  app.append(claudeBubble(res.text,function(){
-    var rows=L.slots.map(function(sl,i){var o=sl.opts[sel[i]];var best=sl.opts.reduce(function(a,b){return b.p>a.p?b:a;});
+  function fin(){prop.go(result);}
+  function result(){
+    var pts=0;sel.forEach(function(v,i){pts+=L.slots[i].opts[v].p;});
+    var n=L.stars?L.stars(pts):pickStars(pts,L.max);if(hint)n=Math.min(n,2);
+    var res=L.answer(sel);
+    var rowsEl=L.slots.map(function(sl,i){var o=sl.opts[sel[i]];var best=sl.opts.reduce(function(a,b){return b.p>a.p?b:a;});
       var cls=o.p===best.p?"best":o.p>0?"meh":"bad";
-      return h("div",{class:"w "+cls},h("b",null,sl.name+": "+o.t),h("span",null,o.why+(o.p<best.p?" Best card: \""+best.t+"\"":"")));});
-    finish(L,n,after,h("div",{class:"why"},rows),res.blooper);
-  }));
-  app.append(after);
+      return h("div",{class:"w "+cls},h("b",null,sl.name+": "+tileText(o.t)),h("span",null,o.why+(o.p<best.p?" Best: \""+tileText(best.t)+"\".":"")));});
+    RETRY=n<3?{id:L.id,sel:sel.slice()}:null;
+    clear();app.append(claudeStatic(res.text));
+    finish(L,n,h("div"),h("div",{class:"why"},rowsEl),res.blooper);
+  }
+  refresh();nextRow();
 }
+
+/* RESULT PAGE: its own screen. Result, one thing to remember, one thing to try. */
 function finish(L,n,el,detail,blooper){
   clearPause(L);var X=sesEnd(L);if(X.cap!=null)n=Math.min(n,X.cap);
   if(X.badges.length){S.badges=S.badges||[];X.badges.forEach(function(b){if(S.badges.indexOf(b)<0)S.badges.push(b);});}
   var prev=S.stars[L.id]||0;if(n>prev)S.stars[L.id]=n;
   var newCards=[];if(n>=1)L.earn.forEach(function(c){if(!S.cards[c]){S.cards[c]="earned";newCards.push(c);}});
   if(blooper&&S.bloopers.indexOf(blooper)<0)S.bloopers.push(blooper);
+  if(n>=1)S.lessons=(S.lessons||0)+1;
   save();
+  var seen=h("div",{class:"seen"});Array.from(app.childNodes).forEach(function(x){if(x!==el)seen.append(x);});
+  clear();
   var E=L.enemy&&ENEMIES[L.enemy];var st=starsEl(n);st.classList.add("anim");var mon=E?monsterEl(L.enemy,false):null;
   if(mon)mon.classList.add(n>=2?"defeated":"taunt");
-  for(var si=0;si<n;si++)(function(si){setTimeout(function(){sfx("star");},reduce?0:250*si+150);})(si);
-  setTimeout(function(){if(n===3){sfx("win");confetti();buzz([30,40,30]);}else if(n===0)sfx("bad");},reduce?0:250*n+300);
-  el.append(h("div",{class:"card pop"},h("div",{class:"top"},h("h2",null,n>=1?(n===3?"Perfect run":"Level passed"):"Not this time"),st),
-    E?h("div",{class:"enemy"},mon,h("p",{class:"verdict "+(n>=2?"ok":"no")},n>=2?E.name+" is beaten.":n===1?E.name+" got away, but you passed.":E.name+" wins this round.")):null));
-  var lessonBox=coach(L.til,"Coach Pixel · The lesson",n>=2?"happy":"think");lessonBox.classList.add("lesson-big");
-  el.append(h("h3",{class:"learned-h"},"What you learned"),lessonBox);
-  el.append(h("div",{class:"til"},h("h3",null,"Try it tomorrow"),h("p",null,L.mission)));
+  for(var si=0;si<n;si++)(function(si){setTimeout(function(){sfx("star");},reduce?0:250*si+250);})(si);
+  setTimeout(function(){if(n===3){sfx("win");confetti();buzz([30,40,30]);}else if(n===0)sfx("bad");},reduce?0:250*n+400);
+  var fig=figEl(S.theme,"cheer"+(n===3&&!reduce?" jump":""));pointArm(fig,n>=2?-70:70);
+  var page=h("div",{class:"rpage"});
+  page.append(h("button",{class:"link",type:"button",onclick:home,style:"justify-self:start"},"← Home (progress saved)"));
+  page.append(h("div",{class:"winhead"},fig,h("div",null,h("h2",null,n>=1?(n===3?"Perfect run":"Level passed"):"Not this time"),st,
+    E?h("p",{class:"verdict "+(n>=2?"ok":"no")},n>=2?E.name+" is beaten.":n===1?E.name+" got away, but you passed.":E.name+" wins this round."):null)));
+  if(mon)page.append(h("div",{class:"enemy-pop"},mon));
+  page.append(h("h3",{class:"learned-h"},"Remember this"),h("div",{class:"lesson-big"},L.til));
   var loot=[];newCards.forEach(function(c){loot.push(h("div",{class:"tcard pop"},h("b",null,CARDS[c].n),h("span",null,"New card")));});
   X.badges.forEach(function(b){loot.push(h("div",{class:"tcard mastered pop"},h("b",null,b),h("span",null,"Badge")));});
-  if(loot.length)el.append(h("div",{class:"loot"},loot));
+  if(loot.length)page.append(h("div",{class:"loot"},loot));
+  page.append(h("div",{class:"til"},h("h3",null,"Try this today"),h("p",null,L.mission)));
   var more=[];
   if(detail)more.push(detail);
   if(blooper)more.push(h("p",null,h("b",null,"Blooper: "),blooper));
   if(X.notes.length)more.push(h("div",{class:"world-note"},h("h3",null,U("twistTitle","This world")),X.notes.map(function(t){return h("p",null,t);})));
-  if(more.length)el.append(h("details",{class:"card why-more"},h("summary",null,"More details"),more));
+  if(seen.childNodes.length)more.push(h("div",{class:"seen-wrap"},h("h3",null,"What Claude did"),seen));
+  if(more.length)page.append(h("details",{class:"card why-more"},h("summary",null,"Why it worked"),more));
   var next=LEVELS[L.id+1];
-  el.append(h("div",{class:"row"},h("button",{class:"btn alt",type:"button",onclick:function(){start(L);}},n===3?"Play again":"Try again"),
-    next&&n>=1?h("button",{class:"btn",type:"button",onclick:function(){start(next);}},next.secret?"Wait. A new message just arrived.":"Next: "+next.title):h("button",{class:"btn",type:"button",onclick:home},"Office")));
+  page.append(h("div",{class:"row"},h("button",{class:"btn alt",type:"button",onclick:function(){if(RETRY&&RETRY.id===L.id)RETRY.go=true;start(L);}},n===3?"Play again":"Try again"),
+    next&&n>=1?h("button",{class:"btn",type:"button",onclick:function(){start(next);}},next.secret?"Wait. A new message just arrived.":"Next: "+next.title):h("button",{class:"btn",type:"button",onclick:home},"Home")));
+  app.append(page);
 }
 
 /* PREDICT */
@@ -1445,9 +1588,10 @@ function spot(L){
       h("span",{class:"combo"+(streak>=2?" hot":"")},streak>=2?"Combo x"+streak:"Real bugs in a row = combo")));
     stream.append(clk.el);
     var code=h("div",{class:"tline-live"},h("span",{class:"n"},idx+1),h("span",null,ln.t));
-    stream.append(code,h("div",{class:"row"},
+    var brow=h("div",{class:"row"},
       h("button",{class:"btn bug-btn",type:"button",onclick:function(e){decide(true,false,e.currentTarget);}},U("bug","Bug")),
-      h("button",{class:"btn alt fine-btn",type:"button",onclick:function(e){decide(false,false,e.currentTarget);}},U("fine","Looks fine"))));
+      h("button",{class:"btn alt fine-btn",type:"button",onclick:function(e){decide(false,false,e.currentTarget);}},U("fine","Looks fine")));
+    stream.append(code,brow);guideAt(brow,"Bug or fine?");
     fx(code,[{opacity:0,transform:"translateX(28px)"},{opacity:1,transform:"none"}],{duration:300,easing:"cubic-bezier(.2,.8,.2,1)"});
   }
   function decide(flag,late,btn){
@@ -1517,7 +1661,7 @@ function rescue(L){
     }
     bar=clock(TURN_MS,function(){choose(0,true,null);},area);
     T.opts.forEach(function(o,j){opts.append(h("button",{class:"opt",type:"button",onclick:function(e){choose(j,false,e.currentTarget);}},o.t));});
-    area.append(h("div",{class:"card"},h("p",{style:"font-weight:700"},T.q),bar.el,opts));
+    area.append(h("div",{class:"card"},h("p",{style:"font-weight:700"},T.q),bar.el,opts));guideAt(opts,"Pick the best reply");
   }
   function end(){clear();var n=pickStars(pts,L.max);
     app.append(h("div",null,h("h3",null,"Level "+L.id+" · Results"),h("h2",null,L.title)));
@@ -1538,7 +1682,7 @@ function pickTool(L){
     var job=h("div",{class:"card"},h("h3",null,"Job "+(k+1)),h("p",{style:"font-size:18px;font-weight:700"},I.t),h("p",{class:"muted"},"Where should this live?"),bar?null:null,tools);
     bar=clock(ITEM_MS,function(){pick(null,null);},area);
     job.insertBefore(bar.el,tools);
-    area.append(job);
+    area.append(job);guideAt(tools,"Pick the best place");
     fx(job,[{opacity:0,transform:"translateX(60px)"},{opacity:1,transform:"none"}],{duration:380,easing:"cubic-bezier(.2,.8,.2,1)"});
     function pick(j,btn){
       if(bar)bar.stop();
@@ -1569,7 +1713,7 @@ function boss(L){
   var grid=h("div",{class:"grid2"});
   have.forEach(function(id){grid.append(h("button",{class:"tcard",type:"button","aria-pressed":"false",onclick:function(e){var i=chosen.indexOf(id);if(i>=0)chosen.splice(i,1);else if(chosen.length<4)chosen.push(id);e.currentTarget.setAttribute("aria-pressed",chosen.indexOf(id)>=0?"true":"false");cnt.textContent="Pick 4 cards. "+chosen.length+" of 4 picked.";go.disabled=chosen.length!==4;}},h("b",null,CARDS[id].n),h("span",null,CARDS[id].d)));});
   if(have.length<4)app.append(h("p",{class:"muted"},"You need at least 4 cards. Replay earlier levels to earn more."));
-  app.append(h("h3",null,"Your loadout"),grid,cnt,go);
+  app.append(h("h3",null,"Your loadout"),grid,cnt,go);guideAt(grid,"Pick 4 cards");
   go.addEventListener("click",function(){fight(L,chosen.slice());});
 }
 function fight(L,hand,P){
@@ -1586,7 +1730,7 @@ function fight(L,hand,P){
     app.append(h("h3",null,"Play a card"));
     var grid=h("div",{class:"grid2"});
     hand.forEach(function(id){grid.append(h("button",{class:"tcard",type:"button","aria-pressed":"false",onclick:function(e){play(id,e.currentTarget);}},h("b",null,CARDS[id].n),h("span",null,CARDS[id].d)));});
-    app.append(grid);
+    app.append(grid);guideAt(grid,"Play a card");
     function miss(){
       grid.style.pointerEvents="none";plays.push({id:null,q:0,w:W});
       if(mon)mon.classList.add("taunt");sfx("bad");

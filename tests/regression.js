@@ -45,26 +45,16 @@ function next(g) { const b = g.btn("Next:") || g.btn("Wait. A new message"); if 
 
 // Level players. They pick the best answer by position, which is the same in every world.
 async function playBuild(g) {
-  // The timed board shows one card at a time. Tap the last (best) option for each card.
-  for (let k = 0; k < 8; k++) {
-    const bs = [...g.d.querySelectorAll(".timed-opts .opt")];
-    if (!bs.length) break;
-    bs[bs.length - 1].click();
-    await g.wait(g.T > 100 ? 400 : 40);
-  }
-  g.d.querySelector("button.run").click();
+  // Tap the last (best) tile in each row. The result page opens by itself a moment later.
+  for (const row of g.d.querySelectorAll(".trow")) { const bs = [...row.querySelectorAll("button")]; bs[bs.length - 1].click(); }
+  await g.wait(g.T > 100 ? 2600 : 40);
   const chips = [...g.d.querySelectorAll(".ingr")].sort((a, b) => a.dataset.slot - b.dataset.slot);
   for (const c of chips) c.click();
   await g.wait(g.T + (chips.length ? 400 : 0));
 }
-// The timed board shows one card at a time. Answer each card with pick(optionCount, cardIndex).
-async function answerCards(g, pick) {
-  for (let k = 0; k < 8; k++) {
-    const bs = [...g.d.querySelectorAll(".timed-opts .opt")];
-    if (!bs.length) break;
-    bs[pick(bs.length, k)].click();
-    await g.wait(g.T > 100 ? 400 : 40);
-  }
+// Answer each row with pick(tileCount, rowIndex), without waiting for the result.
+function answerTiles(g, pick) {
+  [...g.d.querySelectorAll(".trow")].forEach((row, k) => { const bs = [...row.querySelectorAll("button")]; bs[pick(bs.length, k)].click(); });
 }
 async function playSpot(g, bugs) {
   // One line at a time: tap Bug on the flagged lines, Looks fine on the rest.
@@ -178,21 +168,17 @@ test("Each world plays differently: its own stage, verbs and props", async () =>
   assert(new Set(Object.values(checks)).size === 3, "Spot-the-bug buttons are the same across worlds: " + JSON.stringify(checks));
 });
 
-test("Heist: a clock runs, and getting spotted caps the run at 2 stars", async () => {
-  const g = boot({ storage: { cq_fast_heat: "1" } }); await g.wait(50); pickWorld(g, "Heist");
-  g.d.querySelector(".lvl").click(); await playBuild(g);
-  assert(!g.d.querySelector(".heat"), "Tutorial should have no clock");
-  next(g);
-  assert(g.d.querySelector(".heat"), "Clock missing on a Heist level");
-  await g.wait(1600);
-  assert(g.d.querySelector(".heat.caught"), "Clock did not run out");
+test("Heist: no clock, never capped", async () => {
+  const g = boot(); await g.wait(50); pickWorld(g, "Heist");
+  g.d.querySelector(".lvl").click(); await playBuild(g); next(g);
+  assert(!g.d.querySelector(".heat"), "Heist should have no clock");
+  await g.wait(800);
   await playBuild(g);
-  assert(!g.text().includes("Perfect run") && g.text().includes("capped at 2 stars"), "Spotted run was not capped");
-  assert(!g.d.querySelector(".heat"), "Clock should be gone after the level");
+  assert(g.text().includes("Perfect run"), "Slow Heist run should still be perfect");
   assert(g.errs.length === 0, "JS errors: " + g.errs.join("; "));
 });
 
-test("Heist: finishing in time gives a clean getaway", async () => {
+test("Heist: finishing gives a clean getaway", async () => {
   const g = boot(); await g.wait(50); pickWorld(g, "Heist");
   g.d.querySelector(".lvl").click(); await playBuild(g); next(g); await playBuild(g);
   assert(g.text().includes("Clean getaway"), "No clean getaway note");
@@ -218,43 +204,66 @@ test("Academy: ingredients go in by hand, and the right order earns Master Brewe
   g.d.querySelector(".lvl").click(); await playBuild(g);
   assert(!g.d.querySelector(".ingr"), "Tutorial should skip the brewing step");
   next(g);
-  await answerCards(g, n => n - 1);
-  g.d.querySelector("button.run").click();
+  answerTiles(g, n => n - 1); await g.wait(60);
   const chips = [...g.d.querySelectorAll(".ingr")];
   assert(chips.length === 3, "Expected 3 ingredients, got " + chips.length);
   chips.sort((a, b) => a.dataset.slot - b.dataset.slot).forEach(c => c.click());
   await g.wait(400);
   assert(g.text().includes("Master brew") && g.text().includes("Master Brewer"), "Master brew not recognized");
   g.click("Play again");
-  await answerCards(g, n => n - 1);
-  g.d.querySelector("button.run").click();
+  answerTiles(g, n => n - 1); await g.wait(60);
   [...g.d.querySelectorAll(".ingr")].sort((a, b) => b.dataset.slot - a.dataset.slot).forEach(c => c.click());
   await g.wait(400);
   assert(g.text().includes("Claude copes with any order") && g.text().includes("Perfect run"), "Wrong order should still pass, with an honest note");
 });
 
-test("The coach names the skill at the start and the lesson at the end; details are folded", async () => {
+test("Each world has its own anime-style coach, named at the start; the result page gives one lesson", async () => {
+  const names = { Office: "Mina", Heist: "Kite", Academy: "Sora" };
   for (const world of WORLDS) {
     const g = boot(); await g.wait(50); pickWorld(g, world);
     g.d.querySelector(".lvl").click(); await playBuild(g); next(g);
     assert(g.d.querySelector("h3").textContent.startsWith("Lesson 1"), world + ": level label should say Lesson");
-    assert(g.d.querySelector(".coach"), world + ": no coach at level start");
+    const c = g.d.querySelector(".coach");
+    assert(c && c.querySelector("svg.fsvg"), world + ": no coach figure at level start");
+    assert(c.textContent.includes(names[world]), world + ": coach should be " + names[world] + ", got " + c.textContent.slice(0, 30));
     await playBuild(g);
-    const coaches = [...g.d.querySelectorAll(".coach")].map(c => c.textContent);
-    assert(coaches.some(t => t.includes("The lesson")), world + ": no coach lesson at the end");
+    assert(g.d.querySelector(".rpage"), world + ": result should be its own page");
+    assert(!g.d.querySelector(".arena"), world + ": game screen should be gone behind the result");
+    assert(g.text().includes("Remember this") && g.d.querySelector(".lesson-big"), world + ": no single lesson on the result page");
     const det = g.d.querySelector("details.why-more");
-    assert(det && !det.open, world + ": choice details should start folded");
+    assert(det && !det.open, world + ": details should start folded");
   }
 });
 
-test("Choice sections are color-coded, and the prompt preview matches", async () => {
+test("A floating coach points at the next row, then fades as players learn", async () => {
+  const g = boot(); await g.wait(50); pickWorld(g, "Office");
+  g.d.querySelector(".lvl").click();
+  assert(g.d.querySelector(".floater .gsay") && g.d.querySelector(".floater .gsay").textContent === "Tap one tile", "Lesson 1 should show the floating coach");
+  await playBuild(g); next(g);
+  assert(g.d.querySelector(".floater") && !g.d.querySelector(".floater").hidden, "Lesson 2 should still show the coach");
+  await playBuild(g); next(g);
+  await playSpot(g, [2, 4, 6]); next(g);
+  assert(!g.d.querySelector(".floater") || g.d.querySelector(".floater").hidden, "By lesson 4 the coach should be gone");
+  assert(g.btn("Need help?"), "A Need help link should bring her back");
+  g.click("Need help?");
+  assert(g.d.querySelector(".floater") && !g.d.querySelector(".floater").hidden, "Need help should call the coach back");
+});
+
+test("The result opens by itself, with no button to press", async () => {
   const g = boot(); await g.wait(50); pickWorld(g, "Office");
   g.d.querySelector(".lvl").click(); await playBuild(g); next(g);
-  const colors = [];
-  await answerCards(g, (n, k) => { colors.push(g.d.querySelector(".slot").style.getPropertyValue("--slot")); return n - 1; });
-  assert(colors.length === 3 && new Set(colors).size === 3, "Slots should each have their own color: " + colors.join(","));
-  const segs = [...g.d.querySelectorAll(".preview .seg")].map(x => x.style.getPropertyValue("--slot"));
-  assert(segs.join() === colors.join(), "Preview colors should match the slots");
+  answerTiles(g, () => 0); await g.wait(60);
+  assert(g.d.querySelector(".rpage"), "A weak run should open its result by itself");
+  assert(!g.btn("See result"), "There should be no See result button");
+});
+
+test("Choice rows are color-coded, and the summary chips match", async () => {
+  const g = boot(); await g.wait(50); pickWorld(g, "Office");
+  g.d.querySelector(".lvl").click(); await playBuild(g); next(g);
+  const colors = [...g.d.querySelectorAll(".trow")].map(x => x.style.getPropertyValue("--slot"));
+  assert(colors.length === 3 && new Set(colors).size === 3, "Rows should each have their own color: " + colors.join(","));
+  const chips = [...g.d.querySelectorAll(".slots .slot")].map(x => x.style.getPropertyValue("--slot"));
+  assert(chips.join() === colors.join(), "Summary chips should match the row colors");
 });
 
 test("Only the first level and a ??? tile show at the start", async () => {
@@ -267,24 +276,23 @@ test("Pause: resume keeps choices, restart and end clear them, home saves", asyn
   const g = boot(); await g.wait(50); pickWorld(g, "Office");
   const pz = g.d.getElementById("pz");
   assert(pz.hidden, "Pause button should be hidden on home");
-  g.d.querySelector(".lvl").click(); await playBuild(g); next(g); // finish Level 0, which has one card
+  g.d.querySelector(".lvl").click(); await playBuild(g); next(g); // finish Level 0
   assert(!pz.hidden, "Pause button should show inside a level");
-  const card = () => g.d.querySelector(".slot-count").textContent;
-  const opt = k => g.d.querySelectorAll(".timed-opts .opt")[k];
-  opt(1).click(); await g.wait(g.T > 100 ? 400 : 40);
-  assert(card() === "Card 2 of 3", "Picking a card should move on, got " + card());
+  const tile = (r, k) => g.d.querySelectorAll(".trow")[r].querySelectorAll("button")[k];
+  const on = (r, k) => tile(r, k).getAttribute("aria-pressed") === "true";
+  tile(1, 1).click();
   g.click("Home (progress saved)");
   [...g.d.querySelectorAll(".lvl")][1].click();
-  assert(card() === "Card 2 of 3" && g.text().includes("Picked up where you left off"), "Choice not restored after going home");
+  assert(on(1, 1) && g.text().includes("Picked up where you left off"), "Choice not restored after going home");
   pz.click(); assert(!g.d.getElementById("pzm").hidden, "Pause menu did not open");
   g.click("Restart this level");
-  assert(card() === "Card 1 of 3", "Restart did not clear the choices, got " + card());
-  opt(1).click(); await g.wait(g.T > 100 ? 400 : 40); pz.click(); g.click("End level without saving");
+  assert(!on(1, 1), "Restart did not clear the choice");
+  tile(1, 1).click(); pz.click(); g.click("End level without saving");
   [...g.d.querySelectorAll(".lvl")][1].click();
-  assert(card() === "Card 1 of 3", "End level did not clear the choices");
+  assert(!on(1, 1), "End level did not clear the choice");
   await playBuild(g); next(g);
-  g.d.querySelector(".fine-btn").click(); await g.wait(g.T > 100 ? 400 : 40);
-  g.d.querySelector(".bug-btn").click(); await g.wait(g.T > 100 ? 400 : 40);
+  g.d.querySelector(".fine-btn").click(); await g.wait(40);
+  g.d.querySelector(".bug-btn").click(); await g.wait(40);
   pz.click(); g.click("Save and go home");
   [...g.d.querySelectorAll(".lvl")][2].click();
   assert(g.d.querySelector(".slot-count").textContent.startsWith("Line 3 of"), "Spot progress not restored");
@@ -304,19 +312,29 @@ test("Worlds keep separate saves, and restart only clears the current world", as
   assert(stars() === "★ 0", "Restart did not clear Office");
 });
 
+test("Try again keeps your tiles so you can swap one", async () => {
+  const g = boot(); await g.wait(50); pickWorld(g, "Office");
+  g.d.querySelector(".lvl").click(); await playBuild(g); next(g);
+  answerTiles(g, () => 0); await g.wait(60);
+  g.click("Try again");
+  const pressed = [...g.d.querySelectorAll(".trow")].map(r => r.querySelectorAll("button")[0].getAttribute("aria-pressed"));
+  assert(pressed.join() === "true,true,true", "Tiles were not kept: " + pressed.join());
+  g.d.querySelectorAll(".trow")[0].querySelectorAll("button")[2].click(); await g.wait(60);
+  assert(g.d.querySelector(".rpage"), "Swapping a tile should open a new result");
+});
+
 test("Weak answers fail softly and drop a blooper", async () => {
   const g = boot(); await g.wait(50); pickWorld(g, "Academy");
   g.d.querySelector(".lvl").click();
-  await answerCards(g, () => 0);
-  g.d.querySelector("button.run").click(); await g.wait(g.T);
+  answerTiles(g, () => 0); await g.wait(120);
   assert(g.text().includes("Blooper"), "No blooper for a weak answer");
 });
 
-test("Calm mode: nothing is picked for you, and each card waits until you choose", async () => {
+test("Calm mode: nothing is picked for you, and the result waits for you to finish the row", async () => {
   const g = boot({ storage: { cq_fast_clock: "1" } }); await g.wait(50); pickWorld(g, "Office");
   g.d.querySelector(".lvl").click(); await playBuild(g); next(g);
   await g.wait(600);
-  assert(g.d.querySelector(".slot-count").textContent.startsWith("Card 1 of"), "Build moved on without a choice");
+  assert(g.d.querySelectorAll(".trow").length === 3 && !g.d.querySelector(".rpage"), "Build moved on without a choice");
   assert(!g.text().includes("Time is up") && !g.text().includes("Pick fast"), "Build still shows time pressure");
   assert(g.errs.length === 0, "JS errors: " + g.errs.join("; "));
 });

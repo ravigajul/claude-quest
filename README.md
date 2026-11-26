@@ -10,6 +10,14 @@ Designed by [Ravi Gajul](https://www.linkedin.com/in/ravigajul), built together 
 
 I use Claude every day as a QA lead. Most learning material I found was about prompt writing. Real mastery felt wider than that: catching made-up facts, steering a chat that went wrong, choosing the right tool, spotting hidden instructions. I wanted a way to practice those skills that felt like a game, not a course.
 
+## How it plays
+
+- **Tap only.** No typing. Tap a tile in each row and the answer rewrites itself as you go.
+- **Calm.** No timers. Take as long as you like.
+- **A coach in each world.** Mina (Office), Kite (Heist) and Sora (Academy) point at what to tap for the first lessons, then step back. "Need help?" brings them back.
+- **An enemy that reacts.** It taunts, and loses HP as your answer gets better.
+- **A result page.** It opens by itself with one lesson to remember and one thing to try today. Everything else is folded away. "Try again" keeps your tiles so you can swap one.
+
 ## Three worlds
 
 Pick a world when you start. Every world teaches the same skills, but with its own story, puzzles, look and mechanic. Each world keeps its own save, so you can switch anytime from the header and pick up where you left off.
@@ -21,7 +29,7 @@ Pick a world when you start. Every world teaches the same skills, but with its o
 | Look | Bright white and blue | Noir black, alarm red and gold | Violet night sky and mint magic |
 | Home screen | An office tower that lights up floor by floor | A corkboard of crew photos and red string | A star map that lights a star per mentor |
 | How you play | A message window, a document you mark up with a red pen, a chat app, app tiles | A blueprint, a dossier you scan under UV light, radio talk, metal lockers | A cauldron, a parchment scroll you dispel, a crystal ball, treasure chests |
-| Mechanic | The inbox never stops: decide fast whether Claude should handle each request | The guards are coming: beat the clock, or the run is capped at 2 stars | Brew in order: add your ingredients to the cauldron yourself |
+| Mechanic | The inbox never stops: decide fast whether Claude should handle each request | A quiet night heist: no clock, just take your time | Brew in order: add your ingredients to the cauldron yourself |
 
 ## How it plays
 
