@@ -60,12 +60,24 @@ This is a fan-made project. It is not affiliated with or endorsed by Anthropic. 
 
 ## Changelog
 
+- Each world has its own puzzles and wording: an app launch, a museum security test, a potion stall.
+- Pause, save, restart and end any level mid-way.
+- Regression test suite with GitHub Actions.
 - Three worlds with separate saves and a Switch world button.
 - Distinct colors, fonts and picker cards per world.
 - First chapter rebuilt so each level teaches a different skill, not only prompting.
 - Animations: 3D tilt cards, monster reactions, boss attacks, confetti, sound.
 - Hidden level count and a secret bonus level.
 - Wide-screen layout.
+
+## Tests
+
+Regression tests play every level in every world in a headless browser and check pause, saves, world switching, hidden totals, credits and per-world puzzles. They run on every push through GitHub Actions.
+
+```
+npm install
+npm test
+```
 
 ## Contributing
 
