@@ -375,6 +375,9 @@ h3{color:var(--accent)}
 
 .sky{display:block!important;position:relative;height:270px;overflow:hidden;border-radius:16px;padding:0;background:radial-gradient(ellipse at 50% 0%,rgba(139,92,246,.35),rgba(15,12,30,.92))}
 .fall{position:absolute;top:0;left:50%;width:30%;min-height:0;margin:0;font-size:13px;line-height:1.3;padding:10px;border-left-width:4px;box-shadow:0 8px 20px rgba(0,0,0,.35);transform:translate(-50%,-30px)}
+
+.lesson-big{border:3px solid var(--slot,#8b5cf6);font-size:19px}
+.learned-h{margin:8px 0 0}
 </style>
 </head>
 <body>
@@ -1373,14 +1376,17 @@ function finish(L,n,el,detail,blooper){
   setTimeout(function(){if(n===3){sfx("win");confetti();buzz([30,40,30]);}else if(n===0)sfx("bad");},reduce?0:250*n+300);
   el.append(h("div",{class:"card pop"},h("div",{class:"top"},h("h2",null,n>=1?(n===3?"Perfect run":"Level passed"):"Not this time"),st),
     E?h("div",{class:"enemy"},mon,h("p",{class:"verdict "+(n>=2?"ok":"no")},n>=2?E.name+" is beaten.":n===1?E.name+" got away, but you passed.":E.name+" wins this round.")):null));
-  el.append(coach(L.til,"Coach Pixel · The lesson",n>=2?"happy":"think"));
+  var lessonBox=coach(L.til,"Coach Pixel · The lesson",n>=2?"happy":"think");lessonBox.classList.add("lesson-big");
+  el.append(h("h3",{class:"learned-h"},"What you learned"),lessonBox);
   el.append(h("div",{class:"til"},h("h3",null,"Try it tomorrow"),h("p",null,L.mission)));
-  if(detail)el.append(h("details",{class:"card why-more"},h("summary",null,"See why each choice worked"),detail));
   var loot=[];newCards.forEach(function(c){loot.push(h("div",{class:"tcard pop"},h("b",null,CARDS[c].n),h("span",null,"New card")));});
-  if(blooper)loot.push(h("div",{class:"tcard pop"},h("b",null,"Blooper"),h("span",null,blooper)));
   X.badges.forEach(function(b){loot.push(h("div",{class:"tcard mastered pop"},h("b",null,b),h("span",null,"Badge")));});
-  if(X.notes.length)el.append(h("div",{class:"card world-note"},h("h3",null,U("twistTitle","This world")),X.notes.map(function(t){return h("p",null,t);})));
-  if(loot.length)el.append(h("div",{class:"card"},h("h3",null,"Loot"),h("div",{class:"loot"},loot)));
+  if(loot.length)el.append(h("div",{class:"loot"},loot));
+  var more=[];
+  if(detail)more.push(detail);
+  if(blooper)more.push(h("p",null,h("b",null,"Blooper: "),blooper));
+  if(X.notes.length)more.push(h("div",{class:"world-note"},h("h3",null,U("twistTitle","This world")),X.notes.map(function(t){return h("p",null,t);})));
+  if(more.length)el.append(h("details",{class:"card why-more"},h("summary",null,"More details"),more));
   var next=LEVELS[L.id+1];
   el.append(h("div",{class:"row"},h("button",{class:"btn alt",type:"button",onclick:function(){start(L);}},n===3?"Play again":"Try again"),
     next&&n>=1?h("button",{class:"btn",type:"button",onclick:function(){start(next);}},next.secret?"Wait. A new message just arrived.":"Next: "+next.title):h("button",{class:"btn",type:"button",onclick:home},"Office")));
