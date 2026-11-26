@@ -2,7 +2,7 @@
 
 A free browser game for learning to work well with Claude. It runs on any phone or computer, with nothing to install, no sign-up and no tokens spent by players.
 
-**Play it:** https://claude.ai/artifact/ATSajzDMnM3J8J4q4CZiAf
+**Play it:** https://ravigajul.github.io/claude-quest/ (free, no sign-up, works on phones)
 
 Designed by [Ravi Gajul](https://www.linkedin.com/in/ravigajul), built together with Claude.
 
@@ -74,7 +74,7 @@ This is a fan-made project. It is not affiliated with or endorsed by Anthropic. 
 
 ## Tests
 
-Regression tests play every level in every world in a headless browser and check pause, saves, world switching, hidden totals, credits and per-world puzzles. They run on every push through GitHub Actions.
+Regression tests play every level in every world in a headless browser and check pause, saves, world switching, hidden totals, credits and per-world puzzles. They run on every pull request, and on every push to `main` before the game is deployed to GitHub Pages. If a test fails, the deploy is skipped, so the live game never breaks.
 
 ```
 npm install

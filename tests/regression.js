@@ -268,6 +268,7 @@ test("Credits name the creator and link the repo", async () => {
   assert(g.text().includes("Designed by Ravi Gajul"), "Credit line missing");
   const a = [...g.d.querySelectorAll("a")].find(x => x.textContent.includes("Source on GitHub"));
   assert(a && a.href.includes("github.com/ravigajul/claude-quest"), "GitHub link wrong");
+  assert(HTML.includes('play:"https://ravigajul.github.io/claude-quest/"'), "Share link should point to GitHub Pages");
 });
 
 (async () => {
