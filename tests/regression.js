@@ -226,6 +226,16 @@ test("The coach names the skill at the start and the lesson at the end; details 
   }
 });
 
+test("Choice sections are color-coded, and the prompt preview matches", async () => {
+  const g = boot(); await g.wait(50); pickWorld(g, "Office");
+  g.d.querySelector(".lvl").click(); await playBuild(g); next(g);
+  const colors = [...g.d.querySelectorAll(".slot")].map(x => x.style.getPropertyValue("--slot"));
+  assert(colors.length === 3 && new Set(colors).size === 3, "Slots should each have their own color: " + colors.join(","));
+  for (const grp of g.d.querySelectorAll(".slot .opts")) { const bs = [...grp.querySelectorAll("button")]; bs[bs.length - 1].click(); }
+  const segs = [...g.d.querySelectorAll(".preview .seg")].map(x => x.style.getPropertyValue("--slot"));
+  assert(segs.join() === colors.join(), "Preview colors should match the slots");
+});
+
 test("Only the first level and a ??? tile show at the start", async () => {
   const g = boot(); await g.wait(50); pickWorld(g, "Office");
   const lv = [...g.d.querySelectorAll(".lvl")];
