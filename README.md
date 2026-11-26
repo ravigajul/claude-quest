@@ -60,6 +60,7 @@ This is a fan-made project. It is not affiliated with or endorsed by Anthropic. 
 
 ## Changelog
 
+- Each world plays differently: Office drafts messages in a document, Heist plans on a blueprint and scans dossiers under UV light, Academy brews in a cauldron and dispels lies on parchment.
 - Each world has its own puzzles and wording: an app launch, a museum security test, a potion stall.
 - Pause, save, restart and end any level mid-way.
 - Regression test suite with GitHub Actions.

@@ -45,7 +45,7 @@ function next(g) { const b = g.btn("Next:") || g.btn("Wait. A new message"); if 
 // Level players. They pick the best answer by position, which is the same in every world.
 async function playBuild(g) {
   for (const grp of g.d.querySelectorAll(".slot .opts")) { const bs = [...grp.querySelectorAll("button:not([disabled])")]; if (bs.length) bs[bs.length - 1].click(); }
-  g.click("Run it"); await g.wait(g.T);
+  g.d.querySelector("button.run").click(); await g.wait(g.T);
 }
 async function playSpot(g, bugs) {
   const lines = [...g.d.querySelectorAll(".tline")];
@@ -138,6 +138,21 @@ test("Each world has its own puzzles, not just new names", async () => {
   }
 });
 
+test("Each world plays differently: its own stage, verbs and props", async () => {
+  const want = { Office: { run: "Send to Claude", prop: ".doc-bar" }, Heist: { run: "Execute the plan", prop: ".bp-title" }, Academy: { run: "Brew it", prop: ".cauldron" } };
+  const checks = {};
+  for (const world of WORLDS) {
+    const g = boot(); await g.wait(50); pickWorld(g, world);
+    g.d.querySelector(".lvl").click();
+    const run = g.d.querySelector("button.run");
+    assert(run && run.textContent === want[world].run, `${world} run button says "${run && run.textContent}"`);
+    assert(g.d.querySelector(want[world].prop), `${world} is missing its stage prop ${want[world].prop}`);
+    await playBuild(g); next(g); await playBuild(g); next(g);
+    checks[world] = [...g.d.querySelectorAll("button.btn")].pop().textContent;
+  }
+  assert(new Set(Object.values(checks)).size === 3, "Spot-the-bug check buttons are the same across worlds: " + JSON.stringify(checks));
+});
+
 test("Only the first level and a ??? tile show at the start", async () => {
   const g = boot(); await g.wait(50); pickWorld(g, "Office");
   const lv = [...g.d.querySelectorAll(".lvl")];
@@ -185,7 +200,7 @@ test("Weak answers fail softly and drop a blooper", async () => {
   const g = boot(); await g.wait(50); pickWorld(g, "Academy");
   g.d.querySelector(".lvl").click();
   [...g.d.querySelectorAll(".slot .opts")][1].querySelectorAll("button")[0].click();
-  g.click("Run it"); await g.wait(g.T);
+  g.d.querySelector("button.run").click(); await g.wait(g.T);
   assert(g.text().includes("Blooper"), "No blooper for a weak answer");
 });
 

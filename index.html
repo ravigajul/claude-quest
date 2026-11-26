@@ -247,6 +247,49 @@ h3{color:var(--accent)}
 #pzm .box{background:var(--card);color:var(--ink);border:2px solid var(--accent);border-radius:16px;padding:20px;width:min(380px,100%);display:grid;gap:10px;animation:pop .25s ease-out}
 #pzm .btn{width:100%}
 .resumed{font-size:14px;color:var(--accent);font-weight:700}
+/* ---------- world-specific stages ---------- */
+.doc-bar{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:2px}
+.doc-bar i{width:10px;height:10px;border-radius:50%;background:#ff5f57}.doc-bar i:nth-child(2){background:#febc2e}.doc-bar i:nth-child(3){background:#28c840;margin-right:6px}
+[data-skin="heist"] .stage-build{background-color:#0d1b2e;background-image:linear-gradient(rgba(90,150,230,.16) 1px,transparent 1px),linear-gradient(90deg,rgba(90,150,230,.16) 1px,transparent 1px);background-size:22px 22px;border:2px dashed #3d6fb0}
+[data-skin="heist"] .stage-build .opt{background:rgba(13,27,46,.85);border-color:#3d6fb0;color:#dfe9ff}
+[data-skin="heist"] .stage-build .opt[aria-pressed="true"]{background:#e0312f;border-color:#ff8a7a;color:#fff}
+[data-skin="heist"] .stage-build label{color:#8fb8ff;text-transform:uppercase;letter-spacing:.1em;font-size:12px}
+.bp-title{font-family:var(--display);letter-spacing:.14em;text-transform:uppercase;color:#8fb8ff;font-size:13px;border-bottom:1px dashed #3d6fb0;padding-bottom:8px}
+.alarm{position:fixed;inset:0;z-index:45;pointer-events:none;background:radial-gradient(circle at 50% 30%,rgba(224,49,47,.45),transparent 65%);animation:alarm .32s 2}
+@keyframes alarm{50%{opacity:.2}}
+.cauldron-wrap{position:relative;display:grid;justify-items:center;padding-top:4px}
+.cauldron{width:150px;height:auto}
+.cauldron .liquid{transition:fill .5s}
+.bubbles{position:absolute;top:22px;left:50%;width:100px;margin-left:-50px;height:40px;pointer-events:none}
+.bubbles i{position:absolute;bottom:0;width:8px;height:8px;border-radius:50%;background:rgba(127,240,208,.7);opacity:0}
+.cauldron-wrap.boiling .bubbles i{animation:bubble 1.4s infinite}
+.bubbles i:nth-child(1){left:20%}.bubbles i:nth-child(2){left:45%;animation-delay:.35s!important}.bubbles i:nth-child(3){left:65%;animation-delay:.7s!important}.bubbles i:nth-child(4){left:82%;animation-delay:1s!important}
+@keyframes bubble{0%{opacity:0;translate:0 10px}30%{opacity:1}100%{opacity:0;translate:0 -30px}}
+.cauldron-wrap.brewing .cauldron{animation:hit .5s 2}
+.brew-label{font-size:12px;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+[data-skin="wizard"] .stage-build .opt{border-radius:999px}
+.tline{position:relative}
+.tline[aria-pressed="true"]::after{position:absolute;right:10px;top:50%;translate:0 -50%;font-weight:800;font-size:11px;letter-spacing:.08em;padding:2px 7px;border-radius:4px}
+[data-skin="office"] .tline[aria-pressed="true"] span:last-child{text-decoration:line-through;text-decoration-color:#d8343b;text-decoration-thickness:2px}
+[data-skin="office"] .tline[aria-pressed="true"]::after{content:"FLAGGED";color:#d8343b;border:1.5px solid #d8343b;background:#fff}
+[data-skin="heist"] .doc-lines{background:#f4efe4;padding:12px;border-radius:4px;box-shadow:inset 0 0 0 1px #d9cfb8}
+[data-skin="heist"] .doc-lines .tline{background:transparent;color:#2a2320;border:none;border-bottom:1px dashed #c8bba0;border-radius:0;font-family:"Courier New",monospace;font-size:14px}
+[data-skin="heist"] .doc-lines .tline[aria-pressed="true"]{background:rgba(160,90,255,.18);box-shadow:inset 0 0 18px rgba(160,90,255,.55)}
+[data-skin="heist"] .tline[aria-pressed="true"]::after{content:"FORGED";color:#c2272d;border:2px solid #c2272d;rotate:-10deg;background:#f4efe4}
+[data-skin="wizard"] .doc-lines{background:linear-gradient(#f3e6c4,#ead8ad);padding:14px;border-radius:6px;border:2px solid #c9a14a}
+[data-skin="wizard"] .doc-lines .tline{background:transparent;color:#3a2a12;border:none;border-radius:6px;font-family:Georgia,serif}
+[data-skin="wizard"] .doc-lines .tline .n{color:#8a6d33}
+[data-skin="wizard"] .doc-lines .tline[aria-pressed="true"]{background:rgba(127,240,208,.35);box-shadow:0 0 14px rgba(127,240,208,.8)}
+[data-skin="wizard"] .tline[aria-pressed="true"]::after{content:"DISPELLED";color:#06241c;background:#7ff0d0}
+[data-skin="heist"] .rescue .msg::after{content:" Over.";color:var(--muted);font-style:italic}
+[data-skin="heist"] .rescue .opt{font-family:"Courier New",monospace;font-size:14px;border-left:4px solid #e0312f}
+[data-skin="wizard"] .rescue .msg.claude{border-radius:20px;box-shadow:0 0 20px rgba(127,240,208,.25);border-color:#7ff0d0}
+[data-skin="wizard"] .rescue .opt{border-radius:999px}
+[data-skin="office"] .rescue .msg{border-radius:16px}
+.bins .tcard{min-height:74px;display:grid;place-items:center;text-align:center;font-size:16px}
+[data-skin="office"] .bins .tcard{border-top:5px solid #2f6bff}
+[data-skin="heist"] .bins .tcard{background:linear-gradient(#41454d,#24272d);border-color:#5a5f6a;color:#eee;background-image:repeating-linear-gradient(#4a4f58 0 2px,transparent 2px 7px),linear-gradient(#41454d,#24272d);background-size:60% 18px,100% 100%;background-repeat:no-repeat;background-position:center 8px,0 0;padding-top:24px}
+[data-skin="wizard"] .bins .tcard{background:linear-gradient(#6b4423,#4a2e15);border-color:#c9a14a;color:#f8e7b8;box-shadow:inset 0 12px 0 -6px #c9a14a}
 </style>
 </head>
 <body>
@@ -894,6 +937,10 @@ THEMES.wizard.lv={
   miss:"\"The recipe book has been sent.\""}
 };
 THEMES.office.lv={};
+THEMES.office.ui={run:"Send to Claude",prompt:"Your message to Claude",check:"Review the draft",bar:"New message to Claude",placed:"Filed in the right place."};
+THEMES.heist.ui={run:"Execute the plan",prompt:"The plan",check:"Run the UV scan",bar:"Blueprint",placed:"Stashed in the right spot."};
+THEMES.wizard.ui={run:"Brew it",prompt:"Your incantation",check:"Cast Reveal",bar:"Cauldron",placed:"Sealed in the right chest."};
+function U(k,d){var T=THEMES[S.theme];return (T&&T.ui&&T.ui[k])||d;}
 var LV_ORIG=null;
 function applyLevelVariants(T){
   if(!LV_ORIG){LV_ORIG={};Object.keys(THEMES).forEach(function(k){var lv=THEMES[k].lv||{};Object.keys(lv).forEach(function(id){Object.keys(lv[id]).forEach(function(f){var key=id+"|"+f;if(!(key in LV_ORIG))LV_ORIG[key]=LEVELS[+id][f];});});});}
@@ -1056,22 +1103,42 @@ function intro(L){
     L.enemy?h("div",{class:"card"},enemyChip(L.enemy,"Beat it to earn stars.",true)):null];
 }
 
+
+/* ---------- world-specific stage props for Build levels ---------- */
+function stageProp(L){
+  var sk=S.theme,noop=function(){};
+  if(sk==="wizard"){
+    var liquid,el=h("div",{class:"cauldron-wrap"});
+    el.insertAdjacentHTML("beforeend",'<svg class="cauldron" viewBox="0 0 160 120" aria-hidden="true"><ellipse cx="80" cy="112" rx="56" ry="6" fill="rgba(0,0,0,.35)"/><path d="M22 46 Q20 104 80 106 Q140 104 138 46 Z" fill="#1b1430" stroke="#3a2d6b" stroke-width="3"/><ellipse class="liquid" cx="80" cy="46" rx="58" ry="12" fill="#4b3f72"/><ellipse cx="80" cy="46" rx="62" ry="14" fill="none" stroke="#3a2d6b" stroke-width="5"/><rect x="36" y="100" width="10" height="10" fill="#1b1430"/><rect x="114" y="100" width="10" height="10" fill="#1b1430"/></svg><div class="bubbles"><i></i><i></i><i></i><i></i></div><div class="brew-label">The cauldron fills as you choose</div>');
+    liquid=el.querySelector(".liquid");
+    return{el:el,update:function(f){var c=f>=1?"#7ff0d0":f>0?"#5aa89a":"#4b3f72";if(liquid)liquid.setAttribute("fill",c);el.classList.toggle("boiling",f>=1);el.querySelector(".brew-label").textContent=f>=1?"Ready to brew":"The cauldron fills as you choose";},
+      go:function(cb){if(reduce)return cb();el.classList.add("brewing");sfx("good");setTimeout(function(){confetti();cb();},700);}};
+  }
+  if(sk==="heist"){
+    var el2=h("div",{class:"bp-title"},"Blueprint: "+L.title);
+    return{el:el2,update:noop,go:function(cb){if(reduce)return cb();var a=h("div",{class:"alarm"});document.body.append(a);sfx("hit");setTimeout(function(){a.remove();cb();},650);}};
+  }
+  var el3=h("div",{class:"doc-bar"},h("i"),h("i"),h("i"),h("span",null,U("bar","New message")+" · "+L.client+", "+L.role));
+  return{el:el3,update:noop,go:function(cb){if(reduce)return cb();el3.lastChild.textContent="Sending...";setTimeout(cb,450);}};
+}
+
 /* BUILD */
 function build(L){
   clear();var P=paused(L);var sel=P&&P.sel?P.sel.slice():L.slots.map(function(sl){return sl.opts.length===1?0:null;});var hint=!!(P&&P.hint);
   intro(L).forEach(function(x){add(app,x);});
   if(L.input)app.append(h("p",{class:"muted"},"Input: "+L.input));
-  var prev=h("div",{class:"preview"});var run=h("button",{class:"btn",type:"button"},"Run it");
+  var prev=h("div",{class:"preview"});var run=h("button",{class:"btn run",type:"button"},U("run","Run it"));
+  var prop=stageProp(L);
   function refresh(){var parts=[];sel.forEach(function(v,i){if(v!=null){var t=L.slots[i].opts[v].t;if(t.charAt(0)!=="(")parts.push(t);}});
-    prev.textContent=parts.length?parts.join("\n"):"Your prompt appears here as you pick cards.";run.disabled=sel.some(function(v){return v==null;});}
-  var box=h("div",{class:"card"});
+    prev.textContent=parts.length?parts.join("\n"):"Your prompt appears here as you pick cards.";run.disabled=sel.some(function(v){return v==null;});prop.update(sel.filter(function(v){return v!=null;}).length/sel.length);}
+  var box=h("div",{class:"card stage stage-build"},prop.el);
   L.slots.forEach(function(sl,i){var opts=h("div",{class:"opts",role:"group","aria-label":sl.name});
     sl.opts.forEach(function(o,j){var b=h("button",{class:"opt",type:"button","aria-pressed":sel[i]===j?"true":"false",disabled:sl.opts.length===1,onclick:function(){sel[i]=j;Array.from(opts.children).forEach(function(c,k){c.setAttribute("aria-pressed",k===j?"true":"false");});refresh();checkpoint(L,{sel:sel.slice(),hint:hint});}},o.t);opts.append(b);});
     box.append(h("div",{class:"slot"},h("label",null,sl.name),opts));});
-  app.append(box);app.append(h("h3",null,"Your prompt"));app.append(prev);
+  app.append(box);app.append(h("h3",null,U("prompt","Your prompt")));app.append(prev);
   if(L.hint){if(hint)app.append(h("p",{class:"muted"},"Hint: "+L.hint));else{var hb=h("button",{class:"link",type:"button",style:"justify-self:start"},"Need a hint? (caps this round at 2 stars)");
     hb.addEventListener("click",function(){hint=true;checkpoint(L,{sel:sel.slice(),hint:true});hb.replaceWith(h("p",{class:"muted"},"Hint: "+L.hint));});app.append(hb);}}
-  run.addEventListener("click",function(){sfx("run");reveal(L,sel,hint);});app.append(run);refresh();
+  run.addEventListener("click",function(){sfx("run");run.disabled=true;prop.go(function(){reveal(L,sel,hint);});});app.append(run);refresh();
 }
 function reveal(L,sel,hint){
   clear();var pts=0;sel.forEach(function(v,i){pts+=L.slots[i].opts[v].p;});
@@ -1150,10 +1217,10 @@ function claudeStatic(t){return h("div",{class:"bubble"},h("div",{class:"avatar 
 function spot(L){
   clear();var P=paused(L);var flags=P&&P.flags?P.flags.slice():L.lines.map(function(){return false;});
   intro(L).forEach(function(x){add(app,x);});
-  var list=h("div",{class:"opts"});
+  var list=h("div",{class:"opts doc-lines"});
   L.lines.forEach(function(ln,i){list.append(h("button",{class:"tline",type:"button","aria-pressed":flags[i]?"true":"false",onclick:function(e){flags[i]=!flags[i];e.currentTarget.setAttribute("aria-pressed",flags[i]?"true":"false");cnt.textContent=flags.filter(Boolean).length+" flagged";checkpoint(L,{flags:flags.slice()});}},h("span",{class:"n"},i+1),h("span",null,ln.t)));});
   var cnt=h("span",{class:"muted"},flags.filter(Boolean).length+" flagged");
-  var go=h("button",{class:"btn",type:"button"},(L.checkLabel||"Check the template"));
+  var go=h("button",{class:"btn",type:"button"},U("check",L.checkLabel||"Check the template"));
   app.append(h("div",{class:"card"},h("h3",null,L.spotLabel||"Dana's template. Tap the lines that break it."),list,cnt),go);
   go.addEventListener("click",function(){
     var found=0,wrong=0;L.lines.forEach(function(ln,i){if(flags[i]&&ln.bug)found++;if(flags[i]&&!ln.bug)wrong++;});
@@ -1183,9 +1250,9 @@ function spot(L){
 
 /* RESCUE: steer a chat that went wrong */
 function rescue(L){
-  clear();var P=paused(L);var t=P?P.t:0,pts=P?P.pts:0,picks=P?P.picks.slice():[],blooper=P?P.blooper:null;var log=picks.map(function(x){return{T:L.turns[x[0]],o:L.turns[x[0]].opts[x[1]]};});
+  clear();var P=paused(L);var isRescue=true;var t=P?P.t:0,pts=P?P.pts:0,picks=P?P.picks.slice():[],blooper=P?P.blooper:null;var log=picks.map(function(x){return{T:L.turns[x[0]],o:L.turns[x[0]].opts[x[1]]};});
   intro(L).forEach(function(x){add(app,x);});
-  var area=h("div",{style:"display:grid;gap:12px"});app.append(area);
+  var area=h("div",{class:"rescue",style:"display:grid;gap:12px"});app.append(area);
   function userBubble(txt){return h("div",{class:"bubble",style:"flex-direction:row-reverse"},h("div",{class:"avatar"},L.client[0]),h("div",{class:"msg",style:"border-radius:14px 4px 14px 14px"},h("small",null,L.client),txt));}
   function turn(){
     area.textContent="";var T=L.turns[t];checkpoint(L,{t:t,pts:pts,picks:picks.slice(),blooper:blooper});
@@ -1219,12 +1286,12 @@ function pickTool(L){
   var area=h("div",{style:"display:grid;gap:12px"});app.append(area);
   function item(){
     area.textContent="";var I=L.items[k];checkpoint(L,{k:k,right:right,picks:picks.slice()});
-    var tools=h("div",{class:"grid2"});
+    var tools=h("div",{class:"grid2 bins"});
     L.tools.forEach(function(tn,j){tools.append(h("button",{class:"tcard",type:"button","aria-pressed":"false",onclick:function(){pick(j);}},h("b",null,tn)));});
     area.append(h("div",{class:"card"},h("h3",null,"Job "+(k+1)),h("p",{style:"font-size:18px;font-weight:700"},I.t),h("p",{class:"muted"},"Where should this live?"),tools));
     function pick(j){var ok=j===I.a;if(ok)right++;log.push({I:I,j:j,ok:ok});picks.push([k,j]);sfx(ok?"good":"bad");if(!ok)buzz(50);
       area.textContent="";
-      area.append(h("div",{class:"card "+(ok?"pop":"shake")},h("p",{class:"verdict "+(ok?"ok":"no"),style:"font-size:20px;font-family:var(--display)"},ok?"Right place.":"Hmm. "+L.tools[j]+"?"),
+      area.append(h("div",{class:"card "+(ok?"pop":"shake")},h("p",{class:"verdict "+(ok?"ok":"no"),style:"font-size:20px;font-family:var(--display)"},ok?U("placed","Right place."):"Hmm. "+L.tools[j]+"?"),
         ok?null:h("p",null,I.oops),h("p",null,h("b",null,"Best: "+L.tools[I.a]+". "),I.why)),
         h("button",{class:"btn",type:"button",onclick:function(){k++;if(k<L.items.length)item();else end();}},k<L.items.length-1?"Next job":"See results"));}
   }
