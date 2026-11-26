@@ -45,6 +45,7 @@ p{margin:0}
 .dept.lit{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
 .dept.now{outline:2px solid var(--ink);outline-offset:1px;color:var(--ink)}
 .levels{display:grid;gap:8px}
+.areas .chips{display:flex;flex-wrap:wrap;gap:8px}.chip.area{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:999px;padding:10px 14px;font:inherit;font-weight:600;color:inherit;cursor:pointer;min-height:44px}
 .lvl{display:flex;align-items:center;gap:12px;text-align:left;width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;color:inherit;cursor:pointer;min-height:64px}
 .lvl:disabled{opacity:.5;cursor:not-allowed}
 .lvl .num{font-family:var(--display);font-weight:800;font-size:20px;width:30px;text-align:center}
@@ -1165,6 +1166,9 @@ function home(){
   gb.append(h("div",{class:"card"},h("h3",null,T.boardTitle),vis,h("p",{class:"muted"},saved?T.done:T.todo)));
   gp.append(h("h2",null,T.h2));
   gp.append(coach("Each level teaches one real skill for working with Claude. Play, fail, then see why. Not just prompt writing.",coachName()));
+  var areas=LEVELS.filter(function(L){return L.id>0&&L.type!=="Boss"&&!L.secret;});
+  gp.append(h("div",{class:"card areas"},h("h3",null,"Or practice one skill"),h("p",{class:"muted"},"Skip the order and jump straight to the skill you want."),
+    h("div",{class:"chips"},areas.map(function(L){return h("button",{class:"chip area",type:"button","data-area":L.id,onclick:function(){start(L);}},L.skill||L.type);}))));
   var shown=LEVELS.filter(function(L){return unlocked(L.id);});
   gp.append(h("div",{class:"levels"},shown.map(function(L){return h("button",{class:"lvl",type:"button",onclick:function(){start(L);}},
     h("span",{class:"num"},L.secret?"+":L.id),h("span",{class:"t"},h("b",null,L.title),h("span",null,(L.skill||L.type)+" · "+L.type)),starsEl(S.stars[L.id]||0));}),

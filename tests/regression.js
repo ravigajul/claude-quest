@@ -168,6 +168,15 @@ test("Each world plays differently: its own stage, verbs and props", async () =>
   assert(new Set(Object.values(checks)).size === 3, "Spot-the-bug buttons are the same across worlds: " + JSON.stringify(checks));
 });
 
+test("Practice a skill: jump straight to any area without unlocking", async () => {
+  const g = boot(); await g.wait(50); pickWorld(g, "Office");
+  const chips = [...g.d.querySelectorAll(".chip.area")];
+  assert(chips.length >= 4, "Expected skill area chips, got " + chips.length);
+  g.d.querySelector('.chip.area[data-area="3"]').click(); await g.wait(50);
+  assert(g.text().includes("Lesson 3"), "Area chip did not open its lesson");
+  assert(g.errs.length === 0, "JS errors: " + g.errs.join("; "));
+});
+
 test("Heist: no clock, never capped", async () => {
   const g = boot(); await g.wait(50); pickWorld(g, "Heist");
   g.d.querySelector(".lvl").click(); await playBuild(g); next(g);
