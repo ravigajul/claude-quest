@@ -312,23 +312,21 @@ test("Weak answers fail softly and drop a blooper", async () => {
   assert(g.text().includes("Blooper"), "No blooper for a weak answer");
 });
 
-test("A clock that runs out counts as no choice, and the level still finishes", async () => {
+test("Calm mode: nothing is picked for you, and each card waits until you choose", async () => {
   const g = boot({ storage: { cq_fast_clock: "1" } }); await g.wait(50); pickWorld(g, "Office");
   g.d.querySelector(".lvl").click(); await playBuild(g); next(g);
   await g.wait(600);
-  assert(g.text().includes("Time is up") && g.text().includes("All set"), "Build did not move on when time ran out");
-  await g.wait(600);
-  g.d.querySelector("button.run").click();
-  await g.wait(g.T + 300);
-  assert(g.errs.length === 0, "JS errors on timeout: " + g.errs.join("; "));
+  assert(g.d.querySelector(".slot-count").textContent.startsWith("Card 1 of"), "Build moved on without a choice");
+  assert(!g.text().includes("Time is up") && !g.text().includes("Pick fast"), "Build still shows time pressure");
+  assert(g.errs.length === 0, "JS errors: " + g.errs.join("; "));
 });
 
-test("Spot the bug: a line that times out counts as Looks fine", async () => {
+test("Calm mode: Spot the bug waits for each line, with no time limit", async () => {
   const g = boot({ storage: { cq_fast_clock: "1" } }); await g.wait(50); pickWorld(g, "Office");
   g.d.querySelector(".lvl").click(); await playBuild(g); next(g); await playBuild(g); next(g);
-  await g.wait(1500);
-  assert(g.text().includes("Claude's answer"), "Spot did not reach its results after the clock ran out");
-  assert(g.errs.length === 0, "JS errors on spot timeout: " + g.errs.join("; "));
+  await g.wait(600);
+  assert(g.d.querySelector(".slot-count").textContent.startsWith("Line 1 of"), "Spot moved on without a choice");
+  assert(g.errs.length === 0, "JS errors: " + g.errs.join("; "));
 });
 
 test("Credits name the creator and link the repo", async () => {

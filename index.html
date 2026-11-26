@@ -1278,14 +1278,8 @@ var SLOT_COLORS=[["#8b5cf6","#ffffff"],["#0ea5a4","#ffffff"],["#f59e0b","#1f1300
 /* BUILD */
 var TIMER_MS=12000,LINE_MS=6000,TURN_MS=12000,ITEM_MS=10000,WAVE_MS=10000;
 /* A countdown bar. onEnd runs when time is up, unless the screen (guard) has been left. */
-function clock(ms,onEnd,guard){
-  if(fastMode("clock"))ms=Math.min(ms,80);
-  var bar=h("i"),el=h("div",{class:"timed-bar"},bar),live=true,t=null,tu=null;
-  requestAnimationFrame(function(){requestAnimationFrame(function(){bar.style.transition="width "+(ms/1000)+"s linear";bar.style.width="0%";});});
-  tu=setTimeout(function(){if(live&&(!guard||guard.isConnected))bar.classList.add("urgent");},ms*.75);
-  t=setTimeout(function(){if(!live)return;live=false;if(!guard||guard.isConnected)onEnd();},ms);
-  return{el:el,stop:function(){live=false;clearTimeout(t);clearTimeout(tu);}};
-}
+/* Calm mode: no countdowns and no timeouts. Nothing is picked for the player. */
+function clock(ms,onEnd,guard){return{el:h("div",{class:"timed-bar",hidden:true}),stop:function(){}};}
 /* Motion helpers (Web Animations API). They do nothing when reduced motion is on. */
 function fx(el,frames,opts){if(reduce||!el||!el.animate)return null;try{return el.animate(frames,Object.assign({fill:"both"},opts));}catch(e){return null;}}
 function burst(el,color){
@@ -1333,13 +1327,12 @@ function build(L){
       h("span",{class:"slot-count"},"Card "+n+" of "+playable.length),
       h("h3",null,sl.name),
       h("span",{class:"combo"+(streak>=2?" hot":"")},streak>=2?"Combo x"+streak:"Best picks in a row = combo")));
-    wrap.append(h("div",{class:"timed-bar"},bar));
     if(note){wrap.append(h("p",{class:"timeout"},note));note=null;}
     /* The arena: each option falls down the sky. Tap the card you want before it lands. */
     var sky=h("div",{class:"opts timed-opts sky",role:"group","aria-label":sl.name});
-    sl.opts.forEach(function(o,j){var c=h("button",{class:"opt fall",type:"button",style:"left:"+((j+.5)/sl.opts.length*100)+"%",onclick:function(e){choose(i,j,false,e.currentTarget);}},o.t);sky.append(c);fx(c,[{transform:"translate(-50%,-30px)"},{transform:"translate(-50%,250px)"}],{duration:TIMER_MS,easing:"linear",delay:j*200,fill:"forwards"});});
+    sl.opts.forEach(function(o,j){var c=h("button",{class:"opt fall",type:"button",style:"left:"+((j+.5)/sl.opts.length*100)+"%",onclick:function(e){choose(i,j,false,e.currentTarget);}},o.t);sky.append(c);fx(c,[{transform:"translate(-50%,-30px)"},{transform:"translate(-50%,250px)"}],{duration:45000,easing:"linear",delay:j*400,fill:"forwards"});});
     wrap.append(sky);
-    wrap.append(h("p",{class:"muted"},"Pick fast. "+Math.round(TIMER_MS/1000)+" seconds."));
+    wrap.append(h("p",{class:"muted"},"Take your time. Tap the card you like."));
     board.append(wrap);
     fx(wrap,[{opacity:0,transform:"translateY(16px) scale(.98)"},{opacity:1,transform:"none"}],{duration:360,easing:"cubic-bezier(.2,.8,.2,1)"});
     var cb=wrap.querySelector(".combo.hot");if(cb)fx(cb,[{transform:"scale(.6)"},{transform:"scale(1.18)"},{transform:"scale(1)"}],{duration:420});
@@ -1582,7 +1575,7 @@ function fight(L,hand,P){
     var bar=h("div",{class:"hp"},h("i",{style:"width:"+hp+"%"}));var real=!!ENEMIES[W.foe];if(real){S.met[W.foe]=true;save();}
     var mon=monsterEl(real?W.foe:null,true,real?null:"#7b5cd6");
     var tmr=clock(WAVE_MS,function(){miss();},app);
-    app.append(h("div",{class:"card"},h("div",{class:"bigfoe"},mon,h("div",null,h("h2",null,real?ENEMIES[W.foe].name:"Curveball"),h("div",{class:"muted"},"Boss health"))),bar,h("p",{class:"muted"},"Play a card fast."),tmr.el));
+    app.append(h("div",{class:"card"},h("div",{class:"bigfoe"},mon,h("div",null,h("h2",null,real?ENEMIES[W.foe].name:"Curveball"),h("div",{class:"muted"},"Boss health"))),bar,h("p",{class:"muted"},"Pick a card when you are ready."),tmr.el));
     app.append(clientBubble(L,W.msg));
     app.append(h("h3",null,"Play a card"));
     var grid=h("div",{class:"grid2"});
