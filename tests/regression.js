@@ -316,7 +316,7 @@ test("A clock that runs out counts as no choice, and the level still finishes", 
   const g = boot({ storage: { cq_fast_clock: "1" } }); await g.wait(50); pickWorld(g, "Office");
   g.d.querySelector(".lvl").click(); await playBuild(g); next(g);
   await g.wait(600);
-  assert(g.text().includes("Time's up") && g.text().includes("All cards are in"), "Build did not move on when time ran out");
+  assert(g.text().includes("Time is up") && g.text().includes("All set"), "Build did not move on when time ran out");
   await g.wait(600);
   g.d.querySelector("button.run").click();
   await g.wait(g.T + 300);

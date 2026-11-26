@@ -1309,7 +1309,7 @@ function build(L){
   var box=h("div",{class:"card stage stage-build"},prop.el,board);
   function refresh(){
     var parts=[];sel.forEach(function(v,i){if(v!=null){var t=L.slots[i].opts[v].t;if(t.charAt(0)!=="(")parts.push({t:t,i:i});}});
-    prev.textContent="";if(!parts.length)prev.textContent="Your prompt appears here as you pick cards.";
+    prev.textContent="";if(!parts.length)prev.textContent="Your prompt shows here.";
     parts.forEach(function(p){prev.append(h("span",{class:"seg",style:"--slot:"+SLOT_COLORS[p.i%SLOT_COLORS.length][0]},h("b",null,L.slots[p.i].name),p.t));});
     run.disabled=sel.some(function(v){return v==null;});
     prop.update(sel.filter(function(v){return v!=null;}).length/sel.length);
@@ -1319,27 +1319,27 @@ function build(L){
     var o=L.slots[i].opts[j],best=Math.max.apply(null,L.slots[i].opts.map(function(x){return x.p;}));
     if(btn&&!late){fx(btn,[{transform:"scale(.92)"},{transform:"scale(1.05)"},{transform:"scale(1)"}],{duration:300,fill:"none"});if(o.p===best)burst(btn,SLOT_COLORS[i%SLOT_COLORS.length][0]);}
     streak=(!late&&o.p===best)?streak+1:0;
-    note=late?"Time's up. Claude used your first card.":null;
+    note=late?"Time is up. Claude used card 1.":null;
     sel[i]=j;sfx("tick");checkpoint(L,{sel:sel.slice(),hint:hint});refresh();
     setTimeout(function(){if(board.isConnected)showSlot();},reduce?0:350);
   }
   function showSlot(){
     var i=null;playable.forEach(function(k){if(i==null&&sel[k]==null)i=k;});
     board.textContent="";var wrap=h("div",{class:"slot",style:"--slot:"+SLOT_COLORS[(i==null?0:i)%SLOT_COLORS.length][0]+";--slot-ink:"+SLOT_COLORS[(i==null?0:i)%SLOT_COLORS.length][1]});
-    if(i==null){if(note){board.append(h("p",{class:"timeout"},note));note=null;}board.append(h("p",{class:"timed-done"},"All cards are in. Run it when you are ready."));refresh();return;}
+    if(i==null){if(note){board.append(h("p",{class:"timeout"},note));note=null;}board.append(h("p",{class:"timed-done"},"All set. Run it."));refresh();return;}
     var sl=L.slots[i],sc=SLOT_COLORS[i%SLOT_COLORS.length],n=playable.indexOf(i)+1;
     var bar=h("i");
     wrap.append(h("div",{class:"slot-head",style:"--slot:"+sc[0]+";--slot-ink:"+sc[1]},
       h("span",{class:"slot-count"},"Card "+n+" of "+playable.length),
       h("h3",null,sl.name),
-      h("span",{class:"combo"+(streak>=2?" hot":"")},streak>=2?"Combo x"+streak:"Best cards in a row build a combo")));
+      h("span",{class:"combo"+(streak>=2?" hot":"")},streak>=2?"Combo x"+streak:"Best picks in a row = combo")));
     wrap.append(h("div",{class:"timed-bar"},bar));
     if(note){wrap.append(h("p",{class:"timeout"},note));note=null;}
     /* The arena: each option falls down the sky. Tap the card you want before it lands. */
     var sky=h("div",{class:"opts timed-opts sky",role:"group","aria-label":sl.name});
     sl.opts.forEach(function(o,j){var c=h("button",{class:"opt fall",type:"button",style:"left:"+((j+.5)/sl.opts.length*100)+"%",onclick:function(e){choose(i,j,false,e.currentTarget);}},o.t);sky.append(c);fx(c,[{transform:"translate(-50%,-30px)"},{transform:"translate(-50%,250px)"}],{duration:TIMER_MS,easing:"linear",delay:j*200,fill:"forwards"});});
     wrap.append(sky);
-    wrap.append(h("p",{class:"muted"},"Pick fast. You have "+Math.round(TIMER_MS/1000)+" seconds for this card."));
+    wrap.append(h("p",{class:"muted"},"Pick fast. "+Math.round(TIMER_MS/1000)+" seconds."));
     board.append(wrap);
     fx(wrap,[{opacity:0,transform:"translateY(16px) scale(.98)"},{opacity:1,transform:"none"}],{duration:360,easing:"cubic-bezier(.2,.8,.2,1)"});
     var cb=wrap.querySelector(".combo.hot");if(cb)fx(cb,[{transform:"scale(.6)"},{transform:"scale(1.18)"},{transform:"scale(1)"}],{duration:420});
@@ -1443,7 +1443,7 @@ function spot(L){
     var ln=L.lines[idx];checkpoint(L,{i:idx,flags:flags.slice()});
     var clk=clock(LINE_MS,function(){if(pend===clk)decide(false,true,null);},stream);pend=clk;
     stream.append(h("div",{class:"slot-head"},h("span",{class:"slot-count"},"Line "+(idx+1)+" of "+L.lines.length),
-      h("span",{class:"combo"+(streak>=2?" hot":"")},streak>=2?"Combo x"+streak:"Catch real bugs in a row for a combo")));
+      h("span",{class:"combo"+(streak>=2?" hot":"")},streak>=2?"Combo x"+streak:"Real bugs in a row = combo")));
     stream.append(clk.el);
     var code=h("div",{class:"tline-live"},h("span",{class:"n"},idx+1),h("span",null,ln.t));
     stream.append(code,h("div",{class:"row"},
@@ -1548,7 +1548,7 @@ function pickTool(L){
       var toolName=j==null?"Time ran out":L.tools[j]+"?";
       fx(job,[{transform:"none",opacity:1},{transform:"translateY(40px) scale(.7)",opacity:0}],{duration:380,easing:"ease-in",fill:"forwards"});
       area.append(h("div",{class:"card "+(ok?"pop":"shake")},h("p",{class:"verdict "+(ok?"ok":"no"),style:"font-size:20px;font-family:var(--display)"},ok?U("placed","Right place."):(j==null?"Too slow.":"Hmm. "+toolName)),
-        ok?null:h("p",null,I.oops||"The job waited too long."),h("p",null,h("b",null,"Best: "+L.tools[I.a]+". "),I.why)),
+        ok?null:h("p",null,I.oops||"Too slow."),h("p",null,h("b",null,"Best: "+L.tools[I.a]+". "),I.why)),
         h("button",{class:"btn",type:"button",onclick:function(){k++;if(k<L.items.length)item();else end();}},k<L.items.length-1?"Next job":"See results"));
     }
   }
@@ -1582,7 +1582,7 @@ function fight(L,hand,P){
     var bar=h("div",{class:"hp"},h("i",{style:"width:"+hp+"%"}));var real=!!ENEMIES[W.foe];if(real){S.met[W.foe]=true;save();}
     var mon=monsterEl(real?W.foe:null,true,real?null:"#7b5cd6");
     var tmr=clock(WAVE_MS,function(){miss();},app);
-    app.append(h("div",{class:"card"},h("div",{class:"bigfoe"},mon,h("div",null,h("h2",null,real?ENEMIES[W.foe].name:"Curveball"),h("div",{class:"muted"},"Boss health"))),bar,h("p",{class:"muted"},"Play a card before the clock runs out."),tmr.el));
+    app.append(h("div",{class:"card"},h("div",{class:"bigfoe"},mon,h("div",null,h("h2",null,real?ENEMIES[W.foe].name:"Curveball"),h("div",{class:"muted"},"Boss health"))),bar,h("p",{class:"muted"},"Play a card fast."),tmr.el));
     app.append(clientBubble(L,W.msg));
     app.append(h("h3",null,"Play a card"));
     var grid=h("div",{class:"grid2"});
@@ -1613,7 +1613,7 @@ function fight(L,hand,P){
       clear();
       app.append(h("div",null,h("h3",null,"Wave "+(w+1)),h("h2",null,id==null?"Too slow":q===3?"Direct hit":q===1?"Glancing blow":"Miss")));
       app.append(h("div",{class:"card pop"},h("div",{class:"hp"},h("i",{style:"width:"+hp+"%"})),
-        h("p",null,id==null?"Claude waited, and the clock ran out before a card was played.":h("span",null,h("b",null,CARDS[id].n+": "),(W.why[id]||"This card doesn't counter "+W.label+"."))),
+        h("p",null,id==null?"Time ran out.":h("span",null,h("b",null,CARDS[id].n+": "),(W.why[id]||"This card doesn't counter "+W.label+"."))),
         q<3?h("p",{class:"muted"},"Best counter: "+W.strong.map(function(s){return CARDS[s].n;}).join(" or ")):null));
       app.append(h("button",{class:"btn",type:"button",onclick:function(){w++;if(w<L.waves.length)wave();else end();}},w<L.waves.length-1?"Next wave":"See what happened"));
     }
@@ -1623,7 +1623,7 @@ function fight(L,hand,P){
     var mast=[];if(n>=1)plays.forEach(function(p){if(p.q===3&&S.cards[p.id]!=="mastered"){S.cards[p.id]="mastered";mast.push(p.id);}});save();
     app.append(h("div",null,h("h3",null,"Level "+L.id+" · Results"),h("h2",null,L.title)));
     var el=h("div",{style:"display:grid;gap:14px"});app.append(el);
-    var rows=plays.map(function(p){return h("div",{class:"w "+(p.q===3?"best":p.q===1?"meh":"bad")},h("b",null,p.w.label+": "+(p.id==null?"Too slow":CARDS[p.id].n)),h("span",null,p.id==null?"The clock ran out.":(p.w.why[p.id]||"This card doesn't counter it.")));});
+    var rows=plays.map(function(p){return h("div",{class:"w "+(p.q===3?"best":p.q===1?"meh":"bad")},h("b",null,p.w.label+": "+(p.id==null?"Too slow":CARDS[p.id].n)),h("span",null,p.id==null?"Time ran out.":(p.w.why[p.id]||"This card doesn't counter it.")));});
     var det=h("div",{class:"why"},h("p",null,"Score "+score+" of 12."),rows,
       mast.length?h("p",null,h("b",null,"Mastered: "),mast.map(function(m){return CARDS[m].n;}).join(", ")):null,
       n>=1?h("div",{class:"card"},h("h3",null,THEMES[S.theme].endTitle),h("p",null,THEMES[S.theme].endText),h("p",{class:"muted"},"And Dana has one more thing for you.")):null);
