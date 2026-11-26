@@ -45,6 +45,10 @@ p{margin:0}
 .dept.lit{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
 .dept.now{outline:2px solid var(--ink);outline-offset:1px;color:var(--ink)}
 .levels{display:grid;gap:8px}
+.pips{display:inline-flex;gap:4px}.pips i{width:16px;height:6px;border-radius:3px;background:rgba(255,255,255,.28)}.pips i.on{background:#fff}
+.skillup{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border:1px solid var(--line);border-radius:12px}.skillup .pips i{background:var(--line)}.skillup .pips i.on{background:var(--accent)}.skillup .pips i{width:22px;height:8px}
+.youlearn{display:grid;gap:2px;padding:10px 14px;border-left:4px solid var(--accent);background:var(--card);border-radius:8px}.youlearn small{opacity:.75;text-transform:uppercase;letter-spacing:.06em;font-size:.72em;font-weight:600}.youlearn b{font-size:1.15em}
+
 .homecol{gap:12px}.bigplay{display:grid;gap:2px;text-align:left;padding:14px 16px;min-height:64px}.bigplay small{opacity:.85;font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:.72em}.bigplay b{font-size:1.1em}
 .areas h3{margin:0 0 8px}.agrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.btn.area{display:grid;gap:4px;text-align:left;padding:10px 12px;min-height:76px;align-content:space-between}.btn.area b{font-size:.95em;line-height:1.2}.btn.area span{font-size:.8em;opacity:.9}
 .more{border:1px solid var(--line);border-radius:12px;padding:10px 12px}.more summary{cursor:pointer;font-weight:600;min-height:32px;display:flex;align-items:center}.more[open]{display:grid;gap:12px}
@@ -1150,6 +1154,7 @@ function typeOut(el,text,done){
   var t=setInterval(function(){i+=step;el.textContent=text.slice(0,i);if(i>=text.length){clearInterval(t);skip.remove();done&&done();}},16);
 }
 function claudeBubble(text,cb){var m=h("div",{class:"msg claude"},h("span",{class:"dots","aria-label":"Claude is typing"},h("span"),h("span"),h("span")));var b=h("div",{class:"bubble"},h("div",{class:"avatar claude"},"C"),h("div",{style:"flex:1;min-width:0"},m));setTimeout(function(){typeOut(m,text,cb);},reduce?0:900);return b;}
+function pips(n){return h("span",{class:"pips","aria-label":n+" of 3"},[0,1,2].map(function(i){return h("i",{class:i<n?"on":""});}));}
 function unlocked(id){return id===0||(S.stars[id-1]||0)>=1;}
 
 /* ---------- home ---------- */
@@ -1173,8 +1178,8 @@ function home(){
   if(nextL)gp.append(h("button",{class:"btn bigplay",type:"button","data-continue":nextL.id,onclick:function(){start(nextL);}},
     h("small",null,(S.stars[0]||S.stars[1])?"Continue the story":"Start here"),h("b",null,"Lesson "+nextL.id+": "+nextL.title+"  ▶")));
   var areas=LEVELS.filter(function(L){return L.id>0&&L.type!=="Boss"&&!L.secret;});
-  gp.append(h("div",{class:"areas"},h("h3",null,"Or practice one skill"),
-    h("div",{class:"agrid"},areas.map(function(L){return h("button",{class:"btn area","data-area":L.id,type:"button",onclick:function(){start(L);}},h("b",null,L.skill||L.type),h("span",null,"Play ▶"));}))));
+  gp.append(h("div",{class:"areas"},h("h3",null,"Your skills: "+areas.filter(function(L){return (S.stars[L.id]||0)>=1;}).length+" of "+areas.length+" learned"),
+    h("div",{class:"agrid"},areas.map(function(L){return h("button",{class:"btn area","data-area":L.id,type:"button",onclick:function(){start(L);}},h("b",null,L.skill||L.type),pips(S.stars[L.id]||0),h("span",null,(S.stars[L.id]||0)?"Practice again ▶":"Learn this ▶"));}))));
   var more=h("details",{class:"more"},h("summary",null,"More: story map, all levels, credits"),gb,
     h("h3",null,T.h2),h("div",{class:"levels"},shown.map(function(L){return h("button",{class:"lvl",type:"button",onclick:function(){start(L);}},
     h("span",{class:"num"},L.secret?"+":L.id),h("span",{class:"t"},h("b",null,L.title),h("span",null,(L.skill||L.type)+" · "+L.type)),starsEl(S.stars[L.id]||0));}),
@@ -1317,6 +1322,7 @@ function intro(L){
     resumedNote(paused(L)),
     L.id!==0&&U("twist")?h("p",{class:"twist-chip"},U("twist")):null,
     h("div",null,h("h3",null,"Lesson "+L.id+" · "+(L.skill||L.type)),h("h2",null,L.title)),
+    L.id>0&&L.til?h("div",{class:"youlearn"},h("small",null,"In 2 minutes you'll learn"),h("b",null,L.skill||L.type)):null,
     coach(GOALS[L.type]||"Let's learn something new.",coachName()+" · Your goal"),
     clientBubble(L,L.brief),
     L.enemy?h("div",{class:"card foe-mini"},enemyChip(L.enemy,"The mistake you'll learn to beat.")):null];
@@ -1530,6 +1536,7 @@ function finish(L,n,el,detail,blooper){
   page.append(h("div",{class:"winhead"},fig,h("div",null,h("h2",null,n>=1?(n===3?"Perfect run":"Level passed"):"Not this time"),st,
     E?h("p",{class:"verdict "+(n>=2?"ok":"no")},n>=2?E.name+" is beaten.":n===1?E.name+" got away, but you passed.":E.name+" wins this round."):null)));
   if(mon)page.append(h("div",{class:"enemy-pop"},mon));
+  if(L.skill&&L.id>0)page.append(h("div",{class:"skillup"},h("b",null,"Skill: "+L.skill),pips(n)));
   page.append(h("h3",{class:"learned-h"},"Remember this"),h("div",{class:"lesson-big"},L.til));
   var loot=[];newCards.forEach(function(c){loot.push(h("div",{class:"tcard pop"},h("b",null,CARDS[c].n),h("span",null,"New card")));});
   X.badges.forEach(function(b){loot.push(h("div",{class:"tcard mastered pop"},h("b",null,b),h("span",null,"Badge")));});
