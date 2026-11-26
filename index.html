@@ -45,7 +45,11 @@ p{margin:0}
 .dept.lit{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700}
 .dept.now{outline:2px solid var(--ink);outline-offset:1px;color:var(--ink)}
 .levels{display:grid;gap:8px}
-.arearow{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)}.arearow .t{display:grid;gap:2px}.arearow .t span{font-size:.9em;color:var(--muted)}.arearow .btn{flex:none;min-width:84px}.chip.area{display:none}.chip.area{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:999px;padding:10px 14px;font:inherit;font-weight:600;color:inherit;cursor:pointer;min-height:44px}
+.homecol{gap:12px}.bigplay{display:grid;gap:2px;text-align:left;padding:14px 16px;min-height:64px}.bigplay small{opacity:.85;font-weight:600;text-transform:uppercase;letter-spacing:.06em;font-size:.72em}.bigplay b{font-size:1.1em}
+.areas h3{margin:0 0 8px}.agrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.btn.area{display:grid;gap:4px;text-align:left;padding:10px 12px;min-height:76px;align-content:space-between}.btn.area b{font-size:.95em;line-height:1.2}.btn.area span{font-size:.8em;opacity:.9}
+.more{border:1px solid var(--line);border-radius:12px;padding:10px 12px}.more summary{cursor:pointer;font-weight:600;min-height:32px;display:flex;align-items:center}.more[open]{display:grid;gap:12px}
+@media (max-width:600px){.hero{padding:10px 14px}.hero h3,.hero .top .muted{display:none}.hero h1{font-size:1.4rem;margin:0}.hero .stats{margin-top:6px;gap:6px}.hero .stats .pill:nth-child(2){display:none}.hero .tab,.hero .pill{padding:6px 10px;min-height:34px;font-size:.85rem}}
+
 .lvl{display:flex;align-items:center;gap:12px;text-align:left;width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;color:inherit;cursor:pointer;min-height:64px}
 .lvl:disabled{opacity:.5;cursor:not-allowed}
 .lvl .num{font-family:var(--display);font-weight:800;font-size:20px;width:30px;text-align:center}
@@ -1161,19 +1165,22 @@ function home(){
     if(saved)st.push({n:"Omar",lit:false});st.push({mys:true});vis=starMap(st);}
   else{var people=LEVELS.filter(function(L){return L.dept&&unlocked(L.id);}).map(function(L){return{n:L.client,role:L.role,lit:(S.stars[L.id]||0)>=1};});
     if(saved)people.push({n:"Omar",role:"the Archivist",lit:false});people.push({mys:true});vis=crewBoard(people);}
-  var gb=h("div",{class:"col",style:"grid-area:board"}),gp=h("div",{class:"col",style:"grid-area:play"}),gx=h("div",{class:"col",style:"grid-area:extra"});
-  app.append(h("div",{class:"split"},gb,gp,gx));
-  gb.append(h("div",{class:"card"},h("h3",null,T.boardTitle),vis,h("p",{class:"muted"},saved?T.done:T.todo)));
-  gp.append(h("h2",null,T.h2));
-  gp.append(coach("Each level teaches one real skill for working with Claude. Play, fail, then see why. Not just prompt writing.",coachName()));
-  var areas=LEVELS.filter(function(L){return L.id>0&&L.type!=="Boss"&&!L.secret;});
-  gp.append(h("div",{class:"card areas"},h("h3",null,"Or practice one skill"),h("p",{class:"muted"},"Skip the order and jump straight to the skill you want."),
-    h("div",{class:"levels"},areas.map(function(L){return h("div",{class:"arearow"},h("div",{class:"t"},h("b",null,L.skill||L.type),h("span",null,GOALS[L.type]||"")),
-      h("button",{class:"btn area","data-area":L.id,type:"button",onclick:function(){start(L);}},"Play ▶"));}))));
+  var gp=h("div",{class:"col homecol"}),gx=h("div",{class:"col"}),gb=h("div",{class:"col"});
+  app.append(gp);
   var shown=LEVELS.filter(function(L){return unlocked(L.id);});
-  gp.append(h("div",{class:"levels"},shown.map(function(L){return h("button",{class:"lvl",type:"button",onclick:function(){start(L);}},
+  var nextL=shown.filter(function(L){return !(S.stars[L.id]||0);})[0]||shown[shown.length-1];
+  gp.append(coach("Pick a skill to practice, or carry on with the story.",coachName()));
+  if(nextL)gp.append(h("button",{class:"btn bigplay",type:"button","data-continue":nextL.id,onclick:function(){start(nextL);}},
+    h("small",null,(S.stars[0]||S.stars[1])?"Continue the story":"Start here"),h("b",null,"Lesson "+nextL.id+": "+nextL.title+"  ▶")));
+  var areas=LEVELS.filter(function(L){return L.id>0&&L.type!=="Boss"&&!L.secret;});
+  gp.append(h("div",{class:"areas"},h("h3",null,"Or practice one skill"),
+    h("div",{class:"agrid"},areas.map(function(L){return h("button",{class:"btn area","data-area":L.id,type:"button",onclick:function(){start(L);}},h("b",null,L.skill||L.type),h("span",null,"Play ▶"));}))));
+  var more=h("details",{class:"more"},h("summary",null,"More: story map, all levels, credits"),gb,
+    h("h3",null,T.h2),h("div",{class:"levels"},shown.map(function(L){return h("button",{class:"lvl",type:"button",onclick:function(){start(L);}},
     h("span",{class:"num"},L.secret?"+":L.id),h("span",{class:"t"},h("b",null,L.title),h("span",null,(L.skill||L.type)+" · "+L.type)),starsEl(S.stars[L.id]||0));}),
-    h("button",{class:"lvl",type:"button",disabled:true},h("span",{class:"num"},"?"),h("span",{class:"t"},h("b",null,"???"),h("span",null,"Clear the level above to find out")))));
+    h("button",{class:"lvl",type:"button",disabled:true},h("span",{class:"num"},"?"),h("span",{class:"t"},h("b",null,"???"),h("span",null,"Clear the level above to find out")))),gx);
+  gp.append(more);
+  gb.append(h("div",{class:"card"},h("h3",null,T.boardTitle),vis,h("p",{class:"muted"},saved?T.done:T.todo)));
   if(saved)gx.append(shareCard());
   if((S.stars[6]||0)>=1)gp.append(h("div",{class:"card"},h("h3",null,"Your inbox"),h("p",null,T.inbox),h("p",{class:"muted"},T.inboxNote)));
   gx.append(h("div",{class:"card"},h("h3",null,"Credits"),
