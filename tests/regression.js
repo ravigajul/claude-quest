@@ -45,11 +45,26 @@ function next(g) { const b = g.btn("Next:") || g.btn("Wait. A new message"); if 
 
 // Level players. They pick the best answer by position, which is the same in every world.
 async function playBuild(g) {
-  for (const grp of g.d.querySelectorAll(".slot .opts")) { const bs = [...grp.querySelectorAll("button:not([disabled])")]; if (bs.length) bs[bs.length - 1].click(); }
+  // The timed board shows one card at a time. Tap the last (best) option for each card.
+  for (let k = 0; k < 8; k++) {
+    const bs = [...g.d.querySelectorAll(".timed-opts .opt")];
+    if (!bs.length) break;
+    bs[bs.length - 1].click();
+    await g.wait(g.T > 100 ? 400 : 40);
+  }
   g.d.querySelector("button.run").click();
   const chips = [...g.d.querySelectorAll(".ingr")].sort((a, b) => a.dataset.slot - b.dataset.slot);
   for (const c of chips) c.click();
   await g.wait(g.T + (chips.length ? 400 : 0));
+}
+// The timed board shows one card at a time. Answer each card with pick(optionCount, cardIndex).
+async function answerCards(g, pick) {
+  for (let k = 0; k < 8; k++) {
+    const bs = [...g.d.querySelectorAll(".timed-opts .opt")];
+    if (!bs.length) break;
+    bs[pick(bs.length, k)].click();
+    await g.wait(g.T > 100 ? 400 : 40);
+  }
 }
 async function playSpot(g, bugs) {
   const lines = [...g.d.querySelectorAll(".tline")];
@@ -197,7 +212,7 @@ test("Academy: ingredients go in by hand, and the right order earns Master Brewe
   g.d.querySelector(".lvl").click(); await playBuild(g);
   assert(!g.d.querySelector(".ingr"), "Tutorial should skip the brewing step");
   next(g);
-  for (const grp of g.d.querySelectorAll(".slot .opts")) { const bs = [...grp.querySelectorAll("button")]; bs[bs.length - 1].click(); }
+  await answerCards(g, n => n - 1);
   g.d.querySelector("button.run").click();
   const chips = [...g.d.querySelectorAll(".ingr")];
   assert(chips.length === 3, "Expected 3 ingredients, got " + chips.length);
@@ -205,7 +220,7 @@ test("Academy: ingredients go in by hand, and the right order earns Master Brewe
   await g.wait(400);
   assert(g.text().includes("Master brew") && g.text().includes("Master Brewer"), "Master brew not recognized");
   g.click("Play again");
-  for (const grp of g.d.querySelectorAll(".slot .opts")) { const bs = [...grp.querySelectorAll("button")]; bs[bs.length - 1].click(); }
+  await answerCards(g, n => n - 1);
   g.d.querySelector("button.run").click();
   [...g.d.querySelectorAll(".ingr")].sort((a, b) => b.dataset.slot - a.dataset.slot).forEach(c => c.click());
   await g.wait(400);
@@ -229,9 +244,9 @@ test("The coach names the skill at the start and the lesson at the end; details 
 test("Choice sections are color-coded, and the prompt preview matches", async () => {
   const g = boot(); await g.wait(50); pickWorld(g, "Office");
   g.d.querySelector(".lvl").click(); await playBuild(g); next(g);
-  const colors = [...g.d.querySelectorAll(".slot")].map(x => x.style.getPropertyValue("--slot"));
+  const colors = [];
+  await answerCards(g, (n, k) => { colors.push(g.d.querySelector(".slot").style.getPropertyValue("--slot")); return n - 1; });
   assert(colors.length === 3 && new Set(colors).size === 3, "Slots should each have their own color: " + colors.join(","));
-  for (const grp of g.d.querySelectorAll(".slot .opts")) { const bs = [...grp.querySelectorAll("button")]; bs[bs.length - 1].click(); }
   const segs = [...g.d.querySelectorAll(".preview .seg")].map(x => x.style.getPropertyValue("--slot"));
   assert(segs.join() === colors.join(), "Preview colors should match the slots");
 });
@@ -246,19 +261,22 @@ test("Pause: resume keeps choices, restart and end clear them, home saves", asyn
   const g = boot(); await g.wait(50); pickWorld(g, "Office");
   const pz = g.d.getElementById("pz");
   assert(pz.hidden, "Pause button should be hidden on home");
-  g.d.querySelector(".lvl").click();
+  g.d.querySelector(".lvl").click(); await playBuild(g); next(g); // finish Level 0, which has one card
   assert(!pz.hidden, "Pause button should show inside a level");
-  const fmt = () => [...g.d.querySelectorAll(".slot .opts")][1].querySelectorAll("button")[1];
-  fmt().click(); g.click("Home (progress saved)");
-  g.d.querySelector(".lvl").click();
-  assert(fmt().getAttribute("aria-pressed") === "true" && g.text().includes("Picked up where you left off"), "Choice not restored after going home");
+  const card = () => g.d.querySelector(".slot-count").textContent;
+  const opt = k => g.d.querySelectorAll(".timed-opts .opt")[k];
+  opt(1).click(); await g.wait(g.T > 100 ? 400 : 40);
+  assert(card() === "Card 2 of 3", "Picking a card should move on, got " + card());
+  g.click("Home (progress saved)");
+  [...g.d.querySelectorAll(".lvl")][1].click();
+  assert(card() === "Card 2 of 3" && g.text().includes("Picked up where you left off"), "Choice not restored after going home");
   pz.click(); assert(!g.d.getElementById("pzm").hidden, "Pause menu did not open");
   g.click("Restart this level");
-  assert(fmt().getAttribute("aria-pressed") === "false", "Restart did not clear the choice");
-  fmt().click(); pz.click(); g.click("End level without saving");
-  g.d.querySelector(".lvl").click();
-  assert(fmt().getAttribute("aria-pressed") === "false", "End level did not clear the choice");
-  await playBuild(g); next(g); await playBuild(g); next(g);
+  assert(card() === "Card 1 of 3", "Restart did not clear the choices, got " + card());
+  opt(1).click(); await g.wait(g.T > 100 ? 400 : 40); pz.click(); g.click("End level without saving");
+  [...g.d.querySelectorAll(".lvl")][1].click();
+  assert(card() === "Card 1 of 3", "End level did not clear the choices");
+  await playBuild(g); next(g);
   const lines = [...g.d.querySelectorAll(".tline")]; lines[2].click(); lines[4].click();
   pz.click(); g.click("Save and go home");
   [...g.d.querySelectorAll(".lvl")][2].click();
@@ -282,7 +300,7 @@ test("Worlds keep separate saves, and restart only clears the current world", as
 test("Weak answers fail softly and drop a blooper", async () => {
   const g = boot(); await g.wait(50); pickWorld(g, "Academy");
   g.d.querySelector(".lvl").click();
-  [...g.d.querySelectorAll(".slot .opts")][1].querySelectorAll("button")[0].click();
+  await answerCards(g, () => 0);
   g.d.querySelector("button.run").click(); await g.wait(g.T);
   assert(g.text().includes("Blooper"), "No blooper for a weak answer");
 });

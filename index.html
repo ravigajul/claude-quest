@@ -347,6 +347,24 @@ h3{color:var(--accent)}
 [data-skin="office"] .bins .tcard{background:color-mix(in srgb,#8b5cf6 8%,#fff)}
 [data-skin="office"] .bins .tcard:nth-child(2){background:color-mix(in srgb,#0ea5a4 8%,#fff)}[data-skin="office"] .bins .tcard:nth-child(3){background:color-mix(in srgb,#f59e0b 10%,#fff)}[data-skin="office"] .bins .tcard:nth-child(4){background:color-mix(in srgb,#ec4899 8%,#fff)}[data-skin="office"] .bins .tcard:nth-child(5){background:color-mix(in srgb,#3b82f6 8%,#fff)}
 .tray .ingr:nth-child(1){border-left:6px solid #f59e0b}.tray .ingr:nth-child(2){border-left:6px solid #0ea5a4}.tray .ingr:nth-child(3){border-left:6px solid #8b5cf6}
+
+.timed{display:grid;gap:12px}
+.slot-head{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;border-left:6px solid var(--slot);padding-left:10px}
+.slot-head h3{margin:0;font-size:20px}
+.slot-count{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--slot)}
+.combo{margin-left:auto;font-size:13px;font-weight:700;opacity:.8}
+.combo.hot{opacity:1;color:#fff;background:var(--slot);padding:4px 10px;border-radius:999px}
+.timed-bar{height:10px;border-radius:99px;background:rgba(127,127,160,.25);overflow:hidden}
+.timed-bar i{display:block;height:100%;width:100%;background:var(--slot,#8b5cf6)}
+.timed-opts .opt{font-size:17px;min-height:56px;padding:14px 16px;border-left:6px solid var(--slot);background:color-mix(in srgb,var(--slot) 9%,var(--card))}
+.timeout{color:#b45309;font-weight:700;margin:0}
+.timed-done{font-weight:700;margin:0}
+
+.timed-bar i.urgent{background:#ef4444;animation:throb .5s ease-in-out infinite alternate}
+@keyframes throb{from{filter:brightness(1)}to{filter:brightness(1.4)}}
+.burst{position:fixed;width:0;height:0;pointer-events:none;z-index:60}
+.burst i{position:absolute;left:0;top:0;width:9px;height:9px;border-radius:50%}
+@media (prefers-reduced-motion: reduce){.timed-bar i.urgent{animation:none}}
 </style>
 </head>
 <body>
@@ -1248,23 +1266,73 @@ function stageProp(L){
 /* Each slot gets its own color, so a prompt's parts are easy to tell apart */
 var SLOT_COLORS=[["#8b5cf6","#ffffff"],["#0ea5a4","#ffffff"],["#f59e0b","#1f1300"],["#ec4899","#ffffff"]];
 /* BUILD */
+var TIMER_MS=12000;
+/* Motion helpers (Web Animations API). They do nothing when reduced motion is on. */
+function fx(el,frames,opts){if(reduce||!el||!el.animate)return null;try{return el.animate(frames,Object.assign({fill:"both"},opts));}catch(e){return null;}}
+function burst(el,color){
+  if(reduce||!el.getBoundingClientRect)return;
+  var r=el.getBoundingClientRect(),box=h("div",{class:"burst",style:"left:"+(r.left+r.width/2)+"px;top:"+(r.top+r.height/2)+"px"});
+  document.body.append(box);
+  for(var k=0;k<14;k++){var a=k/14*Math.PI*2,d=48+Math.random()*30,p=h("i",{style:"background:"+color});box.append(p);
+    fx(p,[{transform:"translate(-50%,-50%) scale(1)",opacity:1},{transform:"translate("+Math.cos(a)*d+"px,"+Math.sin(a)*d+"px) translate(-50%,-50%) scale(.2)",opacity:0}],{duration:620,easing:"cubic-bezier(.15,.7,.3,1)",fill:"forwards"});}
+  setTimeout(function(){box.remove();},700);
+}
 function build(L){
-  clear();var P=paused(L);var sel=P&&P.sel?P.sel.slice():L.slots.map(function(sl){return sl.opts.length===1?0:null;});var hint=!!(P&&P.hint);
+  clear();var P=paused(L);
+  var sel=P&&P.sel?P.sel.slice():L.slots.map(function(sl){return sl.opts.length===1?0:null;});
+  var hint=!!(P&&P.hint),streak=0,tm=null,note=null;
+  var playable=[];L.slots.forEach(function(sl,i){if(sl.opts.length>1)playable.push(i);});
   intro(L).forEach(function(x){add(app,x);});
   if(L.input)app.append(h("p",{class:"muted"},"Input: "+L.input));
   var prev=h("div",{class:"preview"});var run=h("button",{class:"btn run",type:"button"},U("run","Run it"));
   var prop=stageProp(L);
-  function refresh(){var parts=[];sel.forEach(function(v,i){if(v!=null){var t=L.slots[i].opts[v].t;if(t.charAt(0)!=="(")parts.push({t:t,i:i});}});
+  var board=h("div",{class:"timed","aria-live":"polite"});
+  var box=h("div",{class:"card stage stage-build"},prop.el,board);
+  function refresh(){
+    var parts=[];sel.forEach(function(v,i){if(v!=null){var t=L.slots[i].opts[v].t;if(t.charAt(0)!=="(")parts.push({t:t,i:i});}});
     prev.textContent="";if(!parts.length)prev.textContent="Your prompt appears here as you pick cards.";
-    parts.forEach(function(p,k){prev.append(h("span",{class:"seg",style:"--slot:"+SLOT_COLORS[p.i%SLOT_COLORS.length][0]},h("b",null,L.slots[p.i].name),p.t));});run.disabled=sel.some(function(v){return v==null;});prop.update(sel.filter(function(v){return v!=null;}).length/sel.length);}
-  var box=h("div",{class:"card stage stage-build"},prop.el);
-  L.slots.forEach(function(sl,i){var opts=h("div",{class:"opts",role:"group","aria-label":sl.name});
-    sl.opts.forEach(function(o,j){var b=h("button",{class:"opt",type:"button","aria-pressed":sel[i]===j?"true":"false",disabled:sl.opts.length===1,onclick:function(){sel[i]=j;Array.from(opts.children).forEach(function(c,k){c.setAttribute("aria-pressed",k===j?"true":"false");});refresh();checkpoint(L,{sel:sel.slice(),hint:hint});}},o.t);opts.append(b);});
-    var sc=SLOT_COLORS[i%SLOT_COLORS.length];box.append(h("div",{class:"slot",style:"--slot:"+sc[0]+";--slot-ink:"+sc[1]},h("label",null,sl.name),opts));});
+    parts.forEach(function(p){prev.append(h("span",{class:"seg",style:"--slot:"+SLOT_COLORS[p.i%SLOT_COLORS.length][0]},h("b",null,L.slots[p.i].name),p.t));});
+    run.disabled=sel.some(function(v){return v==null;});
+    prop.update(sel.filter(function(v){return v!=null;}).length/sel.length);
+  }
+  function choose(i,j,late,btn){
+    clearTimeout(tm);if(sel[i]!=null)return;
+    var o=L.slots[i].opts[j],best=Math.max.apply(null,L.slots[i].opts.map(function(x){return x.p;}));
+    if(btn&&!late){fx(btn,[{transform:"scale(.92)"},{transform:"scale(1.05)"},{transform:"scale(1)"}],{duration:300,fill:"none"});if(o.p===best)burst(btn,SLOT_COLORS[i%SLOT_COLORS.length][0]);}
+    streak=(!late&&o.p===best)?streak+1:0;
+    note=late?"Time's up. Claude used your first card.":null;
+    sel[i]=j;sfx("tick");checkpoint(L,{sel:sel.slice(),hint:hint});refresh();
+    setTimeout(function(){if(board.isConnected)showSlot();},reduce?0:350);
+  }
+  function showSlot(){
+    var i=null;playable.forEach(function(k){if(i==null&&sel[k]==null)i=k;});
+    board.textContent="";var wrap=h("div",{class:"slot",style:"--slot:"+SLOT_COLORS[(i==null?0:i)%SLOT_COLORS.length][0]+";--slot-ink:"+SLOT_COLORS[(i==null?0:i)%SLOT_COLORS.length][1]});
+    if(i==null){board.append(h("p",{class:"timed-done"},"All cards are in. Run it when you are ready."));refresh();return;}
+    var sl=L.slots[i],sc=SLOT_COLORS[i%SLOT_COLORS.length],n=playable.indexOf(i)+1;
+    var bar=h("i");
+    wrap.append(h("div",{class:"slot-head",style:"--slot:"+sc[0]+";--slot-ink:"+sc[1]},
+      h("span",{class:"slot-count"},"Card "+n+" of "+playable.length),
+      h("h3",null,sl.name),
+      h("span",{class:"combo"+(streak>=2?" hot":"")},streak>=2?"Combo x"+streak:"Best cards in a row build a combo")));
+    wrap.append(h("div",{class:"timed-bar"},bar));
+    if(note){wrap.append(h("p",{class:"timeout"},note));note=null;}
+    var opts=h("div",{class:"opts timed-opts",role:"group","aria-label":sl.name,style:"--slot:"+sc[0]+";--slot-ink:"+sc[1]});
+    sl.opts.forEach(function(o,j){opts.append(h("button",{class:"opt",type:"button",onclick:function(e){choose(i,j,false,e.currentTarget);}},o.t));});
+    wrap.append(opts);
+    wrap.append(h("p",{class:"muted"},"Pick fast. You have "+Math.round(TIMER_MS/1000)+" seconds for this card."));
+    board.append(wrap);
+    fx(wrap,[{opacity:0,transform:"translateY(16px) scale(.98)"},{opacity:1,transform:"none"}],{duration:360,easing:"cubic-bezier(.2,.8,.2,1)"});
+    var cb=wrap.querySelector(".combo.hot");if(cb)fx(cb,[{transform:"scale(.6)"},{transform:"scale(1.18)"},{transform:"scale(1)"}],{duration:420});
+    setTimeout(function(){if(board.isConnected&&sel[i]==null)bar.classList.add("urgent");},TIMER_MS*.75);
+    requestAnimationFrame(function(){requestAnimationFrame(function(){bar.style.transition="width "+(TIMER_MS/1000)+"s linear";bar.style.width="0%";});});
+    clearTimeout(tm);
+    tm=setTimeout(function(){if(board.isConnected&&sel[i]==null)choose(i,0,true);},TIMER_MS);
+  }
   app.append(box);app.append(h("h3",null,U("prompt","Your prompt")));app.append(prev);
   if(L.hint){if(hint)app.append(h("p",{class:"muted"},"Hint: "+L.hint));else{var hb=h("button",{class:"link",type:"button",style:"justify-self:start"},"Need a hint? (caps this round at 2 stars)");
     hb.addEventListener("click",function(){hint=true;checkpoint(L,{sel:sel.slice(),hint:true});hb.replaceWith(h("p",{class:"muted"},"Hint: "+L.hint));});app.append(hb);}}
-  run.addEventListener("click",function(){sfx("run");run.disabled=true;brewTray(L,sel,prop,function(){prop.go(function(){reveal(L,sel,hint);});});});app.append(run);refresh();
+  run.addEventListener("click",function(){sfx("run");run.disabled=true;clearTimeout(tm);brewTray(L,sel,prop,function(){prop.go(function(){reveal(L,sel,hint);});});});app.append(run);
+  refresh();showSlot();
 }
 function reveal(L,sel,hint){
   clear();var pts=0;sel.forEach(function(v,i){pts+=L.slots[i].opts[v].p;});
