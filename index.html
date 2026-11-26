@@ -5,21 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Claude Quest</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=Oswald:wght@600;700&family=Cinzel:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  /* Layout: phone-first single column. Crew corkboard home, then a screen per job. Single night-time theme by choice: navy, gold, red string. */
-  --bg:#0e1320;
-  --card:#182035;
-  --ink:#eef1f8;
-  --muted:#9aa4bf;
-  --line:#2c3550;
-  --accent:#f5c542;
-  --accent-ink:#2a1f00;
-  --good:#4fd1a1;
-  --bad:#ff6b6b;
-  --claude:#241d3a;
-  --display:"Bricolage Grotesque","Trebuchet MS",sans-serif;
+  /* Layout: phone-first single column. Each world has its own skin. Base is The Heist: noir black, alarm red, vault gold. */
+  --bg:#0b0b0d;
+  --card:#17171b;
+  --ink:#f2efe8;
+  --muted:#a8a29a;
+  --line:#2e2b30;
+  --accent:#e0312f;
+  --accent-ink:#ffffff;
+  --star:#e8b54a;
+  --good:#5fd18f;
+  --bad:#ff5a52;
+  --claude:#221c20;
+  --display:"Oswald","Bricolage Grotesque",sans-serif;
   --body:"Atkinson Hyperlegible",system-ui,sans-serif;
   color-scheme:dark;
 }
@@ -50,7 +51,7 @@ p{margin:0}
 .lvl .t{flex:1;min-width:0}
 .lvl .t b{display:block}
 .lvl .t span{font-size:13px;color:var(--muted)}
-.stars{color:var(--accent);letter-spacing:2px;font-size:18px;white-space:nowrap;text-shadow:0 0 1px var(--accent-ink)}
+.stars{color:var(--star,#f5c542);letter-spacing:2px;font-size:18px;white-space:nowrap;text-shadow:0 0 1px var(--accent-ink)}
 .stars .off{color:var(--line);text-shadow:none}
 .bubble{display:flex;gap:10px;align-items:flex-start}
 .avatar{flex:0 0 36px;height:36px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;background:var(--ink);color:var(--bg)}
@@ -120,8 +121,8 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .tcard,.lvl,.opt,.tline{transform:perspective(600px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .15s ease,box-shadow .2s ease,translate .2s ease}
 .lvl:not(:disabled):hover,.tcard[aria-pressed]:hover{box-shadow:0 10px 22px -12px rgba(22,32,58,.45)}
 .opt[aria-pressed="true"],.tcard[aria-pressed="true"]{translate:0 -3px;box-shadow:0 8px 0 -3px var(--ink)}
-.btn{transition:translate .15s,box-shadow .15s;box-shadow:0 4px 0 0 #8a7a3a}
-.btn:not(:disabled):active{translate:0 3px;box-shadow:0 1px 0 0 #8a7a3a}
+.btn{transition:translate .15s,box-shadow .15s;box-shadow:0 4px 0 0 var(--btn-shadow,#7a1414)}
+.btn:not(:disabled):active{translate:0 3px;box-shadow:0 1px 0 0 var(--btn-shadow,#7a1414)}
 .btn.alt{box-shadow:0 4px 0 0 var(--line)}
 .monster{animation:bob 2.4s ease-in-out infinite}
 .monster::before,.monster::after{animation:blink 4.2s infinite}
@@ -166,7 +167,7 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .cork path{stroke:#d2353b;stroke-width:2;fill:none;stroke-dasharray:600;stroke-dashoffset:600;animation:draw 1.4s .3s ease forwards}
 @keyframes draw{to{stroke-dashoffset:0}}
 @media (prefers-reduced-motion:reduce){.cork path{animation:none;stroke-dashoffset:0}}
-[data-skin="office"]{--bg:#eef1f7;--card:#ffffff;--ink:#16203a;--muted:#5d6782;--line:#d6dbe7;--accent:#ffd23f;--accent-ink:#5a4300;--good:#1d8a66;--bad:#d2353b;--claude:#f6f0ff;color-scheme:light}
+[data-skin="office"]{--bg:#f3f6fb;--card:#ffffff;--ink:#14213d;--muted:#5b6785;--line:#d9e0ec;--accent:#2f6bff;--accent-ink:#ffffff;--star:#f2b705;--good:#14876a;--bad:#d8343b;--claude:#eef2ff;--btn-shadow:#1c3f99;--display:"Bricolage Grotesque","Trebuchet MS",sans-serif;color-scheme:light}
 .worlds{display:grid;gap:12px}
 .world{display:grid;gap:8px;text-align:left;font:inherit;color:inherit;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:0;overflow:hidden;cursor:pointer}
 .world .art{height:110px;position:relative;overflow:hidden}
@@ -177,8 +178,12 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .world.heist .art{background:#6a4e34 radial-gradient(circle at 20% 30%,rgba(255,255,255,.07) 0 2px,transparent 3px) 0 0/14px 14px}
 .world.heist .art span{position:absolute;top:22px;width:54px;height:66px;background:#f4efe4;box-shadow:0 4px 8px rgba(0,0,0,.4);display:grid;place-items:center;font-family:var(--display);font-weight:800;color:#2a1f00;font-size:22px}
 .world.heist .art svg{position:absolute;inset:0}
-[data-skin="wizard"]{--bg:#140f29;--card:#211a3d;--ink:#f1edff;--muted:#a99fd0;--line:#352b5e;--accent:#8be9d0;--accent-ink:#06241c;--good:#8be9d0;--bad:#ff7fa0;--claude:#2c2350;color-scheme:dark}
-[data-skin="wizard"] .btn{box-shadow:0 4px 0 0 #3f8f7c}
+[data-skin="wizard"]{--bg:#160f2e;--card:#24194a;--ink:#f3eeff;--muted:#b1a6dc;--line:#3a2d6b;--accent:#7ff0d0;--accent-ink:#062a20;--star:#ffd86b;--good:#7ff0d0;--bad:#ff86a8;--claude:#2f2160;--btn-shadow:#2f8a72;--display:"Cinzel",Georgia,serif;color-scheme:dark}
+[data-skin="wizard"] body{background:radial-gradient(ellipse at 50% -10%,#3a2380,#160f2e 55%) fixed}
+[data-skin="heist"] body,html:not([data-skin]) body{background:radial-gradient(ellipse at 50% -15%,#2c2226,#0b0b0d 55%) fixed}
+[data-skin="heist"] h1,[data-skin="heist"] h2{text-transform:uppercase;letter-spacing:.03em}
+[data-skin="wizard"] h1,[data-skin="wizard"] h2{letter-spacing:.02em}
+[data-skin="office"] .card{box-shadow:0 1px 3px rgba(20,33,61,.06)}
 .world.wizard .art{background:radial-gradient(circle at 70% 30%,#5b3fa8,#140f29 70%)}
 .world.wizard .art b{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 8px #8be9d0}
 .sky{width:100%;max-width:420px;display:block;margin:0 auto}
@@ -238,7 +243,7 @@ function tower(floors){
   var dpr=Math.min(2,window.devicePixelRatio||1),fh=42,a=78,b=39,W=360,H=b*2+floors.length*fh+40,x0=120;
   c.width=W*dpr;c.height=H*dpr;c.style.aspectRatio=W+" / "+H;ctx.scale(dpr,dpr);
   var css=getComputedStyle(document.documentElement);function v(n){return css.getPropertyValue(n).trim()||"#888";}
-  var ink=v("--ink"),card=v("--card"),bg=v("--bg"),line=v("--line"),muted=v("--muted"),acc=v("--accent");
+  var ink=v("--ink"),card=v("--card"),bg=v("--bg"),line=v("--line"),muted=v("--muted"),acc=v("--star")||v("--accent");
   function poly(pts,fill,stroke,dash){ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(var i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.setLineDash(dash||[]);ctx.strokeStyle=stroke;ctx.lineWidth=1.5;ctx.stroke();ctx.setLineDash([]);}}
   var started=false,tries=0;
   function frame(t){
