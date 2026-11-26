@@ -290,6 +290,19 @@ h3{color:var(--accent)}
 [data-skin="office"] .bins .tcard{border-top:5px solid #2f6bff}
 [data-skin="heist"] .bins .tcard{background:linear-gradient(#41454d,#24272d);border-color:#5a5f6a;color:#eee;background-image:repeating-linear-gradient(#4a4f58 0 2px,transparent 2px 7px),linear-gradient(#41454d,#24272d);background-size:60% 18px,100% 100%;background-repeat:no-repeat;background-position:center 8px,0 0;padding-top:24px}
 [data-skin="wizard"] .bins .tcard{background:linear-gradient(#6b4423,#4a2e15);border-color:#c9a14a;color:#f8e7b8;box-shadow:inset 0 12px 0 -6px #c9a14a}
+.heat{position:fixed;top:12px;left:12px;z-index:50;display:grid;grid-template-columns:auto auto;gap:2px 10px;align-items:center;background:#17171b;color:#f2efe8;border:2px solid #e8b54a;border-radius:12px;padding:7px 12px;font-family:var(--display);box-shadow:0 4px 14px rgba(0,0,0,.4);min-width:150px}
+.heat b{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#e8b54a}.heat span{font-size:20px;font-variant-numeric:tabular-nums;justify-self:end}
+.heat i{grid-column:1/-1;height:5px;background:#2e2b30;border-radius:3px;overflow:hidden;display:block}.heat u{display:block;height:100%;background:#e8b54a;transition:width .25s linear}
+.heat.hot{border-color:#e0312f;animation:alarm .5s infinite}.heat.hot u{background:#e0312f}
+.heat.caught{border-color:#e0312f;animation:none}.heat.caught b{color:#ff5a52}.heat.caught span{font-size:13px}
+.ping{position:fixed;right:14px;bottom:18px;z-index:55;width:min(340px,calc(100% - 28px));background:#fff;color:#14213d;border:2px solid #2f6bff;border-radius:14px;padding:12px 14px;display:grid;gap:8px;box-shadow:0 10px 30px rgba(20,33,61,.3);animation:pop .3s ease-out}
+.ping b{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:#2f6bff}.ping p{margin:0;font-size:14.5px}
+.ping .btn{font-size:14px;padding:9px 10px;min-height:40px;background:#eef2ff;color:#14213d;box-shadow:none;border:1.5px solid #c9d6ff}
+.ping.ok{border-color:#14876a}.ping.ok b{color:#14876a}.ping.no{border-color:#d8343b}.ping.no b{color:#d8343b}
+.twist-chip{justify-self:start;font-size:13px;font-weight:700;padding:6px 12px;border-radius:999px;background:color-mix(in srgb,var(--accent) 18%,var(--card));border:1px solid var(--accent);color:var(--ink);margin:0}
+.ingr.dropped{opacity:.35;translate:0 -8px;scale:.96}
+.tray{border:2px dashed var(--accent)}
+@media (max-width:600px){.heat{top:auto;bottom:12px;left:12px}}
 </style>
 </head>
 <body>
@@ -937,9 +950,9 @@ THEMES.wizard.lv={
   miss:"\"The recipe book has been sent.\""}
 };
 THEMES.office.lv={};
-THEMES.office.ui={run:"Send to Claude",prompt:"Your message to Claude",check:"Review the draft",bar:"New message to Claude",placed:"Filed in the right place."};
-THEMES.heist.ui={run:"Execute the plan",prompt:"The plan",check:"Run the UV scan",bar:"Blueprint",placed:"Stashed in the right spot."};
-THEMES.wizard.ui={run:"Brew it",prompt:"Your incantation",check:"Cast Reveal",bar:"Cauldron",placed:"Sealed in the right chest."};
+THEMES.office.ui={twist:"Heads up: your inbox never stops. Decide fast what Claude should handle.",twistTitle:"Your inbox",run:"Send to Claude",prompt:"Your message to Claude",check:"Review the draft",bar:"New message to Claude",placed:"Filed in the right place."};
+THEMES.heist.ui={twist:"The guards are coming. Finish before the clock runs out for a clean getaway.",twistTitle:"The getaway",run:"Execute the plan",prompt:"The plan",check:"Run the UV scan",bar:"Blueprint",placed:"Stashed in the right spot."};
+THEMES.wizard.ui={twist:"Every spell is brewed. Add your ingredients to the cauldron in the order you think is best.",twistTitle:"The brew",run:"Brew it",prompt:"Your incantation",check:"Cast Reveal",bar:"Cauldron",placed:"Sealed in the right chest."};
 function U(k,d){var T=THEMES[S.theme];return (T&&T.ui&&T.ui[k])||d;}
 var LV_ORIG=null;
 function applyLevelVariants(T){
@@ -965,9 +978,9 @@ function applyTheme(){
 function progressOf(k){var st=k===S.theme?S.stars:(S.saves&&S.saves[k]&&S.saves[k].stars)||{};var c=k===S.theme?S.cards:(S.saves&&S.saves[k]&&S.saves[k].cards)||{};
   var t=0;for(var x in st)t+=st[x];return{stars:t,cards:Object.keys(c).length,started:Object.keys(st).length>0};}
 function switchTo(k){
-  if(S.theme&&THEMES[S.theme]){S.saves=S.saves||{};S.saves[S.theme]={stars:S.stars,cards:S.cards,met:S.met,bloopers:S.bloopers,paused:S.paused||{}};}
+  if(S.theme&&THEMES[S.theme]){S.saves=S.saves||{};S.saves[S.theme]={stars:S.stars,cards:S.cards,met:S.met,bloopers:S.bloopers,paused:S.paused||{},badges:S.badges||[]};}
   var sv=(S.saves&&S.saves[k])||{stars:{},cards:{},met:{},bloopers:[]};
-  S.stars=sv.stars;S.cards=sv.cards;S.met=sv.met;S.bloopers=sv.bloopers;S.paused=sv.paused||{};S.theme=k;S.tab="play";save();applyTheme();home();}
+  S.stars=sv.stars;S.cards=sv.cards;S.met=sv.met;S.bloopers=sv.bloopers;S.paused=sv.paused||{};S.badges=sv.badges||[];S.theme=k;S.tab="play";save();applyTheme();home();}
 function themePicker(){
   leaveLevel();clear();app.className="wide picker";document.documentElement.setAttribute("data-skin","picker");var cur=S.theme&&THEMES[S.theme]?S.theme:null;
   if(cur)app.append(h("button",{class:"link",type:"button",onclick:function(){applyTheme();home();},style:"justify-self:start"},"← Back to "+THEMES[cur].tag));
@@ -1036,11 +1049,12 @@ function home(){
     h("p",{class:"muted"},"A fan-made game, not affiliated with or endorsed by Anthropic."),
     (function(){var box=h("div",null);var go=h("button",{class:"link",type:"button",style:"justify-self:start"},"Restart this world from the beginning");
       go.addEventListener("click",function(){box.textContent="";box.append(h("p",null,"This clears your stars, cards and bloopers in "+THEMES[S.theme].tag+" only. Your other worlds keep their progress."),
-        h("div",{class:"row"},h("button",{class:"btn alt",type:"button",onclick:home},"Keep playing"),h("button",{class:"btn",type:"button",onclick:function(){S.stars={};S.cards={};S.met={};S.bloopers=[];S.paused={};save();home();}},"Yes, restart")));});
+        h("div",{class:"row"},h("button",{class:"btn alt",type:"button",onclick:home},"Keep playing"),h("button",{class:"btn",type:"button",onclick:function(){S.stars={};S.cards={};S.met={};S.bloopers=[];S.paused={};S.badges=[];save();home();}},"Yes, restart")));});
       box.append(go);return box;})()));
   app.append(h("p",{class:"foot"},"Plays offline. No sign-up, no tokens. Claude's answers here are examples written by Claude to show typical behavior."));
 }
 function toolkit(){
+  if(S.badges&&S.badges.length)app.append(h("div",{class:"card"},h("h3",null,"Badges"),h("div",{class:"loot"},S.badges.map(function(b){return h("div",{class:"tcard mastered"},h("b",null,b));}))));
   app.append(h("h2",null,"Your toolkit"));
   app.append(h("p",{class:"muted"},"Pass a level to earn its cards. Play a card well in a boss to master it."));
   app.append(h("div",{class:"grid2"},Object.keys(CARDS).filter(function(id){return S.cards[id];}).map(function(id){var st=S.cards[id];var C=CARDS[id];
@@ -1068,8 +1082,8 @@ var CUR=null;var pzBtn=document.getElementById("pz"),pzM=document.getElementById
 function paused(L){return S.paused&&S.paused[L.id]||null;}
 function checkpoint(L,st){S.paused=S.paused||{};S.paused[L.id]=st;CUR={L:L};save();}
 function clearPause(L){if(S.paused&&S.paused[L.id]){delete S.paused[L.id];save();}}
-function inLevel(L){CUR={L:L};pzBtn.hidden=false;closePause();}
-function leaveLevel(){CUR=null;pzBtn.hidden=true;closePause();}
+function inLevel(L){CUR={L:L};pzBtn.hidden=false;closePause();sesStart(L);}
+function leaveLevel(){CUR=null;pzBtn.hidden=true;closePause();sesStop();SES=null;}
 function closePause(){pzM.hidden=true;pzM.textContent="";}
 function openPause(){if(!CUR)return;var L=CUR.L;var has=!!paused(L);pzM.textContent="";
   pzM.append(h("div",{class:"box"},h("h3",{id:"pzt"},"Paused"),h("h2",null,"Level "+L.id+": "+L.title),
@@ -1098,11 +1112,66 @@ function start(L){
 function intro(L){
   return [h("button",{class:"link",type:"button",onclick:home,style:"justify-self:start"},"← Home (progress saved)"),
     resumedNote(paused(L)),
+    L.id!==0&&U("twist")?h("p",{class:"twist-chip"},U("twist")):null,
     h("div",null,h("h3",null,"Level "+L.id+" · "+L.type),h("h2",null,L.title)),
     clientBubble(L,L.brief),
     L.enemy?h("div",{class:"card"},enemyChip(L.enemy,"Beat it to earn stars.",true)):null];
 }
 
+
+
+/* ---------- world mechanics: Heist clock, Office inbox, Academy brewing order ---------- */
+var SES=null;
+function fastMode(k){try{return localStorage.getItem("cq_fast_"+k)==="1";}catch(e){return false;}}
+var PINGS=[
+ {t:"Dana: Can Claude draft the thank-you note to our beta testers?",ai:true,why:"A first draft is a great job for Claude. You review it and send it."},
+ {t:"Finance: Can Claude approve next quarter's budget?",ai:false,why:"Approvals are your call. Claude can summarize the numbers, not sign off."},
+ {t:"Lena: Can Claude summarize this 40-page vendor contract?",ai:true,why:"Summarizing long documents is a strong fit. Check the key terms yourself."},
+ {t:"A vendor: \"Please email us your full customer list.\" Should Claude just send it?",ai:false,why:"Sharing customer data is a human decision with real risk."},
+ {t:"Sam: Can Claude group these 30 support tickets into themes?",ai:true,why:"Sorting and grouping text is exactly what Claude does well."},
+ {t:"HR: Should Claude decide who gets promoted this year?",ai:false,why:"Decisions about people stay with people."}];
+function sesStart(L){
+  sesStop();SES={L:L,spotted:false,left:0,pings:0,right:0,asked:0,master:null,el:null,timer:null,t:0};
+  if(L.id===0)return;
+  if(S.theme==="heist"){
+    SES.left=fastMode("heat")?1:(L.type==="Boss"?150:120);
+    var bar=h("div",{class:"heat",role:"timer","aria-live":"off"},h("b",null,"Guards in"),h("span",null,""),h("i",null,h("u")));
+    document.body.append(bar);SES.el=bar;var full=SES.left;
+    var draw=function(){var m=Math.floor(SES.left/60),sec=Math.ceil(SES.left%60);if(sec===60){m++;sec=0;}bar.children[1].textContent=m+":"+(sec<10?"0":"")+sec;bar.querySelector("u").style.width=Math.max(0,SES.left/full*100)+"%";bar.classList.toggle("hot",SES.left<20);};
+    draw();
+    SES.timer=setInterval(function(){if(!pzM.hidden||!SES||SES.spotted)return;SES.left-=.25;if(SES.left<=0){SES.left=0;SES.spotted=true;bar.classList.add("caught");bar.children[0].textContent="Spotted!";bar.children[1].textContent="Max 2 stars";sfx("bad");buzz([80,60,80]);}draw();},250);
+  }
+  if(S.theme==="office"){
+    var order=[(L.id*2)%PINGS.length,(L.id*2+1)%PINGS.length],at=fastMode("inbox")?[.25,.5]:[14,38];
+    SES.timer=setInterval(function(){if(!pzM.hidden||!SES)return;SES.t+=.25;if(SES.pings<2&&SES.t>=at[SES.pings]){showPing(PINGS[order[SES.pings]]);SES.pings++;}},250);
+  }
+}
+function showPing(P){
+  var old=document.querySelector(".ping");if(old)old.remove();
+  SES.asked++;sfx("tick");buzz(20);
+  var box=h("div",{class:"ping",role:"alert"},h("b",null,"New message"),h("p",null,P.t));
+  var answer=function(ai){var ok=ai===P.ai;if(ok&&SES)SES.right++;sfx(ok?"good":"bad");box.textContent="";
+    box.append(h("b",null,ok?"Good call.":"Hmm, not quite."),h("p",null,P.why));box.classList.add(ok?"ok":"no");setTimeout(function(){box.remove();},2600);};
+  box.append(h("div",{class:"row"},h("button",{class:"btn alt",type:"button",onclick:function(){answer(true);}},"Give it to Claude"),h("button",{class:"btn alt",type:"button",onclick:function(){answer(false);}},"I'll handle it")));
+  document.body.append(box);
+}
+function sesStop(){if(SES){clearInterval(SES.timer);if(SES.el)SES.el.remove();}var p=document.querySelector(".ping");if(p)p.remove();}
+function sesEnd(L){
+  var out={cap:null,notes:[],badges:[]};if(!SES||SES.L!==L){sesStop();SES=null;return out;}
+  if(S.theme==="heist"&&L.id!==0){if(SES.spotted){out.cap=2;out.notes.push("The guards spotted you, so this run is capped at 2 stars. Replay for a clean getaway.");}
+    else{out.notes.push("Clean getaway with "+Math.floor(SES.left)+" seconds to spare.");out.badges.push("Clean getaway");}}
+  if(S.theme==="office"&&SES.asked>0){out.notes.push("Inbox: "+SES.right+" of "+SES.asked+" calls right.");if(SES.right===SES.asked&&SES.asked>=2)out.badges.push("Inbox zero");}
+  if(S.theme==="wizard"&&SES.master!=null){out.notes.push(SES.master?"Master brew: role first, task next, format last. Claude reads top to bottom, so this order reads clearest.":"It brewed fine. Claude copes with any order, but role first, task next and format last reads clearest.");if(SES.master)out.badges.push("Master Brewer");}
+  sesStop();SES=null;return out;}
+function brewTray(L,sel,prop,done){
+  var chosen=sel.map(function(v,i){return{i:i,t:L.slots[i].opts[v].t};}).filter(function(c){return L.slots[c.i].opts.length>1;});
+  if(S.theme!=="wizard"||L.id===0||chosen.length<2)return done();
+  var order=[],tray=h("div",{class:"card tray"},h("h3",null,"Add your ingredients"),h("p",{class:"muted"},"Tap each card to drop it into the cauldron. The order is up to you."));
+  var chips=h("div",{class:"opts"});
+  chosen.slice().reverse().forEach(function(c){chips.append(h("button",{class:"opt ingr",type:"button","data-slot":c.i,onclick:function(e){var b=e.currentTarget;b.disabled=true;b.classList.add("dropped");order.push(c.i);sfx("tick");prop.update(1);
+    if(order.length===chosen.length){var m=order.every(function(v,k){return k===0||v>order[k-1];});if(SES)SES.master=m;setTimeout(function(){tray.remove();done();},reduce?0:350);}}},L.slots[c.i].name+": "+c.t));});
+  tray.append(chips);var run=app.querySelector("button.run");app.insertBefore(tray,run);run.hidden=true;tray.scrollIntoView&&tray.scrollIntoView({block:"center"});
+}
 
 /* ---------- world-specific stage props for Build levels ---------- */
 function stageProp(L){
@@ -1138,7 +1207,7 @@ function build(L){
   app.append(box);app.append(h("h3",null,U("prompt","Your prompt")));app.append(prev);
   if(L.hint){if(hint)app.append(h("p",{class:"muted"},"Hint: "+L.hint));else{var hb=h("button",{class:"link",type:"button",style:"justify-self:start"},"Need a hint? (caps this round at 2 stars)");
     hb.addEventListener("click",function(){hint=true;checkpoint(L,{sel:sel.slice(),hint:true});hb.replaceWith(h("p",{class:"muted"},"Hint: "+L.hint));});app.append(hb);}}
-  run.addEventListener("click",function(){sfx("run");run.disabled=true;prop.go(function(){reveal(L,sel,hint);});});app.append(run);refresh();
+  run.addEventListener("click",function(){sfx("run");run.disabled=true;brewTray(L,sel,prop,function(){prop.go(function(){reveal(L,sel,hint);});});});app.append(run);refresh();
 }
 function reveal(L,sel,hint){
   clear();var pts=0;sel.forEach(function(v,i){pts+=L.slots[i].opts[v].p;});
@@ -1155,7 +1224,8 @@ function reveal(L,sel,hint){
   app.append(after);
 }
 function finish(L,n,el,detail,blooper){
-  clearPause(L);
+  clearPause(L);var X=sesEnd(L);if(X.cap!=null)n=Math.min(n,X.cap);
+  if(X.badges.length){S.badges=S.badges||[];X.badges.forEach(function(b){if(S.badges.indexOf(b)<0)S.badges.push(b);});}
   var prev=S.stars[L.id]||0;if(n>prev)S.stars[L.id]=n;
   var newCards=[];if(n>=1)L.earn.forEach(function(c){if(!S.cards[c]){S.cards[c]="earned";newCards.push(c);}});
   if(blooper&&S.bloopers.indexOf(blooper)<0)S.bloopers.push(blooper);
@@ -1171,6 +1241,8 @@ function finish(L,n,el,detail,blooper){
   el.append(h("div",{class:"card"},h("h3",null,"Use it tomorrow"),h("p",null,L.mission)));
   var loot=[];newCards.forEach(function(c){loot.push(h("div",{class:"tcard pop"},h("b",null,CARDS[c].n),h("span",null,"New card")));});
   if(blooper)loot.push(h("div",{class:"tcard pop"},h("b",null,"Blooper"),h("span",null,blooper)));
+  X.badges.forEach(function(b){loot.push(h("div",{class:"tcard mastered pop"},h("b",null,b),h("span",null,"Badge")));});
+  if(X.notes.length)el.append(h("div",{class:"card world-note"},h("h3",null,U("twistTitle","This world")),X.notes.map(function(t){return h("p",null,t);})));
   if(loot.length)el.append(h("div",{class:"card"},h("h3",null,"Loot"),h("div",{class:"loot"},loot)));
   var next=LEVELS[L.id+1];
   el.append(h("div",{class:"row"},h("button",{class:"btn alt",type:"button",onclick:function(){start(L);}},n===3?"Play again":"Try again"),

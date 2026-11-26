@@ -15,7 +15,7 @@ const TOTALS = /\bof (18|21|50|100)\b|Wave \d+ of \d+/;
 function boot(opts = {}) {
   const vc = new VirtualConsole(); // canvas is not implemented in jsdom; ignore that noise
   const dom = new JSDOM(HTML, {
-    runScripts: "dangerously", pretendToBeVisual: true, virtualConsole: vc,
+    runScripts: "dangerously", pretendToBeVisual: true, virtualConsole: vc, url: "https://claude-quest.test/",
     beforeParse(w) {
       w.matchMedia = () => ({ matches: opts.motion ? false : true });
       w.scrollTo = () => {};
@@ -27,7 +27,8 @@ function boot(opts = {}) {
   const buttons = () => [...d.querySelectorAll("button")];
   const btn = t => buttons().find(b => b.textContent.includes(t));
   const click = t => { const b = btn(t); if (!b) throw new Error(`No button "${t}". Seen: ${buttons().map(x => x.textContent.slice(0, 25)).join(" | ")}`); b.click(); };
-  const text = () => d.body.textContent;
+  // Visible game text only. body.textContent would include the <script> source and hide failures.
+  const text = () => ["#app", "#sig", "#pzm", ".ping", ".heat"].map(sel => [...d.querySelectorAll(sel)].map(e => e.textContent).join(" ")).join(" ");
   const wait = ms => new Promise(r => setTimeout(r, ms));
   const T = opts.motion ? 4500 : 20;
   return { w, d, errs, btn, click, text, wait, T, dom };
@@ -45,7 +46,10 @@ function next(g) { const b = g.btn("Next:") || g.btn("Wait. A new message"); if 
 // Level players. They pick the best answer by position, which is the same in every world.
 async function playBuild(g) {
   for (const grp of g.d.querySelectorAll(".slot .opts")) { const bs = [...grp.querySelectorAll("button:not([disabled])")]; if (bs.length) bs[bs.length - 1].click(); }
-  g.d.querySelector("button.run").click(); await g.wait(g.T);
+  g.d.querySelector("button.run").click();
+  const chips = [...g.d.querySelectorAll(".ingr")].sort((a, b) => a.dataset.slot - b.dataset.slot);
+  for (const c of chips) c.click();
+  await g.wait(g.T + (chips.length ? 400 : 0));
 }
 async function playSpot(g, bugs) {
   const lines = [...g.d.querySelectorAll(".tline")];
@@ -151,6 +155,61 @@ test("Each world plays differently: its own stage, verbs and props", async () =>
     checks[world] = [...g.d.querySelectorAll("button.btn")].pop().textContent;
   }
   assert(new Set(Object.values(checks)).size === 3, "Spot-the-bug check buttons are the same across worlds: " + JSON.stringify(checks));
+});
+
+test("Heist: a clock runs, and getting spotted caps the run at 2 stars", async () => {
+  const g = boot({ storage: { cq_fast_heat: "1" } }); await g.wait(50); pickWorld(g, "Heist");
+  g.d.querySelector(".lvl").click(); await playBuild(g);
+  assert(!g.d.querySelector(".heat"), "Tutorial should have no clock");
+  next(g);
+  assert(g.d.querySelector(".heat"), "Clock missing on a Heist level");
+  await g.wait(1600);
+  assert(g.d.querySelector(".heat.caught"), "Clock did not run out");
+  await playBuild(g);
+  assert(!g.text().includes("Perfect run") && g.text().includes("capped at 2 stars"), "Spotted run was not capped");
+  assert(!g.d.querySelector(".heat"), "Clock should be gone after the level");
+  assert(g.errs.length === 0, "JS errors: " + g.errs.join("; "));
+});
+
+test("Heist: finishing in time gives a clean getaway", async () => {
+  const g = boot(); await g.wait(50); pickWorld(g, "Heist");
+  g.d.querySelector(".lvl").click(); await playBuild(g); next(g); await playBuild(g);
+  assert(g.text().includes("Clean getaway"), "No clean getaway note");
+});
+
+test("Office: inbox pings arrive, and good calls earn Inbox zero", async () => {
+  const g = boot({ storage: { cq_fast_inbox: "1" } }); await g.wait(50); pickWorld(g, "Office");
+  g.d.querySelector(".lvl").click(); await playBuild(g); next(g);
+  await g.wait(400);
+  let p = g.d.querySelector(".ping"); assert(p, "First ping did not arrive");
+  // Level 1 pings: index 2 (Claude can) and 3 (you decide)
+  [...p.querySelectorAll("button")].find(b => b.textContent.includes("Give it to Claude")).click();
+  await g.wait(300);
+  p = [...g.d.querySelectorAll(".ping")].find(x => x.querySelector("button"));
+  assert(p, "Second ping did not arrive");
+  [...p.querySelectorAll("button")].find(b => b.textContent.includes("I'll handle it")).click();
+  await playBuild(g);
+  assert(g.text().includes("Inbox: 2 of 2 calls right") && g.text().includes("Inbox zero"), "Inbox result missing");
+});
+
+test("Academy: ingredients go in by hand, and the right order earns Master Brewer", async () => {
+  const g = boot(); await g.wait(50); pickWorld(g, "Academy");
+  g.d.querySelector(".lvl").click(); await playBuild(g);
+  assert(!g.d.querySelector(".ingr"), "Tutorial should skip the brewing step");
+  next(g);
+  for (const grp of g.d.querySelectorAll(".slot .opts")) { const bs = [...grp.querySelectorAll("button")]; bs[bs.length - 1].click(); }
+  g.d.querySelector("button.run").click();
+  const chips = [...g.d.querySelectorAll(".ingr")];
+  assert(chips.length === 3, "Expected 3 ingredients, got " + chips.length);
+  chips.sort((a, b) => a.dataset.slot - b.dataset.slot).forEach(c => c.click());
+  await g.wait(400);
+  assert(g.text().includes("Master brew") && g.text().includes("Master Brewer"), "Master brew not recognized");
+  g.click("Play again");
+  for (const grp of g.d.querySelectorAll(".slot .opts")) { const bs = [...grp.querySelectorAll("button")]; bs[bs.length - 1].click(); }
+  g.d.querySelector("button.run").click();
+  [...g.d.querySelectorAll(".ingr")].sort((a, b) => b.dataset.slot - a.dataset.slot).forEach(c => c.click());
+  await g.wait(400);
+  assert(g.text().includes("Claude copes with any order") && g.text().includes("Perfect run"), "Wrong order should still pass, with an honest note");
 });
 
 test("Only the first level and a ??? tile show at the start", async () => {
