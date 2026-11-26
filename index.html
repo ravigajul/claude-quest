@@ -173,20 +173,33 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .world .art{height:110px;position:relative;overflow:hidden}
 .world .txt{padding:4px 14px 14px;display:grid;gap:4px}
 .world .txt b{font-family:var(--display);font-size:20px}
-.world.office .art{background:linear-gradient(#cfe3ff,#eef4ff)}
-.world.office .art i{position:absolute;bottom:0;width:46px;background:#16203a;border-radius:3px 3px 0 0;background-image:linear-gradient(90deg,transparent 6px,#ffd23f 6px 14px,transparent 14px 20px,#ffd23f 20px 28px,transparent 28px 34px,#ffd23f 34px 40px,transparent 40px);background-size:100% 16px}
-.world.heist .art{background:#6a4e34 radial-gradient(circle at 20% 30%,rgba(255,255,255,.07) 0 2px,transparent 3px) 0 0/14px 14px}
-.world.heist .art span{position:absolute;top:22px;width:54px;height:66px;background:#f4efe4;box-shadow:0 4px 8px rgba(0,0,0,.4);display:grid;place-items:center;font-family:var(--display);font-weight:800;color:#2a1f00;font-size:22px}
-.world.heist .art svg{position:absolute;inset:0}
+.wo-office .art{background:linear-gradient(#cfe3ff,#eef4ff)}
+.wo-office .art i{position:absolute;bottom:0;width:46px;background:#16203a;border-radius:3px 3px 0 0;background-image:linear-gradient(90deg,transparent 6px,#ffd23f 6px 14px,transparent 14px 20px,#ffd23f 20px 28px,transparent 28px 34px,#ffd23f 34px 40px,transparent 40px);background-size:100% 16px}
+.wo-heist .art{background:#6a4e34 radial-gradient(circle at 20% 30%,rgba(255,255,255,.07) 0 2px,transparent 3px) 0 0/14px 14px}
+.wo-heist .art span{position:absolute;top:22px;width:54px;height:66px;background:#f4efe4;box-shadow:0 4px 8px rgba(0,0,0,.4);display:grid;place-items:center;font-family:var(--display);font-weight:800;color:#2a1f00;font-size:22px}
+.wo-heist .art svg{position:absolute;inset:0}
 [data-skin="wizard"]{--bg:#160f2e;--card:#24194a;--ink:#f3eeff;--muted:#b1a6dc;--line:#3a2d6b;--accent:#7ff0d0;--accent-ink:#062a20;--star:#ffd86b;--good:#7ff0d0;--bad:#ff86a8;--claude:#2f2160;--btn-shadow:#2f8a72;--display:"Cinzel",Georgia,serif;color-scheme:dark}
 [data-skin="wizard"] body{background:radial-gradient(ellipse at 50% -10%,#3a2380,#160f2e 55%) fixed}
 [data-skin="heist"] body,html:not([data-skin]) body{background:radial-gradient(ellipse at 50% -15%,#2c2226,#0b0b0d 55%) fixed}
 [data-skin="heist"] h1,[data-skin="heist"] h2{text-transform:uppercase;letter-spacing:.03em}
 [data-skin="wizard"] h1,[data-skin="wizard"] h2{letter-spacing:.02em}
 [data-skin="office"] .card{box-shadow:0 1px 3px rgba(20,33,61,.06)}
-.world.wizard .art{background:radial-gradient(circle at 70% 30%,#5b3fa8,#140f29 70%)}
-.world.wizard .art b{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 8px #8be9d0}
+.wo-wizard .art{background:radial-gradient(circle at 70% 30%,#5b3fa8,#140f29 70%)}
+.wo-wizard .art b{position:absolute;width:4px;height:4px;border-radius:50%;background:#fff;box-shadow:0 0 8px #8be9d0}
 .sky{width:100%;max-width:420px;display:block;margin:0 auto}
+[data-skin="picker"]{--bg:#101318;--card:#1a1e26;--ink:#f2f4f8;--muted:#a3abbd;--line:#2c3240;--accent:#ffffff;--accent-ink:#101318;--display:"Bricolage Grotesque",sans-serif;color-scheme:dark}
+[data-skin="picker"] body{background:#101318}
+.worlds .world{width:100%;display:flex;flex-direction:column;gap:0;border-width:2px;transition:translate .2s,box-shadow .2s}
+.worlds .world:hover{translate:0 -3px}
+.world .art{height:120px;width:100%}
+.world .txt{padding:14px 16px 16px;display:grid;gap:6px;justify-items:start}
+.world .txt b{font-family:var(--display);font-size:22px;line-height:1.15}
+.world .go{display:inline-block;margin-top:4px;padding:7px 14px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:14px}
+.wo-office{--accent:#2f6bff;--accent-ink:#fff;--muted:#5b6785;--display:"Bricolage Grotesque",sans-serif;background:#ffffff;color:#14213d;border-color:#2f6bff}
+.wo-heist{--accent:#e0312f;--accent-ink:#fff;--muted:#a8a29a;--display:"Oswald",sans-serif;background:#17171b;color:#f2efe8;border-color:#e0312f}
+.wo-heist .txt b{text-transform:uppercase;letter-spacing:.03em}
+.wo-wizard{--accent:#7ff0d0;--accent-ink:#062a20;--muted:#b1a6dc;--display:"Cinzel",Georgia,serif;background:#24194a;color:#f3eeff;border-color:#7ff0d0}
+.world .txt .muted{color:var(--muted)}
 </style>
 </head>
 <body>
@@ -669,16 +682,16 @@ function switchTo(k){
   var sv=(S.saves&&S.saves[k])||{stars:{},cards:{},met:{},bloopers:[]};
   S.stars=sv.stars;S.cards=sv.cards;S.met=sv.met;S.bloopers=sv.bloopers;S.theme=k;S.tab="play";save();applyTheme();home();}
 function themePicker(){
-  clear();var cur=S.theme&&THEMES[S.theme]?S.theme:null;
-  if(cur)app.append(h("button",{class:"link",type:"button",onclick:home,style:"justify-self:start"},"← Back to "+THEMES[cur].tag));
+  clear();document.documentElement.setAttribute("data-skin","picker");var cur=S.theme&&THEMES[S.theme]?S.theme:null;
+  if(cur)app.append(h("button",{class:"link",type:"button",onclick:function(){applyTheme();home();},style:"justify-self:start"},"← Back to "+THEMES[cur].tag));
   app.append(h("div",null,h("h3",null,"Claude Quest"),h("h1",null,cur?"Switch world":"Choose your world"),h("p",{class:"muted"},"Every world teaches the same skills, with its own story. Each world keeps its own progress, so you can switch anytime and pick up where you left off.")));
   var heistArt=function(){var a=h("div",{class:"art"});["N","D","L"].forEach(function(c,i){a.append(h("span",{style:"left:"+(22+i*80)+"px;rotate:"+[-5,4,-3][i]+"deg"},c));});
     a.insertAdjacentHTML("afterbegin",'<svg aria-hidden="true"><path d="M49,22 Q89,60 129,22 Q169,60 209,22" stroke="#d2353b" stroke-width="2" fill="none"/></svg>');return a;};
   var officeArt=function(){var a=h("div",{class:"art"});[[18,70],[74,96],[130,58],[186,84]].forEach(function(b){a.append(h("i",{style:"left:"+b[0]+"px;height:"+b[1]+"px"}));});return a;};
   var wizardArt=function(){var a=h("div",{class:"art"});for(var i=0;i<18;i++)a.append(h("b",{style:"left:"+((i*53)%300+10)+"px;top:"+((i*37)%90+8)+"px"}));return a;};
   app.append(h("div",{class:"worlds"},["office","heist","wizard"].map(function(k){var T=THEMES[k];
-    return h("button",{class:"world "+k,type:"button",onclick:function(){sfx("good");if(k===cur)home();else switchTo(k);}},k==="office"?officeArt():k==="heist"?heistArt():wizardArt(),
-      h("div",{class:"txt"},h("b",null,T.name+": "+T.tag),h("span",{class:"muted"},T.pitch),(function(){var p=progressOf(k);return h("span",{style:"font-weight:700"},k===cur?"Playing now: ★ "+p.stars+", "+p.cards+" cards":p.started?"Continue: ★ "+p.stars+", "+p.cards+" cards":"Start this world");})()));})));
+    return h("button",{class:"world wo-"+k,type:"button",onclick:function(){sfx("good");if(k===cur){applyTheme();home();}else switchTo(k);}},k==="office"?officeArt():k==="heist"?heistArt():wizardArt(),
+      h("div",{class:"txt"},h("b",null,T.name+": "+T.tag),h("span",{class:"muted"},T.pitch),(function(){var p=progressOf(k);return h("span",{class:"go"},k===cur?"Playing now: ★ "+p.stars+", "+p.cards+" cards":p.started?"Continue: ★ "+p.stars+", "+p.cards+" cards":"Start this world");})()));})));
   app.append(h("p",{class:"foot"},"By "+CREATOR.name+", built with Claude. Plays offline. No sign-up, no tokens."));
 }
 
