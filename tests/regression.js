@@ -212,6 +212,20 @@ test("Academy: ingredients go in by hand, and the right order earns Master Brewe
   assert(g.text().includes("Claude copes with any order") && g.text().includes("Perfect run"), "Wrong order should still pass, with an honest note");
 });
 
+test("The coach names the skill at the start and the lesson at the end; details are folded", async () => {
+  for (const world of WORLDS) {
+    const g = boot(); await g.wait(50); pickWorld(g, world);
+    g.d.querySelector(".lvl").click(); await playBuild(g); next(g);
+    assert(g.d.querySelector("h3").textContent.startsWith("Lesson 1"), world + ": level label should say Lesson");
+    assert(g.d.querySelector(".coach"), world + ": no coach at level start");
+    await playBuild(g);
+    const coaches = [...g.d.querySelectorAll(".coach")].map(c => c.textContent);
+    assert(coaches.some(t => t.includes("The lesson")), world + ": no coach lesson at the end");
+    const det = g.d.querySelector("details.why-more");
+    assert(det && !det.open, world + ": choice details should start folded");
+  }
+});
+
 test("Only the first level and a ??? tile show at the start", async () => {
   const g = boot(); await g.wait(50); pickWorld(g, "Office");
   const lv = [...g.d.querySelectorAll(".lvl")];
