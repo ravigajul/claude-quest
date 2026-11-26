@@ -12,13 +12,17 @@ I use Claude every day as a QA lead. Most learning material I found was about pr
 
 ## How it plays
 
-- **Pick a world.** Office, Heist or Wizard Academy. Each world tells its own story and teaches the same skills. Each world keeps its own save.
+- **Pick a world.** The Office (a startup, close to real IT work), The Heist (a crew of clever, perfectly legal jobs) or The Academy (a school of magic). Each world has its own story, colors, fonts and home screen, and teaches the same skills. Each world keeps its own save, so you can switch anytime.
 - **Every level is a different skill.** Asking clearly, catching invented facts, rescuing a chat, picking the right tool, and more.
 - **Fail first, then learn.** You choose, see what Claude does with your choice, then get a debrief that explains why.
 - **Enemies are failure modes.** The Vague, The Fabricator, The Yes-Man, The Drifter, and a villain called The Injector.
 - **Concepts become cards.** Pass a level to earn cards. Play them well in a boss fight to master them.
 - **Hidden progression.** You never see how many levels are left. A secret level waits after the boss.
 - **Use it tomorrow.** Every level ends with one lesson and one small mission to try at work.
+
+## Works everywhere
+
+Phone-first, with a two-column layout on laptops and desktops. Respects reduced-motion settings. Sound can be turned off.
 
 ## Level types
 
@@ -53,6 +57,15 @@ The first chapter is playable in all three worlds: a tutorial, four levels, a bo
 Claude's answers in the game are examples written with Claude to show typical behavior. They are not live recordings.
 
 This is a fan-made project. It is not affiliated with or endorsed by Anthropic. Claude is a trademark of Anthropic.
+
+## Changelog
+
+- Three worlds with separate saves and a Switch world button.
+- Distinct colors, fonts and picker cards per world.
+- First chapter rebuilt so each level teaches a different skill, not only prompting.
+- Animations: 3D tilt cards, monster reactions, boss attacks, confetti, sound.
+- Hidden level count and a secret bonus level.
+- Wide-screen layout.
 
 ## Contributing
 
