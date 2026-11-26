@@ -67,10 +67,16 @@ async function answerCards(g, pick) {
   }
 }
 async function playSpot(g, bugs) {
-  const lines = [...g.d.querySelectorAll(".tline")];
-  bugs.forEach(i => lines[i].click());
-  [...g.d.querySelectorAll("button.btn")].pop().click();
-  if (g.btn("Answer")) { g.d.querySelectorAll(".opt")[1].click(); g.click("Answer"); }
+  // One line at a time: tap Bug on the flagged lines, Looks fine on the rest.
+  for (let k = 0; k < 30; k++) {
+    const label = g.d.querySelector(".stream .slot-count");
+    if (!label) break;
+    const n = parseInt(label.textContent.split(" ")[1], 10) - 1;
+    (bugs.includes(n) ? g.d.querySelector(".bug-btn") : g.d.querySelector(".fine-btn")).click();
+    await g.wait(g.T > 100 ? 400 : 40);
+  }
+  const opts = g.d.querySelectorAll(".stream .timed-opts .opt");
+  if (opts.length) { opts[1].click(); await g.wait(g.T > 100 ? 400 : 40); }
 }
 async function playRescue(g) {
   for (let t = 0; t < 2; t++) {
@@ -167,9 +173,9 @@ test("Each world plays differently: its own stage, verbs and props", async () =>
     assert(run && run.textContent === want[world].run, `${world} run button says "${run && run.textContent}"`);
     assert(g.d.querySelector(want[world].prop), `${world} is missing its stage prop ${want[world].prop}`);
     await playBuild(g); next(g); await playBuild(g); next(g);
-    checks[world] = [...g.d.querySelectorAll("button.btn")].pop().textContent;
+    const flag = g.d.querySelector(".stream") ? "stream" : null; checks[world] = g.d.querySelector(".bug-btn") ? g.d.querySelector(".bug-btn").textContent : (flag || "none");
   }
-  assert(new Set(Object.values(checks)).size === 3, "Spot-the-bug check buttons are the same across worlds: " + JSON.stringify(checks));
+  assert(new Set(Object.values(checks)).size === 3, "Spot-the-bug buttons are the same across worlds: " + JSON.stringify(checks));
 });
 
 test("Heist: a clock runs, and getting spotted caps the run at 2 stars", async () => {
@@ -277,10 +283,11 @@ test("Pause: resume keeps choices, restart and end clear them, home saves", asyn
   [...g.d.querySelectorAll(".lvl")][1].click();
   assert(card() === "Card 1 of 3", "End level did not clear the choices");
   await playBuild(g); next(g);
-  const lines = [...g.d.querySelectorAll(".tline")]; lines[2].click(); lines[4].click();
+  g.d.querySelector(".fine-btn").click(); await g.wait(g.T > 100 ? 400 : 40);
+  g.d.querySelector(".bug-btn").click(); await g.wait(g.T > 100 ? 400 : 40);
   pz.click(); g.click("Save and go home");
   [...g.d.querySelectorAll(".lvl")][2].click();
-  assert([...g.d.querySelectorAll(".tline")].filter(b => b.getAttribute("aria-pressed") === "true").length === 2, "Spot flags not restored");
+  assert(g.d.querySelector(".slot-count").textContent.startsWith("Line 3 of"), "Spot progress not restored");
   assert(g.errs.length === 0, "JS errors: " + g.errs.join("; "));
 });
 
@@ -303,6 +310,25 @@ test("Weak answers fail softly and drop a blooper", async () => {
   await answerCards(g, () => 0);
   g.d.querySelector("button.run").click(); await g.wait(g.T);
   assert(g.text().includes("Blooper"), "No blooper for a weak answer");
+});
+
+test("A clock that runs out counts as no choice, and the level still finishes", async () => {
+  const g = boot({ storage: { cq_fast_clock: "1" } }); await g.wait(50); pickWorld(g, "Office");
+  g.d.querySelector(".lvl").click(); await playBuild(g); next(g);
+  await g.wait(600);
+  assert(g.text().includes("Time's up") && g.text().includes("All cards are in"), "Build did not move on when time ran out");
+  await g.wait(600);
+  g.d.querySelector("button.run").click();
+  await g.wait(g.T + 300);
+  assert(g.errs.length === 0, "JS errors on timeout: " + g.errs.join("; "));
+});
+
+test("Spot the bug: a line that times out counts as Looks fine", async () => {
+  const g = boot({ storage: { cq_fast_clock: "1" } }); await g.wait(50); pickWorld(g, "Office");
+  g.d.querySelector(".lvl").click(); await playBuild(g); next(g); await playBuild(g); next(g);
+  await g.wait(1500);
+  assert(g.text().includes("Claude's answer"), "Spot did not reach its results after the clock ran out");
+  assert(g.errs.length === 0, "JS errors on spot timeout: " + g.errs.join("; "));
 });
 
 test("Credits name the creator and link the repo", async () => {

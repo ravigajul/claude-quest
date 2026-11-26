@@ -365,6 +365,13 @@ h3{color:var(--accent)}
 .burst{position:fixed;width:0;height:0;pointer-events:none;z-index:60}
 .burst i{position:absolute;left:0;top:0;width:9px;height:9px;border-radius:50%}
 @media (prefers-reduced-motion: reduce){.timed-bar i.urgent{animation:none}}
+
+.stream .tline-live{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:12px;background:rgba(127,127,160,.12);font-size:17px;font-weight:600;margin:8px 0}
+.tline-live .n{flex:0 0 auto;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--slot,#8b5cf6);color:#fff;font-size:14px}
+.bug-btn{background:#ef4444;color:#fff;border-color:#ef4444}
+.stream{transition:box-shadow .2s}
+.stream.flash-good{box-shadow:0 0 0 4px rgba(34,197,94,.55)}
+.stream.flash-bad{box-shadow:0 0 0 4px rgba(239,68,68,.55)}
 </style>
 </head>
 <body>
@@ -1012,9 +1019,9 @@ THEMES.wizard.lv={
   miss:"\"The recipe book has been sent.\""}
 };
 THEMES.office.lv={};
-THEMES.office.ui={twist:"Heads up: your inbox never stops. Decide fast what Claude should handle.",twistTitle:"Your inbox",run:"Send to Claude",prompt:"Your message to Claude",check:"Review the draft",bar:"New message to Claude",placed:"Filed in the right place."};
-THEMES.heist.ui={twist:"The guards are coming. Finish before the clock runs out for a clean getaway.",twistTitle:"The getaway",run:"Execute the plan",prompt:"The plan",check:"Run the UV scan",bar:"Blueprint",placed:"Stashed in the right spot."};
-THEMES.wizard.ui={twist:"Every spell is brewed. Add your ingredients to the cauldron in the order you think is best.",twistTitle:"The brew",run:"Brew it",prompt:"Your incantation",check:"Cast Reveal",bar:"Cauldron",placed:"Sealed in the right chest."};
+THEMES.office.ui={bug:"Flag it",fine:"Looks fine",twist:"Heads up: your inbox never stops. Decide fast what Claude should handle.",twistTitle:"Your inbox",run:"Send to Claude",prompt:"Your message to Claude",check:"Review the draft",bar:"New message to Claude",placed:"Filed in the right place."};
+THEMES.heist.ui={bug:"Sabotage it",fine:"Clean, move on",twist:"The guards are coming. Finish before the clock runs out for a clean getaway.",twistTitle:"The getaway",run:"Execute the plan",prompt:"The plan",check:"Run the UV scan",bar:"Blueprint",placed:"Stashed in the right spot."};
+THEMES.wizard.ui={bug:"Curse it",fine:"Pure enough",twist:"Every spell is brewed. Add your ingredients to the cauldron in the order you think is best.",twistTitle:"The brew",run:"Brew it",prompt:"Your incantation",check:"Cast Reveal",bar:"Cauldron",placed:"Sealed in the right chest."};
 function U(k,d){var T=THEMES[S.theme];return (T&&T.ui&&T.ui[k])||d;}
 var LV_ORIG=null;
 function applyLevelVariants(T){
@@ -1266,7 +1273,16 @@ function stageProp(L){
 /* Each slot gets its own color, so a prompt's parts are easy to tell apart */
 var SLOT_COLORS=[["#8b5cf6","#ffffff"],["#0ea5a4","#ffffff"],["#f59e0b","#1f1300"],["#ec4899","#ffffff"]];
 /* BUILD */
-var TIMER_MS=12000;
+var TIMER_MS=12000,LINE_MS=6000,TURN_MS=12000,ITEM_MS=10000,WAVE_MS=10000;
+/* A countdown bar. onEnd runs when time is up, unless the screen (guard) has been left. */
+function clock(ms,onEnd,guard){
+  if(fastMode("clock"))ms=Math.min(ms,80);
+  var bar=h("i"),el=h("div",{class:"timed-bar"},bar),live=true,t=null,tu=null;
+  requestAnimationFrame(function(){requestAnimationFrame(function(){bar.style.transition="width "+(ms/1000)+"s linear";bar.style.width="0%";});});
+  tu=setTimeout(function(){if(live&&(!guard||guard.isConnected))bar.classList.add("urgent");},ms*.75);
+  t=setTimeout(function(){if(!live)return;live=false;if(!guard||guard.isConnected)onEnd();},ms);
+  return{el:el,stop:function(){live=false;clearTimeout(t);clearTimeout(tu);}};
+}
 /* Motion helpers (Web Animations API). They do nothing when reduced motion is on. */
 function fx(el,frames,opts){if(reduce||!el||!el.animate)return null;try{return el.animate(frames,Object.assign({fill:"both"},opts));}catch(e){return null;}}
 function burst(el,color){
@@ -1296,7 +1312,7 @@ function build(L){
     prop.update(sel.filter(function(v){return v!=null;}).length/sel.length);
   }
   function choose(i,j,late,btn){
-    clearTimeout(tm);if(sel[i]!=null)return;
+    if(tm)tm.stop();if(sel[i]!=null)return;
     var o=L.slots[i].opts[j],best=Math.max.apply(null,L.slots[i].opts.map(function(x){return x.p;}));
     if(btn&&!late){fx(btn,[{transform:"scale(.92)"},{transform:"scale(1.05)"},{transform:"scale(1)"}],{duration:300,fill:"none"});if(o.p===best)burst(btn,SLOT_COLORS[i%SLOT_COLORS.length][0]);}
     streak=(!late&&o.p===best)?streak+1:0;
@@ -1307,7 +1323,7 @@ function build(L){
   function showSlot(){
     var i=null;playable.forEach(function(k){if(i==null&&sel[k]==null)i=k;});
     board.textContent="";var wrap=h("div",{class:"slot",style:"--slot:"+SLOT_COLORS[(i==null?0:i)%SLOT_COLORS.length][0]+";--slot-ink:"+SLOT_COLORS[(i==null?0:i)%SLOT_COLORS.length][1]});
-    if(i==null){board.append(h("p",{class:"timed-done"},"All cards are in. Run it when you are ready."));refresh();return;}
+    if(i==null){if(note){board.append(h("p",{class:"timeout"},note));note=null;}board.append(h("p",{class:"timed-done"},"All cards are in. Run it when you are ready."));refresh();return;}
     var sl=L.slots[i],sc=SLOT_COLORS[i%SLOT_COLORS.length],n=playable.indexOf(i)+1;
     var bar=h("i");
     wrap.append(h("div",{class:"slot-head",style:"--slot:"+sc[0]+";--slot-ink:"+sc[1]},
@@ -1323,15 +1339,14 @@ function build(L){
     board.append(wrap);
     fx(wrap,[{opacity:0,transform:"translateY(16px) scale(.98)"},{opacity:1,transform:"none"}],{duration:360,easing:"cubic-bezier(.2,.8,.2,1)"});
     var cb=wrap.querySelector(".combo.hot");if(cb)fx(cb,[{transform:"scale(.6)"},{transform:"scale(1.18)"},{transform:"scale(1)"}],{duration:420});
-    setTimeout(function(){if(board.isConnected&&sel[i]==null)bar.classList.add("urgent");},TIMER_MS*.75);
     requestAnimationFrame(function(){requestAnimationFrame(function(){bar.style.transition="width "+(TIMER_MS/1000)+"s linear";bar.style.width="0%";});});
-    clearTimeout(tm);
-    tm=setTimeout(function(){if(board.isConnected&&sel[i]==null)choose(i,0,true);},TIMER_MS);
+    if(tm)tm.stop();
+    tm=clock(TIMER_MS,function(){choose(i,0,true);},board);
   }
   app.append(box);app.append(h("h3",null,U("prompt","Your prompt")));app.append(prev);
   if(L.hint){if(hint)app.append(h("p",{class:"muted"},"Hint: "+L.hint));else{var hb=h("button",{class:"link",type:"button",style:"justify-self:start"},"Need a hint? (caps this round at 2 stars)");
     hb.addEventListener("click",function(){hint=true;checkpoint(L,{sel:sel.slice(),hint:true});hb.replaceWith(h("p",{class:"muted"},"Hint: "+L.hint));});app.append(hb);}}
-  run.addEventListener("click",function(){sfx("run");run.disabled=true;clearTimeout(tm);brewTray(L,sel,prop,function(){prop.go(function(){reveal(L,sel,hint);});});});app.append(run);
+  run.addEventListener("click",function(){sfx("run");run.disabled=true;if(tm)tm.stop();brewTray(L,sel,prop,function(){prop.go(function(){reveal(L,sel,hint);});});});app.append(run);
   refresh();showSlot();
 }
 function reveal(L,sel,hint){
@@ -1410,44 +1425,70 @@ function predict(L){
 }
 function claudeStatic(t){return h("div",{class:"bubble"},h("div",{class:"avatar claude"},"C"),h("div",{class:"msg claude"},t));}
 
-/* SPOT THE BUG */
+/* SPOT THE BUG: the template scrolls in one line at a time. Catch the bugs before a line times out. */
 function spot(L){
-  clear();var P=paused(L);var flags=P&&P.flags?P.flags.slice():L.lines.map(function(){return false;});
+  clear();var P=paused(L);
+  var flags=P&&P.flags?P.flags.slice():L.lines.map(function(){return false;});
+  var idx=P&&P.i!=null?P.i:0,streak=0,pend=null;
+  var stream=h("div",{class:"timed"});
   intro(L).forEach(function(x){add(app,x);});
-  var list=h("div",{class:"opts doc-lines"});
-  L.lines.forEach(function(ln,i){list.append(h("button",{class:"tline",type:"button","aria-pressed":flags[i]?"true":"false",onclick:function(e){flags[i]=!flags[i];e.currentTarget.setAttribute("aria-pressed",flags[i]?"true":"false");cnt.textContent=flags.filter(Boolean).length+" flagged";checkpoint(L,{flags:flags.slice()});}},h("span",{class:"n"},i+1),h("span",null,ln.t)));});
-  var cnt=h("span",{class:"muted"},flags.filter(Boolean).length+" flagged");
-  var go=h("button",{class:"btn",type:"button"},U("check",L.checkLabel||"Check the template"));
-  app.append(h("div",{class:"card"},h("h3",null,L.spotLabel||"Dana's template. Tap the lines that break it."),list,cnt),go);
-  go.addEventListener("click",function(){
-    var found=0,wrong=0;L.lines.forEach(function(ln,i){if(flags[i]&&ln.bug)found++;if(flags[i]&&!ln.bug)wrong++;});
-    var B=L.lines.filter(function(x){return x.bug;}).length;
-    if(!L.sysq){return result(false);}
-    clear();
-    app.append(h("div",null,h("h3",null,"Level "+L.id+" · Part 2"),h("h2",null,L.sysq.title||"Where does it live?")));
-    var opts=h("div",{class:"opts"});var pick=null;var ok=h("button",{class:"btn",type:"button",disabled:true},"Answer");
-    L.sysq.opts.forEach(function(o,j){opts.append(h("button",{class:"opt",type:"button","aria-pressed":"false",onclick:function(){pick=j;Array.from(opts.children).forEach(function(c,k){c.setAttribute("aria-pressed",k===j?"true":"false");});ok.disabled=false;}},o));});
-    app.append(h("div",{class:"card"},h("p",{style:"font-weight:700"},L.sysq.q),opts),ok);
-    ok.addEventListener("click",function(){result(pick===L.sysq.correct);});
-    function result(sysOk){
-      var pts=Math.max(0,found-wrong)+(sysOk?1:0);var n=pickStars(pts,B+(L.sysq?1:0));
-      clear();app.append(h("div",null,h("h3",null,"Level "+L.id+" · Claude's answer"),h("h2",null,L.title)));
-      app.append(h("h3",null,L.buggyLabel||"What Dana's template sent"));app.append(claudeStatic(L.buggy));
-      app.append(h("h3",null,L.fixedLabel||"Same request, fixed template"));app.append(claudeStatic(L.fixed));
-      var rows=L.lines.map(function(ln,i){var cls=ln.bug?(flags[i]?"best":"bad"):(flags[i]?"bad":"best");
-        var tag=ln.bug?(flags[i]?"Bug found":"Bug missed"):(flags[i]?"Not a bug":"Fine");
-        return h("div",{class:"w "+cls},h("b",null,(i+1)+". "+tag),h("span",null,ln.why));});
-      if(L.sysq)rows.push(h("div",{class:"w "+(sysOk?"best":"bad")},h("b",null,"System prompt: "+(sysOk?"right":"not quite")),h("span",null,L.sysq.why)));
-      var el=h("div",{style:"display:grid;gap:14px"});app.append(el);
-      finish(L,n,el,h("div",{class:"why"},h("p",null,(L.foundLabel||"Bugs found: ")+found+" of "+B+". False alarms: "+wrong+"."),rows),found<B?(L.miss||"4,000 students offered a sale that ended last month."):null);
-    }
-  });
+  app.append(h("div",{class:"card stage stream"},h("h3",null,L.spotLabel||"Dana's template. Catch the bugs before they scroll past."),stream));
+  function line(){
+    stream.textContent="";stream.classList.remove("flash-good","flash-bad");
+    if(idx>=L.lines.length)return sysOrResult();
+    var ln=L.lines[idx];checkpoint(L,{i:idx,flags:flags.slice()});
+    var clk=clock(LINE_MS,function(){if(pend===clk)decide(false,true,null);},stream);pend=clk;
+    stream.append(h("div",{class:"slot-head"},h("span",{class:"slot-count"},"Line "+(idx+1)+" of "+L.lines.length),
+      h("span",{class:"combo"+(streak>=2?" hot":"")},streak>=2?"Combo x"+streak:"Catch real bugs in a row for a combo")));
+    stream.append(clk.el);
+    var code=h("div",{class:"tline-live"},h("span",{class:"n"},idx+1),h("span",null,ln.t));
+    stream.append(code,h("div",{class:"row"},
+      h("button",{class:"btn bug-btn",type:"button",onclick:function(e){decide(true,false,e.currentTarget);}},U("bug","Bug")),
+      h("button",{class:"btn alt fine-btn",type:"button",onclick:function(e){decide(false,false,e.currentTarget);}},U("fine","Looks fine"))));
+    fx(code,[{opacity:0,transform:"translateX(28px)"},{opacity:1,transform:"none"}],{duration:300,easing:"cubic-bezier(.2,.8,.2,1)"});
+  }
+  function decide(flag,late,btn){
+    if(!pend)return;pend.stop();pend=null;
+    var real=!!L.lines[idx].bug,good=flag===real;
+    flags[idx]=flag;streak=(good&&flag)?streak+1:0;
+    if(btn){fx(btn,[{transform:"scale(.9)"},{transform:"scale(1.06)"},{transform:"scale(1)"}],{duration:280,fill:"none"});if(flag&&real)burst(btn,"#ef4444");}
+    sfx(good?"good":"bad");if(!good)buzz(40);
+    stream.classList.add(good?"flash-good":"flash-bad");
+    idx++;checkpoint(L,{i:idx,flags:flags.slice()});
+    setTimeout(line,reduce?0:320);
+  }
+  function sysOrResult(){
+    var found=0,wrong=0,B=0;
+    L.lines.forEach(function(ln,i){if(ln.bug)B++;if(flags[i]&&ln.bug)found++;if(flags[i]&&!ln.bug)wrong++;});
+    if(!L.sysq)return result(false,found,wrong,B);
+    var done=false,clk=null;
+    function once(ok){if(done)return;done=true;clk.stop();result(ok,found,wrong,B);}
+    stream.textContent="";
+    stream.append(h("h3",null,L.sysq.title||"Where does it live?"),h("p",{style:"font-weight:700"},L.sysq.q));
+    clk=clock(TURN_MS,function(){once(false);},stream);
+    stream.append(clk.el);
+    var opts=h("div",{class:"opts timed-opts"});
+    L.sysq.opts.forEach(function(o,j){opts.append(h("button",{class:"opt",type:"button",onclick:function(e){once(j===L.sysq.correct);}},o));});
+    stream.append(opts);
+  }
+  function result(sysOk,found,wrong,B){
+    var pts=Math.max(0,found-wrong)+(sysOk?1:0);var n=pickStars(pts,B+(L.sysq?1:0));
+    clear();app.append(h("div",null,h("h3",null,"Level "+L.id+" · Claude's answer"),h("h2",null,L.title)));
+    app.append(h("h3",null,L.buggyLabel||"What Dana's template sent"));app.append(claudeStatic(L.buggy));
+    app.append(h("h3",null,L.fixedLabel||"Same request, fixed template"));app.append(claudeStatic(L.fixed));
+    var rows=L.lines.map(function(ln,i){var cls=ln.bug?(flags[i]?"best":"bad"):(flags[i]?"bad":"best");
+      var tag=ln.bug?(flags[i]?"Bug found":"Bug missed"):(flags[i]?"Not a bug":"Fine");
+      return h("div",{class:"w "+cls},h("b",null,(i+1)+". "+tag),h("span",null,ln.why));});
+    if(L.sysq)rows.push(h("div",{class:"w "+(sysOk?"best":"bad")},h("b",null,"System prompt: "+(sysOk?"right":"not quite")),h("span",null,L.sysq.why)));
+    var el=h("div",{style:"display:grid;gap:14px"});app.append(el);
+    finish(L,n,el,h("div",{class:"why"},h("p",null,(L.foundLabel||"Bugs found: ")+found+" of "+B+". False alarms: "+wrong+"."),rows),found<B?(L.miss||"4,000 students offered a sale that ended last month."):null);
+  }
+  line();
 }
 
-
-/* RESCUE: steer a chat that went wrong */
+/* RESCUE: steer a chat that went wrong. Each reply has a clock; running out means Claude takes the first option. */
 function rescue(L){
-  clear();var P=paused(L);var isRescue=true;var t=P?P.t:0,pts=P?P.pts:0,picks=P?P.picks.slice():[],blooper=P?P.blooper:null;var log=picks.map(function(x){return{T:L.turns[x[0]],o:L.turns[x[0]].opts[x[1]]};});
+  clear();var P=paused(L);var t=P?P.t:0,pts=P?P.pts:0,picks=P?P.picks.slice():[],blooper=P?P.blooper:null;var log=picks.map(function(x){return{T:L.turns[x[0]],o:L.turns[x[0]].opts[x[1]]};});
   intro(L).forEach(function(x){add(app,x);});
   var area=h("div",{class:"rescue",style:"display:grid;gap:12px"});app.append(area);
   function userBubble(txt){return h("div",{class:"bubble",style:"flex-direction:row-reverse"},h("div",{class:"avatar"},L.client[0]),h("div",{class:"msg",style:"border-radius:14px 4px 14px 14px"},h("small",null,L.client),txt));}
@@ -1456,18 +1497,24 @@ function rescue(L){
     area.append(h("h3",null,"The chat so far"));
     T.chat.forEach(function(m){area.append(m.u?userBubble(m.t):claudeStatic(m.t));});
     if(T.note)area.append(h("p",{class:"verdict no"},T.note));
-    var opts=h("div",{class:"opts"});
-    T.opts.forEach(function(o,j){opts.append(h("button",{class:"opt",type:"button",onclick:function(){choose(j);}},o.t));});
-    area.append(h("div",{class:"card"},h("p",{style:"font-weight:700"},T.q),opts));
-    function choose(j){var o=T.opts[j];pts+=o.p;log.push({T:T,o:o});picks.push([t,j]);if(o.blooper)blooper=o.blooper;sfx("run");
-      area.textContent="";area.append(h("h3",null,"You send"),userBubble(o.t),h("h3",null,"Claude replies"));
+    var bar=null,opts=h("div",{class:"opts timed-opts"});
+    function choose(j,late,btn){
+      if(bar)bar.stop();var o=T.opts[j];pts+=o.p;log.push({T:T,o:o});picks.push([t,j]);if(o.blooper)blooper=o.blooper;sfx("run");
+      area.textContent="";
+      var sent=userBubble(o.t);
+      area.append(h("h3",null,late?"Time's up. Claude used your first option.":"You send"),sent,h("h3",null,"Claude replies"));
+      fx(sent,[{opacity:0,transform:"translateX(40px)"},{opacity:1,transform:"none"}],{duration:320,easing:"cubic-bezier(.2,.8,.2,1)"});
       var after=h("div",{style:"display:grid;gap:12px"});
       area.append(claudeBubble(o.reply,function(){var best=T.opts.reduce(function(a,b){return b.p>a.p?b:a;});
-        sfx(o.p===best.p?"good":"bad");
+        sfx(o.p===best.p?"good":"bad");if(o.p===best.p&&!late)burst(sent,"#22c55e");
         after.append(h("div",{class:"card "+(o.p===best.p?"pop":"shake")},h("p",{class:"verdict "+(o.p===best.p?"ok":"no")},o.p===best.p?"Back on track.":o.p>0?"Better, not fixed.":"Still sideways."),h("p",null,o.why),
           o.p<best.p?h("p",{class:"muted"},"Best move: \""+best.t+"\""):null),
           h("button",{class:"btn",type:"button",onclick:function(){t++;if(t<L.turns.length)turn();else end();}},t<L.turns.length-1?"Keep going":"See results"));}));
-      area.append(after);}
+      area.append(after);
+    }
+    bar=clock(TURN_MS,function(){choose(0,true,null);},area);
+    T.opts.forEach(function(o,j){opts.append(h("button",{class:"opt",type:"button",onclick:function(e){choose(j,false,e.currentTarget);}},o.t));});
+    area.append(h("div",{class:"card"},h("p",{style:"font-weight:700"},T.q),bar.el,opts));
   }
   function end(){clear();var n=pickStars(pts,L.max);
     app.append(h("div",null,h("h3",null,"Level "+L.id+" · Results"),h("h2",null,L.title)));
@@ -1476,26 +1523,35 @@ function rescue(L){
   turn();
 }
 
-/* PICK THE TOOL: sort jobs into the right place */
+/* PICK THE TOOL: jobs arrive one at a time. Drop each into a bin before its clock runs out. */
 function pickTool(L){
   clear();var P=paused(L);var k=P?P.k:0,right=P?P.right:0,picks=P?P.picks.slice():[];var log=picks.map(function(x){return{I:L.items[x[0]],j:x[1],ok:x[1]===L.items[x[0]].a};});
   intro(L).forEach(function(x){add(app,x);});
   var area=h("div",{style:"display:grid;gap:12px"});app.append(area);
   function item(){
     area.textContent="";var I=L.items[k];checkpoint(L,{k:k,right:right,picks:picks.slice()});
-    var tools=h("div",{class:"grid2 bins"});
-    L.tools.forEach(function(tn,j){tools.append(h("button",{class:"tcard",type:"button","aria-pressed":"false",onclick:function(){pick(j);}},h("b",null,tn)));});
-    area.append(h("div",{class:"card"},h("h3",null,"Job "+(k+1)),h("p",{style:"font-size:18px;font-weight:700"},I.t),h("p",{class:"muted"},"Where should this live?"),tools));
-    function pick(j){var ok=j===I.a;if(ok)right++;log.push({I:I,j:j,ok:ok});picks.push([k,j]);sfx(ok?"good":"bad");if(!ok)buzz(50);
-      area.textContent="";
-      area.append(h("div",{class:"card "+(ok?"pop":"shake")},h("p",{class:"verdict "+(ok?"ok":"no"),style:"font-size:20px;font-family:var(--display)"},ok?U("placed","Right place."):"Hmm. "+L.tools[j]+"?"),
-        ok?null:h("p",null,I.oops),h("p",null,h("b",null,"Best: "+L.tools[I.a]+". "),I.why)),
-        h("button",{class:"btn",type:"button",onclick:function(){k++;if(k<L.items.length)item();else end();}},k<L.items.length-1?"Next job":"See results"));}
+    var bar=null,tools=h("div",{class:"grid2 bins"});
+    L.tools.forEach(function(tn,j){tools.append(h("button",{class:"tcard",type:"button","aria-pressed":"false",onclick:function(e){pick(j,e.currentTarget);}},h("b",null,tn)));});
+    var job=h("div",{class:"card"},h("h3",null,"Job "+(k+1)),h("p",{style:"font-size:18px;font-weight:700"},I.t),h("p",{class:"muted"},"Where should this live?"),bar?null:null,tools);
+    bar=clock(ITEM_MS,function(){pick(null,null);},area);
+    job.insertBefore(bar.el,tools);
+    area.append(job);
+    fx(job,[{opacity:0,transform:"translateX(60px)"},{opacity:1,transform:"none"}],{duration:380,easing:"cubic-bezier(.2,.8,.2,1)"});
+    function pick(j,btn){
+      if(bar)bar.stop();
+      var ok=j===I.a;if(ok)right++;log.push({I:I,j:j,ok:ok});picks.push([k,j]);sfx(ok?"good":"bad");if(!ok)buzz(50);
+      if(btn&&ok)burst(btn,"#22c55e");
+      var toolName=j==null?"Time ran out":L.tools[j]+"?";
+      fx(job,[{transform:"none",opacity:1},{transform:"translateY(40px) scale(.7)",opacity:0}],{duration:380,easing:"ease-in",fill:"forwards"});
+      area.append(h("div",{class:"card "+(ok?"pop":"shake")},h("p",{class:"verdict "+(ok?"ok":"no"),style:"font-size:20px;font-family:var(--display)"},ok?U("placed","Right place."):(j==null?"Too slow.":"Hmm. "+toolName)),
+        ok?null:h("p",null,I.oops||"The job waited too long."),h("p",null,h("b",null,"Best: "+L.tools[I.a]+". "),I.why)),
+        h("button",{class:"btn",type:"button",onclick:function(){k++;if(k<L.items.length)item();else end();}},k<L.items.length-1?"Next job":"See results"));
+    }
   }
   function end(){clear();var n=pickStars(right,L.items.length);
     app.append(h("div",null,h("h3",null,"Level "+L.id+" · Results"),h("h2",null,L.title)));
     var el=h("div",{style:"display:grid;gap:14px"});app.append(el);
-    finish(L,n,el,h("div",{class:"why"},h("p",null,"Right place for "+right+" of "+L.items.length+" jobs."),log.map(function(x){return h("div",{class:"w "+(x.ok?"best":"bad")},h("b",null,x.I.t),h("span",null,(x.ok?"":"You picked "+L.tools[x.j]+". ")+"Best: "+L.tools[x.I.a]+". "+x.I.why));})),right<3?"Kept the brand guide in a chat, and pasted it 40 times.":null);}
+    finish(L,n,el,h("div",{class:"why"},h("p",null,"Right place for "+right+" of "+L.items.length+" jobs."),log.map(function(x){return h("div",{class:"w "+(x.ok?"best":"bad")},h("b",null,x.I.t),h("span",null,(x.ok?"":(x.j==null?"Too slow. ":"You picked "+L.tools[x.j]+". "))+"Best: "+L.tools[x.I.a]+". "+x.I.why));})),right<3?"Kept the brand guide in a chat, and pasted it 40 times.":null);}
   item();
 }
 
@@ -1521,14 +1577,20 @@ function fight(L,hand,P){
     app.append(h("div",null,h("h3",null,"Level "+L.id+" · Wave "+(w+1)),h("h2",null,W.label)));
     var bar=h("div",{class:"hp"},h("i",{style:"width:"+hp+"%"}));var real=!!ENEMIES[W.foe];if(real){S.met[W.foe]=true;save();}
     var mon=monsterEl(real?W.foe:null,true,real?null:"#7b5cd6");
-    app.append(h("div",{class:"card"},h("div",{class:"bigfoe"},mon,h("div",null,h("h2",null,real?ENEMIES[W.foe].name:"Curveball"),h("div",{class:"muted"},"Boss health"))),bar));
+    var tmr=clock(WAVE_MS,function(){miss();},app);
+    app.append(h("div",{class:"card"},h("div",{class:"bigfoe"},mon,h("div",null,h("h2",null,real?ENEMIES[W.foe].name:"Curveball"),h("div",{class:"muted"},"Boss health"))),bar,h("p",{class:"muted"},"Play a card before the clock runs out."),tmr.el));
     app.append(clientBubble(L,W.msg));
     app.append(h("h3",null,"Play a card"));
     var grid=h("div",{class:"grid2"});
     hand.forEach(function(id){grid.append(h("button",{class:"tcard",type:"button","aria-pressed":"false",onclick:function(e){play(id,e.currentTarget);}},h("b",null,CARDS[id].n),h("span",null,CARDS[id].d)));});
     app.append(grid);
+    function miss(){
+      grid.style.pointerEvents="none";plays.push({id:null,q:0,w:W});
+      if(mon)mon.classList.add("taunt");sfx("bad");
+      setTimeout(show,reduce?0:500);
+    }
     function play(id,cardEl){
-      grid.style.pointerEvents="none";
+      tmr.stop();grid.style.pointerEvents="none";
       hand.splice(hand.indexOf(id),1);
       var q=W.strong.indexOf(id)>=0?3:W.ok.indexOf(id)>=0?1:0;score+=q;plays.push({id:id,q:q,w:W});
       hp=Math.max(0,hp-(q===3?25:q===1?10:0));
@@ -1545,9 +1607,9 @@ function fight(L,hand,P){
     }
     function show(){var id=plays[plays.length-1].id,q=plays[plays.length-1].q;
       clear();
-      app.append(h("div",null,h("h3",null,"Wave "+(w+1)),h("h2",null,q===3?"Direct hit":q===1?"Glancing blow":"Miss")));
+      app.append(h("div",null,h("h3",null,"Wave "+(w+1)),h("h2",null,id==null?"Too slow":q===3?"Direct hit":q===1?"Glancing blow":"Miss")));
       app.append(h("div",{class:"card pop"},h("div",{class:"hp"},h("i",{style:"width:"+hp+"%"})),
-        h("p",null,h("b",null,CARDS[id].n+": "),(W.why[id]||"This card doesn't counter "+W.label+".")),
+        h("p",null,id==null?"Claude waited, and the clock ran out before a card was played.":h("span",null,h("b",null,CARDS[id].n+": "),(W.why[id]||"This card doesn't counter "+W.label+"."))),
         q<3?h("p",{class:"muted"},"Best counter: "+W.strong.map(function(s){return CARDS[s].n;}).join(" or ")):null));
       app.append(h("button",{class:"btn",type:"button",onclick:function(){w++;if(w<L.waves.length)wave();else end();}},w<L.waves.length-1?"Next wave":"See what happened"));
     }
@@ -1557,7 +1619,7 @@ function fight(L,hand,P){
     var mast=[];if(n>=1)plays.forEach(function(p){if(p.q===3&&S.cards[p.id]!=="mastered"){S.cards[p.id]="mastered";mast.push(p.id);}});save();
     app.append(h("div",null,h("h3",null,"Level "+L.id+" · Results"),h("h2",null,L.title)));
     var el=h("div",{style:"display:grid;gap:14px"});app.append(el);
-    var rows=plays.map(function(p){return h("div",{class:"w "+(p.q===3?"best":p.q===1?"meh":"bad")},h("b",null,p.w.label+": "+CARDS[p.id].n),h("span",null,p.w.why[p.id]||"This card doesn't counter it."));});
+    var rows=plays.map(function(p){return h("div",{class:"w "+(p.q===3?"best":p.q===1?"meh":"bad")},h("b",null,p.w.label+": "+(p.id==null?"Too slow":CARDS[p.id].n)),h("span",null,p.id==null?"The clock ran out.":(p.w.why[p.id]||"This card doesn't counter it.")));});
     var det=h("div",{class:"why"},h("p",null,"Score "+score+" of 12."),rows,
       mast.length?h("p",null,h("b",null,"Mastered: "),mast.map(function(m){return CARDS[m].n;}).join(", ")):null,
       n>=1?h("div",{class:"card"},h("h3",null,THEMES[S.theme].endTitle),h("p",null,THEMES[S.theme].endText),h("p",{class:"muted"},"And Dana has one more thing for you.")):null);
