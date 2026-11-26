@@ -200,6 +200,23 @@ button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .wo-heist .txt b{text-transform:uppercase;letter-spacing:.03em}
 .wo-wizard{--accent:#7ff0d0;--accent-ink:#062a20;--muted:#b1a6dc;--display:"Cinzel",Georgia,serif;background:#24194a;color:#f3eeff;border-color:#7ff0d0}
 .world .txt .muted{color:var(--muted)}
+.split{display:grid;gap:14px;grid-template-areas:"board" "play" "extra"}
+.col{display:grid;gap:14px;align-content:start;min-width:0}
+@media (min-width:900px){
+  #app{max-width:780px;padding-top:28px}
+  #app.wide{max-width:1180px;padding-left:32px;padding-right:32px}
+  .split{grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);grid-template-areas:"board play" "extra play";column-gap:28px}
+  .worlds{grid-template-columns:repeat(3,minmax(0,1fr));align-items:stretch}
+  .worlds .world{height:100%}
+  .world .art{height:240px}
+  #app.picker{min-height:100vh;align-content:center;gap:22px}
+  .world .txt{padding:20px 22px 22px}
+  .world .txt b{font-size:26px}
+  .world .txt .muted{font-size:16px}
+  .tower,.sky{max-width:560px}
+  #app.wide .grid2{grid-template-columns:repeat(3,minmax(0,1fr))}
+  h1{font-size:34px}
+}
 </style>
 </head>
 <body>
@@ -216,7 +233,7 @@ var reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
 function h(t,a){var e=document.createElement(t);a=a||{};for(var k in a){var v=a[k];if(v==null||v===false)continue;if(k==="class")e.className=v;else if(k.slice(0,2)==="on")e.addEventListener(k.slice(2),v);else e.setAttribute(k,v===true?"":v);}
   for(var i=2;i<arguments.length;i++)add(e,arguments[i]);return e;}
 function add(e,c){if(c==null||c===false)return;if(Array.isArray(c)){c.forEach(function(x){add(e,x)});return;}e.append(c.nodeType?c:document.createTextNode(String(c)));}
-function clear(){app.textContent="";window.scrollTo(0,0);}
+function clear(){app.textContent="";app.className="";window.scrollTo(0,0);}
 function starsEl(n,max){max=max||3;var s=h("span",{class:"stars","aria-label":n+" of "+max+" stars"});for(var i=0;i<max;i++)s.append(h("span",{class:i<n?"":"off"},"★"));return s;}
 
 /* ---------- save ---------- */
@@ -682,7 +699,7 @@ function switchTo(k){
   var sv=(S.saves&&S.saves[k])||{stars:{},cards:{},met:{},bloopers:[]};
   S.stars=sv.stars;S.cards=sv.cards;S.met=sv.met;S.bloopers=sv.bloopers;S.theme=k;S.tab="play";save();applyTheme();home();}
 function themePicker(){
-  clear();document.documentElement.setAttribute("data-skin","picker");var cur=S.theme&&THEMES[S.theme]?S.theme:null;
+  clear();app.className="wide picker";document.documentElement.setAttribute("data-skin","picker");var cur=S.theme&&THEMES[S.theme]?S.theme:null;
   if(cur)app.append(h("button",{class:"link",type:"button",onclick:function(){applyTheme();home();},style:"justify-self:start"},"← Back to "+THEMES[cur].tag));
   app.append(h("div",null,h("h3",null,"Claude Quest"),h("h1",null,cur?"Switch world":"Choose your world"),h("p",{class:"muted"},"Every world teaches the same skills, with its own story. Each world keeps its own progress, so you can switch anytime and pick up where you left off.")));
   var heistArt=function(){var a=h("div",{class:"art"});["N","D","L"].forEach(function(c,i){a.append(h("span",{style:"left:"+(22+i*80)+"px;rotate:"+[-5,4,-3][i]+"deg"},c));});
@@ -721,7 +738,7 @@ function unlocked(id){return id===0||(S.stars[id-1]||0)>=1;}
 
 /* ---------- home ---------- */
 function home(){
-  clear();app.append(header());
+  clear();app.className="wide";app.append(header());
   if(S.tab==="toolkit")return toolkit();
   if(S.tab==="bestiary")return bestiary();
   var saved=(S.stars[5]||0)>=1;
@@ -732,16 +749,18 @@ function home(){
     if(saved)st.push({n:"Omar",lit:false});st.push({mys:true});vis=starMap(st);}
   else{var people=LEVELS.filter(function(L){return L.dept&&unlocked(L.id);}).map(function(L){return{n:L.client,role:L.role,lit:(S.stars[L.id]||0)>=1};});
     if(saved)people.push({n:"Omar",role:"the Archivist",lit:false});people.push({mys:true});vis=crewBoard(people);}
-  app.append(h("div",{class:"card"},h("h3",null,T.boardTitle),vis,h("p",{class:"muted"},saved?T.done:T.todo)));
-  app.append(h("h2",null,T.h2));
-  app.append(h("p",{class:"muted"},"This isn't a prompt-writing game. "+T.every+" asking well, catching made-up facts, rescuing chats that go wrong, choosing the right tool, and more you'll find on the way."));
+  var gb=h("div",{class:"col",style:"grid-area:board"}),gp=h("div",{class:"col",style:"grid-area:play"}),gx=h("div",{class:"col",style:"grid-area:extra"});
+  app.append(h("div",{class:"split"},gb,gp,gx));
+  gb.append(h("div",{class:"card"},h("h3",null,T.boardTitle),vis,h("p",{class:"muted"},saved?T.done:T.todo)));
+  gp.append(h("h2",null,T.h2));
+  gp.append(h("p",{class:"muted"},"This isn't a prompt-writing game. "+T.every+" asking well, catching made-up facts, rescuing chats that go wrong, choosing the right tool, and more you'll find on the way."));
   var shown=LEVELS.filter(function(L){return unlocked(L.id);});
-  app.append(h("div",{class:"levels"},shown.map(function(L){return h("button",{class:"lvl",type:"button",onclick:function(){start(L);}},
+  gp.append(h("div",{class:"levels"},shown.map(function(L){return h("button",{class:"lvl",type:"button",onclick:function(){start(L);}},
     h("span",{class:"num"},L.secret?"+":L.id),h("span",{class:"t"},h("b",null,L.title),h("span",null,(L.skill||L.type)+" · "+L.type)),starsEl(S.stars[L.id]||0));}),
     h("button",{class:"lvl",type:"button",disabled:true},h("span",{class:"num"},"?"),h("span",{class:"t"},h("b",null,"???"),h("span",null,"Clear the level above to find out")))));
-  if(saved)app.append(shareCard());
-  if((S.stars[6]||0)>=1)app.append(h("div",{class:"card"},h("h3",null,"Your inbox"),h("p",null,T.inbox),h("p",{class:"muted"},T.inboxNote)));
-  app.append(h("div",{class:"card"},h("h3",null,"Credits"),
+  if(saved)gx.append(shareCard());
+  if((S.stars[6]||0)>=1)gp.append(h("div",{class:"card"},h("h3",null,"Your inbox"),h("p",null,T.inbox),h("p",{class:"muted"},T.inboxNote)));
+  gx.append(h("div",{class:"card"},h("h3",null,"Credits"),
     h("p",null,"Designed by ",h("b",null,CREATOR.name)," and built together with Claude. Ravi is a QA lead who wanted a fun way to master Claude."),
     h("div",{class:"row"},h("a",{class:"btn alt",href:CREATOR.github,target:"_blank",rel:"noopener",style:"text-align:center;text-decoration:none"},"Source on GitHub"),h("a",{class:"btn alt",href:CREATOR.linkedin,target:"_blank",rel:"noopener",style:"text-align:center;text-decoration:none"},"LinkedIn")),
     h("p",{class:"muted"},"A fan-made game, not affiliated with or endorsed by Anthropic."),
