@@ -674,7 +674,7 @@ function themePicker(){
   app.append(h("div",{class:"worlds"},["office","heist","wizard"].map(function(k){var T=THEMES[k];
     return h("button",{class:"world "+k,type:"button",onclick:function(){sfx("good");if(k===cur)home();else switchTo(k);}},k==="office"?officeArt():k==="heist"?heistArt():wizardArt(),
       h("div",{class:"txt"},h("b",null,T.name+": "+T.tag),h("span",{class:"muted"},T.pitch),(function(){var p=progressOf(k);return h("span",{style:"font-weight:700"},k===cur?"Playing now: ★ "+p.stars+", "+p.cards+" cards":p.started?"Continue: ★ "+p.stars+", "+p.cards+" cards":"Start this world");})()));})));
-  app.append(h("p",{class:"foot"},"A game by "+CREATOR.name+". Plays offline. No sign-up, no tokens."));
+  app.append(h("p",{class:"foot"},"By "+CREATOR.name+", built with Claude. Plays offline. No sign-up, no tokens."));
 }
 
 /* ---------- shared pieces ---------- */
@@ -682,7 +682,7 @@ function header(){
   var total=0;for(var k in S.stars)total+=S.stars[k];
   var mastered=0,earned=0;for(var c in S.cards){earned++;if(S.cards[c]==="mastered")mastered++;}
   return h("div",{class:"card"},
-    h("div",{class:"top"},h("div",null,h("h3",null,THEMES[S.theme].tag),h("h1",null,"Claude Quest"),h("div",{class:"muted"},"A game by "+CREATOR.name)),
+    h("div",{class:"top"},h("div",null,h("h3",null,THEMES[S.theme].tag),h("h1",null,"Claude Quest"),h("div",{class:"muted"},"By "+CREATOR.name+", built with Claude")),
       h("div",{class:"tabs",role:"tablist"},
         ["play","toolkit","bestiary"].map(function(t){return h("button",{class:"tab",type:"button","aria-current":S.tab===t?"true":"false",onclick:function(){S.tab=t;save();home();}},t==="play"?"Play":t==="toolkit"?"Toolkit":"Bestiary");}))),
     h("div",{class:"stats"},h("span",{class:"pill"},"★ "+total),h("span",{class:"pill"},"Cards "+earned+" earned, "+mastered+" mastered"),
@@ -724,9 +724,9 @@ function home(){
   if(saved)app.append(shareCard());
   if((S.stars[6]||0)>=1)app.append(h("div",{class:"card"},h("h3",null,"Your inbox"),h("p",null,T.inbox),h("p",{class:"muted"},T.inboxNote)));
   app.append(h("div",{class:"card"},h("h3",null,"Credits"),
-    h("p",null,"Designed and built by ",h("b",null,CREATOR.name),", a QA lead who wanted a fun way to master Claude."),
+    h("p",null,"Designed by ",h("b",null,CREATOR.name)," and built together with Claude. Ravi is a QA lead who wanted a fun way to master Claude."),
     h("div",{class:"row"},h("a",{class:"btn alt",href:CREATOR.github,target:"_blank",rel:"noopener",style:"text-align:center;text-decoration:none"},"Source on GitHub"),h("a",{class:"btn alt",href:CREATOR.linkedin,target:"_blank",rel:"noopener",style:"text-align:center;text-decoration:none"},"LinkedIn")),
-    h("p",{class:"muted"},"Built with the help of Claude. A fan-made game, not affiliated with or endorsed by Anthropic."),
+    h("p",{class:"muted"},"A fan-made game, not affiliated with or endorsed by Anthropic."),
     (function(){var box=h("div",null);var go=h("button",{class:"link",type:"button",style:"justify-self:start"},"Restart this world from the beginning");
       go.addEventListener("click",function(){box.textContent="";box.append(h("p",null,"This clears your stars, cards and bloopers in "+THEMES[S.theme].tag+" only. Your other worlds keep their progress."),
         h("div",{class:"row"},h("button",{class:"btn alt",type:"button",onclick:home},"Keep playing"),h("button",{class:"btn",type:"button",onclick:function(){S.stars={};S.cards={};S.met={};S.bloopers=[];save();home();}},"Yes, restart")));});

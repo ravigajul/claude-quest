@@ -4,7 +4,7 @@ A free browser game for learning to work well with Claude. It runs on any phone 
 
 **Play it:** https://claude.ai/artifact/ATSajzDMnM3J8J4q4CZiAf
 
-Created by [Ravi Gajul](https://www.linkedin.com/in/ravigajul).
+Designed by [Ravi Gajul](https://www.linkedin.com/in/ravigajul), built together with Claude.
 
 ## Why I built it
 
