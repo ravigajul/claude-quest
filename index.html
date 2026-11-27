@@ -549,6 +549,81 @@ body[data-level="2"] #objective { background: #3d0a3f !important; border-color: 
 body[data-level="3"] #objective { background: #06392b !important; border-color: var(--lvl) !important; }
 .credit { font-family: var(--f-mono); font-size: .78rem; letter-spacing: .04em; color: var(--muted); }
 .credit b { color: var(--amber); font-weight: 600; }
+
+/* ---------- Mission select ---------- */
+.hub { overflow-y: auto; align-content: start; background: linear-gradient(180deg, rgba(5,7,22,.86), rgba(5,7,22,.94)); backdrop-filter: blur(3px); }
+.hub-in { width: min(72rem, 100%); margin: 0 auto; padding: 3rem 1.5rem; display: grid; gap: 1rem; }
+.hub-title { margin: 0; font-family: var(--f-display); font-weight: 800; font-size: clamp(2rem, 4vw, 3.2rem); color: #fff; line-height: 1.05; }
+.hub-sub { margin: 0; color: #d9dcf5; font-size: calc(1rem * var(--rs)); max-width: 46rem; line-height: 1.5; }
+.hub-sub b { color: var(--amber); }
+.hub-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: .6rem; }
+.mission { text-align: left; display: grid; gap: .5rem; align-content: start; padding: 1.3rem; border-radius: 12px; background: #0e1233; border: 1px solid rgba(255,181,71,.45); color: var(--ink); font: inherit; cursor: pointer; transition: transform .2s, border-color .2s, box-shadow .2s; }
+.mission:hover, .mission:focus-visible { transform: translateY(-3px); border-color: #ffb547; box-shadow: 0 0 40px rgba(255,181,71,.2); }
+.mission.m2c { border-color: rgba(92,200,255,.5); background: #0a1a33; }
+.mission.m2c:hover, .mission.m2c:focus-visible { border-color: #5cc8ff; box-shadow: 0 0 40px rgba(92,200,255,.22); }
+.mission.locked { opacity: .5; cursor: default; border-style: dashed; border-color: rgba(255,255,255,.2); }
+.mission.locked:hover { transform: none; box-shadow: none; }
+.mission b { font-family: var(--f-display); font-weight: 800; font-size: calc(2rem * var(--rs)); color: #fff; line-height: 1; }
+.m-num { font-family: var(--f-mono); font-size: .72rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.m-pitch { font-size: calc(.95rem * var(--rs)); line-height: 1.5; color: #e2e4fa; }
+.m-learn { font-family: var(--f-mono); font-size: calc(.72rem * var(--rs)); line-height: 1.6; color: #ffcf8a; }
+.m2c .m-learn { color: #9fdcff; }
+.m-status { font-family: var(--f-mono); font-size: .75rem; color: #7dffb2; }
+.m-status:empty { display: none; }
+
+@media (max-width: 760px) { .hub-grid { grid-template-columns: 1fr; } }
+/* ---------- Knowledge check ---------- */
+.qz-card { max-width: 44rem; }
+.qz-q { font-size: calc(1.9rem * var(--rs)) !important; line-height: 1.15 !important; }
+.qz-opts { display: grid; gap: .5rem; }
+.qz-opts .c-opt.right { border-color: #7dffb2; background: rgba(125,255,178,.12); }
+.qz-opts .c-opt.wrong { border-color: var(--hot); background: rgba(255,77,109,.12); }
+.qz-opts .c-opt:disabled { cursor: default; }
+.qz-fb { margin: 0; padding: .8rem .9rem; border-radius: 8px; font-size: calc(.95rem * var(--rs)); line-height: 1.5; }
+.qz-fb.ok { background: rgba(125,255,178,.1); border: 1px solid rgba(125,255,178,.5); color: #dfffee; }
+.qz-fb.bad { background: rgba(255,77,109,.1); border: 1px solid rgba(255,77,109,.5); color: #ffe3e9; }
+
+/* ---------- Mission 2 ---------- */
+body[data-level="m2"] { --lvl: #5cc8ff; --amber: #5cc8ff; --night: #04122a; --panel: rgba(8, 30, 64, .9); --line: rgba(92, 200, 255, .4); --muted: #9fc6e6; }
+body:has(#m2:not([hidden])) #hud, body:has(#hub:not([hidden])) #hud { opacity: 0 !important; pointer-events: none; }
+.m2 { overflow-y: auto; align-content: start; background: linear-gradient(180deg, rgba(4,18,42,.55), rgba(4,18,42,.92) 30%); }
+.m2-in { width: min(96rem, 100%); margin: 0 auto; padding: 1.2rem 1.2rem 2rem; display: grid; gap: 1rem; }
+.m2-head { display: flex; justify-content: space-between; align-items: end; gap: 1rem; flex-wrap: wrap; }
+.m2-head h2 { margin: .2rem 0 0; font-family: var(--f-display); font-weight: 800; font-size: calc(2rem * var(--rs)); color: #fff; line-height: 1.05; }
+.m2-head-r { display: flex; gap: .8rem; align-items: center; }
+.m2-runs { font-family: var(--f-mono); font-size: .85rem; color: var(--lvl); }
+.m2-grid { display: grid; grid-template-columns: minmax(15rem, .9fr) minmax(20rem, 1.25fr) minmax(20rem, 1.25fr); gap: 1rem; align-items: start; }
+@media (max-width: 1050px) { .m2-grid { grid-template-columns: 1fr; } }
+.m2-col { display: grid; gap: 1rem; min-width: 0; }
+.m2-card { background: #0a1c3d; border: 1px solid rgba(92,200,255,.35); border-radius: 10px; padding: .9rem 1rem; display: grid; gap: .55rem; min-width: 0; }
+.m2-msg { margin: 0; font-size: calc(.95rem * var(--rs)); color: #e6f2ff; line-height: 1.5; }
+.m2-story { margin: 0; padding: .7rem .8rem; border-left: 3px solid var(--lvl); background: rgba(92,200,255,.08); font-size: calc(1.02rem * var(--rs)); color: #fff; line-height: 1.5; }
+.m2-goal { margin: 0; font-size: calc(.88rem * var(--rs)); color: #cfe6fa; line-height: 1.5; }
+.m2-src { margin: 0; padding: 0; list-style: none; display: grid; gap: .5rem; font-size: calc(.86rem * var(--rs)); line-height: 1.45; color: #cfe6fa; }
+.m2-src li { padding: .5rem .6rem; border-radius: 6px; border: 1px dashed rgba(255,255,255,.18); }
+.m2-src li.used { border: 1px solid #7dffb2; background: rgba(125,255,178,.07); }
+.m2-src li.used::after { content: "  \2713 in the prompt"; color: #7dffb2; font-family: var(--f-mono); font-size: .72rem; }
+.m2-src b { color: #fff; font-family: var(--f-mono); font-size: .82em; }
+.m2-group { display: grid; gap: .35rem; margin-bottom: .55rem; }
+.m2-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+.m2-chip { cursor: pointer; font: inherit; font-size: calc(.84rem * var(--rs)); text-align: left; padding: .45rem .7rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.25); background: rgba(255,255,255,.04); color: #dce9f7; transition: background .15s, border-color .15s; }
+.m2-chip:hover { border-color: var(--lvl); }
+.m2-chip.on { background: var(--lvl); border-color: var(--lvl); color: #04122a; font-weight: 600; }
+.m2-chip.on::before { content: "\2713  "; }
+.m2-pre { margin: 0; font-family: var(--f-mono); font-size: calc(.78rem * var(--rs)); line-height: 1.55; white-space: pre-wrap; word-break: break-word; color: #e6f2ff; background: rgba(0,0,0,.35); border-radius: 6px; padding: .7rem .8rem; max-height: 22rem; overflow: auto; }
+.m2-pre.out:empty::before { content: "Nothing yet. Build a prompt and send it."; color: var(--muted); }
+#m2-run { justify-self: start; }
+#m2-run:disabled { opacity: .5; cursor: not-allowed; }
+.m2-score { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.m2-score div { display: grid; gap: .1rem; padding: .5rem .6rem; border-radius: 6px; background: rgba(255,255,255,.04); }
+.m2-score span { font-size: calc(.75rem * var(--rs)); color: var(--muted); }
+.m2-score b { font-family: var(--f-display); font-size: calc(1.6rem * var(--rs)); line-height: 1; }
+.m2-score b.ok { color: #7dffb2; } .m2-score b.bad { color: #ff7d93; }
+.m2-notes { margin: 0; padding-left: 1.1rem; display: grid; gap: .4rem; font-size: calc(.86rem * var(--rs)); line-height: 1.45; color: #ffd9e0; }
+.m2-final { border-color: #7dffb2; }
+.m2-final h3 { margin: 0; font-family: var(--f-display); font-size: calc(1.8rem * var(--rs)); color: #fff; }
+body:has(#m2:not([hidden])) .result { z-index: 45; }
+body:has(#m2:not([hidden])) .toast, body:has(#hub:not([hidden])) .toast { z-index: 70; }
 </style>
 </head>
 <body>
@@ -571,6 +646,121 @@ body[data-level="3"] #objective { background: #06392b !important; border-color: 
     <button id="start" class="btn-primary" type="button">Wake up</button>
     <span class="proto-note">Prototype · one mission · about 12 minutes · opens full screen, sound on</span>
     <span class="credit">Created by <b>Ravi Gajul</b>, built together with Claude</span>
+  </div>
+</section>
+
+<section id="hub" class="screen hub" hidden aria-label="Choose a mission">
+  <div class="hub-in">
+    <span class="eyebrow">Choose a mission</span>
+    <h2 class="hub-title">Every mission teaches different Claude skills</h2>
+    <p class="hub-sub">Each one starts and ends with the same 5 quick questions, so you can see what you learned. Your Field Guide fills in as you play: <b id="hub-count">0/29</b> concepts.</p>
+    <div class="hub-grid">
+      <button class="mission" id="go-m1" type="button" data-m="m1">
+        <span class="m-num">Mission 1 · 3 levels · about 12 min</span>
+        <b>Release Day</b>
+        <span class="m-pitch">You are the AI agent in a time loop. Fix the failing tests before 5:00 PM. Only your notes survive.</span>
+        <span class="m-learn">Context window · CLAUDE.md memory · compaction · subagents · MCP · plan mode · permissions · skills · hooks</span>
+        <span class="m-status" id="st-m1"></span>
+      </button>
+      <button class="mission m2c" id="go-m2" type="button" data-m="m2">
+        <span class="m-num">Mission 2 · new · about 8 min</span>
+        <b>The Vague Story</b>
+        <span class="m-pitch">A product owner sends a one-line user story. Build the prompt that turns it into test cases you can import into Azure DevOps.</span>
+        <span class="m-learn">Specific prompts · examples · structured output · screenshots · role and audience · clarifying questions · no invented facts</span>
+        <span class="m-status" id="st-m2"></span>
+      </button>
+      <div class="mission locked">
+        <span class="m-num">Mission 3 · coming soon</span>
+        <b>Contract Drift</b>
+        <span class="m-pitch">An API changed silently and the tests still pass.</span>
+        <span class="m-learn">/review · custom slash commands · headless claude -p in CI · choosing a model</span>
+      </div>
+      <div class="mission locked">
+        <span class="m-num">Mission 4 · coming soon</span>
+        <b>Night Shift</b>
+        <span class="m-pitch">Three tasks, one night, several Claudes at once.</span>
+        <span class="m-learn">Resuming sessions · worktrees · custom subagents · plugins</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="quiz" class="levelup" hidden role="dialog" aria-modal="true" aria-labelledby="qz-q">
+  <div class="lv-card qz-card">
+    <span id="qz-tag" class="lv-tag"></span>
+    <div class="lv-pips" id="qz-pips"></div>
+    <h2 id="qz-q" class="qz-q"></h2>
+    <p id="qz-sub" class="lv-goal"></p>
+    <div id="qz-opts" class="qz-opts"></div>
+    <p id="qz-fb" class="qz-fb" hidden></p>
+    <div class="btn-row"><button id="qz-next" class="btn-primary small" type="button" hidden>Next</button><button id="qz-skip" class="btn" type="button" hidden>Skip the check</button></div>
+  </div>
+</div>
+
+<section id="m2" class="screen m2" hidden aria-label="Mission 2: The Vague Story">
+  <div class="m2-in">
+    <header class="m2-head">
+      <div><span class="eyebrow">Mission 2 · The Vague Story</span><h2>Turn a one-line story into test cases Priya can import</h2></div>
+      <div class="m2-head-r"><span id="m2-runs" class="m2-runs"></span><button id="m2-run-top" class="btn solid" type="button">Send to Claude</button><button id="m2-back" class="btn" type="button">Missions</button></div>
+    </header>
+    <div class="m2-grid">
+      <div class="m2-col">
+        <div class="m2-card">
+          <span class="r-lbl">Priya · product owner</span>
+          <p class="m2-msg">"Can you get test cases for this into Azure DevOps before sprint planning? Thanks!"</p>
+          <p class="m2-story">As a member, I want to apply a promo code at checkout so that I can save money.</p>
+        </div>
+        <div class="m2-card">
+          <span class="r-lbl">Where the details might live</span>
+          <ul class="m2-src">
+            <li id="m2-src-ticket"><b>ADO-4821</b> · the ticket, with acceptance criteria. Not in the chat: Claude can only see it through the Azure DevOps MCP connector.</li>
+            <li id="m2-src-design"><b>checkout-promo-design.png</b> · the design. Field limits and button states are only visible there.</li>
+            <li id="m2-src-priya"><b>Priya</b> · knows rules nobody wrote down. She answers questions.</li>
+          </ul>
+        </div>
+        <div class="m2-card" id="m2-chat" hidden>
+          <span class="r-lbl">Priya replied</span>
+          <p class="m2-msg">"1) Not case-sensitive. 2) No, never on gift cards. 3) One code per order."</p>
+        </div>
+        <div class="m2-card">
+          <span class="r-lbl">How to win</span>
+          <p class="m2-goal">All 10 requirements covered, nothing invented, steps a manual tester can follow, and importable into Azure DevOps. You have 6 sessions.</p>
+        </div>
+      </div>
+      <div class="m2-col">
+        <div class="m2-card">
+          <span class="r-lbl">Build your prompt: tap parts to add or remove them</span>
+          <div id="m2-parts"></div>
+        </div>
+        <div class="m2-card">
+          <span class="r-lbl">The prompt Claude will receive</span>
+          <pre id="m2-prompt" class="m2-pre"></pre>
+          <button id="m2-run" class="btn-primary small" type="button">Send to Claude</button>
+        </div>
+      </div>
+      <div class="m2-col">
+        <div class="m2-card">
+          <span class="r-lbl" id="m2-out-h"></span>
+          <pre id="m2-out" class="m2-pre out"></pre>
+        </div>
+        <div class="m2-card" id="m2-review" hidden>
+          <span class="r-lbl">Review by your QA lead</span>
+          <div class="m2-score">
+            <div><span>Requirements covered</span><b id="m2-cov"></b></div>
+            <div><span>Invented rules</span><b id="m2-inv"></b></div>
+            <div><span>Manual testers can run it</span><b id="m2-use"></b></div>
+            <div><span>Imports into Azure DevOps</span><b id="m2-imp"></b></div>
+          </div>
+          <ul id="m2-notes" class="m2-notes"></ul>
+        </div>
+      </div>
+    </div>
+    <div class="m2-card m2-final" id="m2-final" hidden>
+      <span class="r-lbl">Mission complete · <span id="m2-final-score"></span></span>
+      <h3>Your prompt is a template you can use at work tomorrow</h3>
+      <pre id="m2-final-prompt" class="m2-pre"></pre>
+      <div class="btn-row"><button id="m2-copy" class="btn solid" type="button">Copy prompt</button><button id="m2-again" class="btn" type="button">Play again</button><button id="m2-hub" class="btn" type="button">Back to missions</button></div>
+    </div>
   </div>
 </section>
 
@@ -666,7 +856,7 @@ body[data-level="3"] #objective { background: #06392b !important; border-color: 
       <h3>Your save files are real Claude Code setup</h3>
       <p class="sub">Everything you carved in the loop, in the real formats. Drop them into a repo and Claude Code uses them from the next session on.</p>
       <div id="m-files" class="mfiles"></div>
-      <div class="btn-row"><button id="m-again" class="btn" type="button">Play again</button></div>
+      <div class="btn-row"><button id="m-again" class="btn" type="button">Play again</button><button id="m-hub" class="btn solid" type="button">Next mission</button></div>
     </div>
     <p class="feedback">Created by <b>Ravi Gajul</b>, built together with Claude. Prototype: more missions coming.</p>
   </div>

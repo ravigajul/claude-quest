@@ -1,6 +1,8 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
 import { MISSION as M } from './mission.js';
 import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js';
+import { runQuiz } from './quiz.js';
+import { startMission2 } from './mission2.js';
 import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js';
 
 const $ = sel => document.querySelector(sel);
@@ -853,7 +855,9 @@ async function win() {
   await scene.sunrise();
   await line('sys', 'The clock moves past 5:00 PM for the first time. The loop is broken.');
   await wait(reduced ? 200 : 1200);
-  showMirror();
+  markDone('m1');
+  const q = await runQuiz('m1', 'post');
+  showMirror(q);
 }
 
 function buildClaudeMd() {
@@ -884,7 +888,7 @@ function buildClaudeMd() {
   ].join('\n');
 }
 
-function showMirror() {
+function showMirror(q) {
   $('#m-loops').textContent = S.loop;
   $('#m-time').textContent = `${Math.max(0, M.endMinute - S.minute)} min`;
   $('#m-peak').textContent = `${Math.round(S.peak)}k`;
@@ -892,6 +896,7 @@ function showMirror() {
   let v = `${S.loop} loops. You fixed it, proved it, and taught the next session how not to repeat it.`;
   v += S.wrongGuesses ? ` ${S.wrongGuesses} wrong diagnosis${S.wrongGuesses > 1 ? 'es' : ''}.` : ' Every diagnosis matched the evidence.';
   v += S.hintsUsed ? ` ${S.hintsUsed} hint${S.hintsUsed > 1 ? 's' : ''} used.` : ' No hints used.';
+  if (q && q.score != null) v += q.before != null ? ` Knowledge check: ${q.before}/${q.total} before, ${q.score}/${q.total} now.` : ` Knowledge check: ${q.score}/${q.total}.`;
   $('#m-verdict').textContent = v;
 
   const tr = $('#m-transcript');
@@ -917,9 +922,10 @@ function showMirror() {
     d.append(b, p);
     cc.appendChild(d);
   }
+  const other = GUIDE.filter(g => g.mission !== 'm1');
   const more = document.createElement('div'); more.className = 'concept missed';
-  const mb = document.createElement('b'); mb.textContent = `${GUIDE.length - m1.length} more concepts in Missions 2 to 4 (coming soon)`;
-  const mp = document.createElement('p'); mp.textContent = GUIDE.filter(g => g.mission !== 'm1').map(g => g.name).join(' · ');
+  const mb = document.createElement('b'); mb.textContent = `${other.length} more concepts in the other missions. Mission 2, The Vague Story, is ready to play.`;
+  const mp = document.createElement('p'); mp.textContent = other.map(g => g.name).join(' · ');
   more.append(mb, mp); cc.appendChild(more);
 
   const files = [{ name: 'CLAUDE.md', where: 'repo root', data: buildClaudeMd() }];
@@ -1011,6 +1017,54 @@ function resetGame() {
   startLoop();
 }
 
+// ---------- missions ----------
+function markDone(m) { try { localStorage.setItem(`cq-done-${m}`, '1'); } catch (e) {} }
+function isDone(m) { try { return localStorage.getItem(`cq-done-${m}`) === '1'; } catch (e) { return false; } }
+
+function showHub() {
+  document.body.classList.remove('playing', 'dawn');
+  applyTheme(1);
+  $('#hub-count').textContent = `${learned.size}/${GUIDE.length}`;
+  $('#st-m1').textContent = isDone('m1') ? '\u2713 Completed · play again any time' : '';
+  $('#st-m2').textContent = isDone('m2') ? '\u2713 Completed · play again any time' : '';
+  $('#hub').hidden = false;
+  $('#hub').scrollTop = 0;
+  (isDone('m1') && !isDone('m2') ? $('#go-m2') : $('#go-m1')).focus({ preventScroll: true });
+}
+
+function goHub() {
+  Object.assign(S, fresh());
+  shownLevel = 0;
+  $('#mirror').hidden = true;
+  $('#m2').hidden = true;
+  scene.resetDay();
+  renderHud();
+  showHub();
+}
+
+async function playMission1() {
+  $('#hub').hidden = true;
+  Object.assign(S, fresh());
+  shownLevel = 0;
+  scene.resetDay();
+  applyTheme(1);
+  renderHud();
+  await runQuiz('m1', 'pre');
+  await showBrief();
+  document.body.classList.add('playing');
+  startLoop();
+}
+
+async function playMission2() {
+  $('#hub').hidden = true;
+  document.body.dataset.level = 'm2';
+  scene.setTheme && scene.setTheme('#04122a', '#0b3a66');
+  await runQuiz('m2', 'pre');
+  startMission2({
+    $, learn, BY_ID, showResult, sfx, toast, runQuiz, goHub, markDone,
+  });
+}
+
 // ---------- boot ----------
 async function main() {
   await boot3d();
@@ -1025,7 +1079,7 @@ async function main() {
     enterFullscreen();
     initAudio();
     $('#intro').hidden = true;
-    showBrief().then(() => { document.body.classList.add('playing'); startLoop(); });
+    showHub();
   });
   $('#mute').addEventListener('click', () => {
     initAudio();
@@ -1034,6 +1088,9 @@ async function main() {
     $('#mute').setAttribute('aria-pressed', String(isMuted()));
   });
   $('#m-again').addEventListener('click', resetGame);
+  $('#m-hub').addEventListener('click', goHub);
+  $('#go-m1').addEventListener('click', playMission1);
+  $('#go-m2').addEventListener('click', playMission2);
   setupTextSize();
   setupFullscreen();
 }

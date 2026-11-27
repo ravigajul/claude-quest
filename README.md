@@ -27,7 +27,7 @@ That isn't a metaphor laid over Claude. It's how Claude actually works:
 | Carving a procedure every future session follows | Skills (`SKILL.md`) |
 | Setting tests to run on their own | Hooks (`settings.json`) |
 
-## Three levels
+## Mission 1: Release Day (three levels)
 
 1. **Amnesia.** You're meant to fail, and you learn what's worth writing down.
 2. **The Clone and the Portal.** Use your notes, a subagent and MCP to diagnose, fix and prove it.
@@ -35,6 +35,14 @@ That isn't a metaphor laid over Claude. It's how Claude actually works:
 
 Every concept you meet unlocks in the **Field Guide**, with how to do it in Claude Code and a small exercise to try at work.
 At the end you can download a real `CLAUDE.md`, `SKILL.md` and `settings.json` hook built from your choices.
+
+## Mission 2: The Vague Story
+
+A product owner sends a one-line user story. You build a prompt from parts (role, task, the ADO ticket through MCP, a design screenshot, clarifying questions, an example, the output format and a "don't invent facts" rule) and send it. Each run shows what Claude produces and a QA lead's review: requirements covered, invented rules, whether manual testers can run it, and whether it imports into Azure DevOps. You learn what each part of a prompt does by watching the output change. At the end you keep the prompt as a template.
+
+## See what you learned
+
+Each mission starts and ends with the same five real-world questions, so you can see the difference, for example "Before: 2/5 → Now: 5/5".
 
 ## Tech
 
