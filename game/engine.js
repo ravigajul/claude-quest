@@ -1,9 +1,9 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js';
-import { runQuiz } from './quiz.js';
-import { startMission2 } from './mission2.js';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js';
+import { MISSION as M } from './mission.js?v=20261127120520';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127120520';
+import { runQuiz } from './quiz.js?v=20261127120520';
+import { startMission2 } from './mission2.js?v=20261127120520';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127120520';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -15,7 +15,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js');
+    const mod = await import('./scene3d.js?v=20261127120520');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
