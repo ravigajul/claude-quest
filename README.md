@@ -112,3 +112,7 @@ This is a prototype. At the end of each mission you can tap 👍 or 👎, or use
 ## License
 
 MIT © 2026 Ravi Gajul (see [LICENSE](LICENSE)). Third-party code keeps its own license: Three.js (MIT, `vendor/three/LICENSE`) and the GoatCounter counter script (ISC, header in `vendor/goatcounter/count.js`).
+
+## Credits
+
+Some sound effects are recordings by [Kenney](https://www.kenney.nl) (Interface Sounds, Impact Sounds; CC0, public domain). Sources are listed in `vendor/kenney-sounds/SOURCES.md`. Three.js is MIT licensed.

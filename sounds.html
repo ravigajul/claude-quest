@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>5:00 PM Forever · sound board</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; background: #0b0e26; color: #e8eaff; }
+  main { max-width: 64rem; margin: 0 auto; padding: 2rem 1.2rem 3rem; display: grid; gap: 1rem; }
+  h1 { margin: 0; font-size: 2rem; line-height: 1.1; }
+  p { margin: 0; color: #c6cbef; }
+  .bar { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; }
+  button, select { font: inherit; border-radius: 8px; border: 1px solid #4a5190; background: #161b45; color: #fff; padding: .45rem .8rem; cursor: pointer; }
+  button:hover { border-color: #ffb547; }
+  button:focus-visible, select:focus-visible { outline: 3px solid #ffb547; outline-offset: 2px; }
+  .take[aria-pressed="true"] { border-color: #8dffbf; color: #8dffbf; }
+  .takes { margin-top: .35rem; font-size: .85rem; }
+  button.new { background: #ffb547; color: #1a1030; border-color: #ffb547; font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  th, td { text-align: left; padding: .6rem .5rem; border-bottom: 1px solid #262c63; vertical-align: top; }
+  th { font-size: .75rem; letter-spacing: .08em; text-transform: uppercase; color: #9aa1d8; font-weight: 600; }
+  td b { display: block; color: #fff; }
+  .when { color: #aab0e0; font-size: .85rem; }
+  .m { font-family: ui-monospace, Menlo, monospace; font-size: .8rem; color: #c9cdf3; white-space: nowrap; }
+  .m .old { color: #ff9aa8; } .m .newv { color: #8dffbf; }
+  #out { width: 100%; min-height: 8rem; font: .85rem/1.5 ui-monospace, Menlo, monospace; background: #070a1f; color: #e8eaff; border: 1px solid #262c63; border-radius: 8px; padding: .7rem; }
+  .note { font-size: .85rem; color: #9aa1d8; }
+  @media (max-width: 720px) { .hide-sm { display: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Sound board</h1>
+  <p>Play each sound the old way and the new way, then pick how the new one feels. Use headphones or speakers at a normal volume. The numbers are measured in your browser: <b>loudness</b> (average, dB: closer to 0 is louder), <b>length</b>, and <b>brightness</b> (higher sounds sharper, harsher when repeated).</p>
+  <div class="bar">
+    <span>Volume for the new sounds:</span>
+    <button type="button" data-level="full" class="lvl new">Full</button>
+    <button type="button" data-level="soft" class="lvl">Soft</button>
+    <button type="button" id="all" >Play all new sounds in order</button>
+  </div>
+  <table>
+    <thead><tr><th>Sound</th><th>Listen</th><th class="hide-sm">Old → new</th><th>How does the new one feel?</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div class="bar"><button type="button" id="copy">Copy my ratings</button><span class="note">Paste them to Claude, and each one becomes feedback (F#) with its own test.</span></div>
+  <textarea id="out" readonly aria-label="Your ratings"></textarea>
+</main>
+<script type="module">
+import { VOICES, DRY, buildChain, LEVELS, renderVoice, SAMPLE_SLOTS, PICK, loadSamples } from './game/fx.js';
+import { LEGACY, legacyChain } from './game/sfx-legacy.js';
+
+const SOUNDS = [
+  ['tick', 'Clock tick', 'Every game minute in Mission 1. Gets a little stronger near 5:00.'],
+  ['type', 'Typing', 'While text types itself out.'],
+  ['card', 'Card / button', 'Playing a card, choosing an answer, changing volume.'],
+  ['clue', 'Clue found', 'A new clue, a step done, a concept unlocked.'],
+  ['pour', 'Context pours in', 'Reading something big fills Claude’s context jar.'],
+  ['glitch', 'Wrong answer', 'A wrong choice or a made-up fix.'],
+  ['blackout', 'Blackout', 'The context jar overflows.'],
+  ['rewind', 'Rewind', 'The day restarts.'],
+  ['clone', 'Subagent sent', 'A clone goes off to explore.'],
+  ['portal', 'MCP portal', 'A connector opens.'],
+  ['win', 'Win', 'A level or mission is completed.'],
+];
+const FEEL = ['', 'Better', 'Same', 'Worse', 'Too loud', 'Too quiet', 'Too long', 'Doesn’t fit the moment'];
+
+let ctx = null, newChain = null, oldOut = null, level = 'full', ready = Promise.resolve();
+const picks = { ...PICK };   // which recorded take each slot uses on this board
+function audio() {
+  if (!ctx) { ctx = new AudioContext(); newChain = buildChain(ctx, LEVELS[level]); oldOut = legacyChain(ctx); ready = loadSamples(ctx, picks); }
+  return ctx;
+}
+const playNew = async n => { audio(); await ready; VOICES[n](ctx, DRY.has(n) ? newChain.dry : newChain.bus); };
+const playOld = n => { audio(); LEGACY[n](ctx, oldOut); };
+
+// loudness (RMS of the audible part), peak, length, brightness (zero crossings, roughly the pitch region)
+function measure(d, rate = 44100) {
+  let peak = 0, last = 0, first = -1;
+  for (let i = 0; i < d.length; i++) { const a = Math.abs(d[i]); if (a > peak) peak = a; if (a > 0.001) { last = i; if (first < 0) first = i; } }
+  let sum = 0, zc = 0;
+  for (let i = Math.max(0, first); i <= last; i++) { sum += d[i] * d[i]; if (i && (d[i] >= 0) !== (d[i - 1] >= 0)) zc++; }
+  const n = Math.max(1, last - first + 1);
+  const db = x => (x > 0 ? 20 * Math.log10(x) : -120);
+  return { peakDb: db(peak), loudDb: db(Math.sqrt(sum / n)), ms: Math.round(n / rate * 1000), bright: Math.round(zc / 2 / (n / rate)) };
+}
+const fmt = m => `${m.loudDb.toFixed(0)} dB · ${m.ms} ms · ${m.bright} Hz`;
+
+const rows = document.querySelector('#rows');
+for (const [id, name, when] of SOUNDS) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td><b></b><span class="when"></span></td>
+    <td><div class="bar"><button type="button" class="old-b">Old</button><button type="button" class="new new-b">New</button></div><div class="bar takes"></div></td>
+    <td class="m hide-sm"><span class="old">…</span><br><span class="newv">…</span></td>
+    <td><select aria-label="How does the new ${name.toLowerCase()} sound feel?"></select></td>`;
+  tr.querySelector('b').textContent = name;
+  tr.querySelector('.when').textContent = when;
+  tr.querySelector('.old-b').onclick = () => playOld(id);
+  tr.querySelector('.new-b').onclick = () => playNew(id);
+  if (SAMPLE_SLOTS[id]) {   // recorded takes: pick one by ear; "New" then plays your pick
+    const takes = tr.querySelector('.takes');
+    takes.insertAdjacentHTML('beforeend', '<span class="note">Try:</span>');
+    for (const k of ['a', 'b', 'c', 'coded']) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'take'; b.dataset.take = k;
+      b.textContent = k === 'coded' ? 'Hand-made' : 'Recorded ' + k.toUpperCase();
+      b.setAttribute('aria-pressed', String(picks[id] === k));
+      b.onclick = async () => {
+        picks[id] = k; audio(); ready = loadSamples(ctx, { [id]: k });
+        takes.querySelectorAll('.take').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+        playNew(id);
+      };
+      takes.appendChild(b);
+    }
+  }
+  const sel = tr.querySelector('select');
+  for (const f of FEEL) { const o = document.createElement('option'); o.value = f; o.textContent = f || 'Choose…'; sel.appendChild(o); }
+  sel.dataset.id = id; sel.dataset.name = name;
+  rows.appendChild(tr);
+  Promise.all([renderVoice(LEGACY, id, { chainFn: legacyChain }), renderVoice(VOICES, id, { picks: PICK })]).then(([o, n]) => {
+    tr.querySelector('.m .old').textContent = 'old ' + fmt(measure(o));
+    tr.querySelector('.m .newv').textContent = 'new ' + fmt(measure(n));
+  });
+}
+document.querySelectorAll('.lvl').forEach(b => b.onclick = () => {
+  level = b.dataset.level; audio(); newChain.vol.gain.value = LEVELS[level];
+  document.querySelectorAll('.lvl').forEach(x => x.classList.toggle('new', x === b));
+  playNew('card');
+});
+document.querySelector('#all').onclick = async () => {
+  for (const [id] of SOUNDS) { playNew(id); await new Promise(r => setTimeout(r, id === 'tick' || id === 'type' ? 500 : 1500)); }
+};
+document.querySelector('#copy').onclick = async () => {
+  const lines = [...document.querySelectorAll('select')].filter(s => s.value).map(s => `- ${s.dataset.name}: ${s.value}${SAMPLE_SLOTS[s.dataset.id] ? ` (using ${picks[s.dataset.id] === 'coded' ? 'hand-made' : 'recorded ' + picks[s.dataset.id].toUpperCase()})` : ''}`);
+  const text = lines.length ? 'Sound board ratings (new vs old):\n' + lines.join('\n') : 'No ratings picked yet.';
+  document.querySelector('#out').value = text;
+  try { await navigator.clipboard.writeText(text); } catch (e) { /* the text box still shows it */ }
+};
+</script>
+</body>
+</html>

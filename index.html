@@ -686,7 +686,8 @@ body:has(#m2:not([hidden])) #hud, body:has(#hub:not([hidden])) #hud { opacity: 0
 .m2-in { width: min(96rem, 100%); margin: 0 auto; padding: 1.2rem 1.2rem 2rem; display: grid; gap: 1rem; }
 .m2-head { display: flex; justify-content: space-between; align-items: end; gap: 1rem; flex-wrap: wrap; }
 .m2-head h2 { margin: .2rem 0 0; font-family: var(--f-display); font-weight: 800; font-size: calc(2rem * var(--rs)); color: #fff; line-height: 1.05; }
-.m2-head-r { display: flex; gap: .8rem; align-items: center; }
+.m2-head-r { display: flex; gap: .8rem; align-items: center; flex-wrap: wrap; }
+.hub-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
 .m2-runs { font-family: var(--f-mono); font-size: .85rem; color: var(--lvl); }
 .m2-grid { display: grid; grid-template-columns: minmax(15rem, .9fr) minmax(20rem, 1.25fr) minmax(20rem, 1.25fr); gap: 1rem; align-items: start; }
 @media (max-width: 1050px) { .m2-grid { grid-template-columns: 1fr; } }
@@ -929,7 +930,7 @@ body:has(#m3:not([hidden])) .toast { z-index: 70; }
 
 <section id="hub" class="screen hub" hidden aria-label="Choose a mission">
   <div class="hub-in">
-    <span class="eyebrow">Choose a mission</span>
+    <div class="hub-top"><span class="eyebrow">Choose a mission</span><button id="hub-sound" class="btn sound-btn" type="button">Sound: full</button></div>
     <h2 class="hub-title">Every mission teaches different Claude skills</h2>
     <button id="hub-primer" class="btn hub-primer" type="button">New to AI? How Claude works, in 1 minute</button>
     <p class="hub-sub">Each one starts and ends with the same 5 quick questions, so you can see what you learned. Your Field Guide fills in as you play: <b id="hub-count">0/29</b> concepts.</p>
@@ -1005,7 +1006,7 @@ body:has(#m3:not([hidden])) .toast { z-index: 70; }
   <div class="m2-in">
     <header class="m2-head">
       <div><span class="eyebrow">Mission 2 · The Vague Story</span><h2>Turn a one-line story into test cases Priya can import</h2></div>
-      <div class="m2-head-r"><span id="m2-runs" class="m2-runs"></span><button id="m2-run-top" class="btn solid" type="button">Send to Claude</button><button id="m2-back" class="btn" type="button">Missions</button></div>
+      <div class="m2-head-r"><span id="m2-runs" class="m2-runs"></span><button id="m2-run-top" class="btn solid" type="button">Send to Claude</button><button class="btn sound-btn" type="button">Sound: full</button><button id="m2-back" class="btn" type="button">Missions</button></div>
     </header>
     <div class="m2-grid">
       <div class="m2-col">
@@ -1087,7 +1088,7 @@ body:has(#m3:not([hidden])) .toast { z-index: 70; }
   <div class="m2-in">
     <header class="m2-head">
       <div><span class="eyebrow">Mission 3 · Contract Drift</span><h2>The tests pass. The app is broken. Find out why.</h2></div>
-      <div class="m2-head-r"><span class="m2-runs">Support tickets: <b id="m3-tickets">37</b></span><button id="m3-back" class="btn" type="button">Missions</button></div>
+      <div class="m2-head-r"><span class="m2-runs">Support tickets: <b id="m3-tickets">37</b></span><button class="btn sound-btn" type="button">Sound: full</button><button id="m3-back" class="btn" type="button">Missions</button></div>
     </header>
     <ol id="m3-pipe" class="m3-pipe" aria-label="Your progress"></ol>
     <div class="m2-grid m3-grid">
@@ -1194,7 +1195,7 @@ body:has(#m3:not([hidden])) .toast { z-index: 70; }
       <button id="guide-btn" class="icon-btn guide-btn" type="button">Field guide <b id="guide-count">0/28</b></button>
       <button id="fullscreen" class="icon-btn" type="button" aria-pressed="false">Full screen</button>
       <button id="textsize" class="icon-btn" type="button" aria-label="Text size: normal">Aa</button>
-      <button id="mute" class="icon-btn" type="button" aria-pressed="false">Sound on</button>
+      <button id="mute" class="icon-btn sound-btn" type="button">Sound: full</button>
     </div>
   </header>
 
@@ -1403,7 +1404,7 @@ body:has(#m3:not([hidden])) .toast { z-index: 70; }
 
 <div id="toast" class="toast" role="status"></div>
 
-<script type="module" src="game/engine.js?v=20261127180909"></script>
+<script type="module" src="game/engine.js?v=20261127185114"></script>
 
 </body>
 </html>

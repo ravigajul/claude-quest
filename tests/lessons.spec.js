@@ -121,6 +121,27 @@ test('L11: the commit hook also checks the built copy that GitHub tests', () => 
   expect(gate).toMatch(/files\.spec\.js lessons\.spec\.js/);
 });
 
+test('L12: the Sound control is on every screen, not just Mission 1', () => {
+  const html = read('index.html');
+  expect((html.match(/class="[^"]*sound-btn/g) || []).length).toBeGreaterThanOrEqual(4);
+  expect(read('game/fx.js')).toMatch(/DRY = new Set\(\['tick', 'type'/);   // quick sounds skip the reverb
+});
+
+test('L13: every recorded sound the game picks exists, is credited, and falls back to the hand-made voice', () => {
+  const fx = read('game/fx.js');
+  const pick = JSON.parse(fx.match(/export const PICK = (\{[^}]+\})/)[1].replace(/(\w+):/g, '"$1":').replace(/'/g, '"'));
+  const sources = read('vendor/kenney-sounds/SOURCES.md');
+  for (const [slot, take] of Object.entries(pick)) {
+    if (take === 'coded') continue;
+    const f = `${slot}-${take}.wav`;
+    expect(fs.existsSync(path.join(root, 'vendor/kenney-sounds', f)), `${f} exists`).toBe(true);
+    expect(sources, `${f} is credited`).toContain(f);
+  }
+  expect(fs.readdirSync(path.join(root, 'vendor/kenney-sounds')).filter(f => /^License/.test(f)).length).toBe(3);
+  expect(read('README.md')).toMatch(/Kenney/);
+  expect(fx).toMatch(/if \(!playSample\(c, o, k, a\[0\]\)\) CODED\[k\]/);   // fallback
+});
+
 // ---------- Ravi's feedback ----------
 test('F1: How to play is pointed out, and never says "replay" before the tour was taken', async ({ page }) => {
   await openHub(page, { seen: false });
@@ -188,4 +209,33 @@ test('F7: CLAUDE.md stays short and links the docs instead of importing them', (
   }
   expect(md, 'no @imports: they load the whole file into every session').not.toMatch(/^@|\s@docs\//m);
   expect(read('PLAN.md').split('\n').length, 'PLAN.md is an index, not the whole history').toBeLessThan(60);
+});
+
+test('F8: sounds are measured on every commit, and the harsh old voices are gone from the game', () => {
+  expect(fs.existsSync(path.join(__dirname, 'audio.spec.js'))).toBe(true);
+  const fx = read('game/fx.js');
+  expect(fx).not.toMatch(/type: '(square|sawtooth)'/);      // buzzy waves are only in sfx-legacy.js, for the sound board
+  expect(fx).toMatch(/createDynamicsCompressor/);            // a limiter, so nothing distorts
+  expect(fs.existsSync(path.join(root, 'sounds.html'))).toBe(true);
+});
+
+test('F9: sound board ratings stay applied (tick louder; card, clue and win quieter than round 1)', async ({ page }) => {
+  await page.goto('/sounds.html', { waitUntil: 'domcontentloaded' });
+  const peak = await page.evaluate(async () => {
+    const { VOICES, renderVoice, PICK } = await import('/game/fx.js');
+    const out = {};
+    for (const k of ['tick', 'card', 'clue', 'win']) { let m = 0; for (const x of await renderVoice(VOICES, k, { picks: PICK })) m = Math.max(m, Math.abs(x)); out[k] = 20 * Math.log10(m); }
+    return out;
+  });
+  // Peaks Ravi rated in round 1: tick -38, card -21, clue -16, win -15 (dBFS)
+  expect(peak.tick, 'tick was too quiet').toBeGreaterThan(-36);
+  expect(peak.card, 'card was too loud').toBeLessThan(-23);
+  expect(peak.clue, 'clue was too loud').toBeLessThan(-18);
+  expect(peak.win, 'win was too loud').toBeLessThan(-17);
+});
+
+test('F10: Ravi\'s round-2 picks stay in the game (tick B, card C, clue A; typing hand-made)', () => {
+  const fx = read('game/fx.js');
+  expect(fx).toMatch(/export const PICK = \{ tick: 'b', type: 'coded', card: 'c', glitch: 'coded', blackout: 'coded', clue: 'a' \}/);
+  expect(read('tests/audio.spec.js')).toMatch(/EAR_APPROVED = \{ tick: 4500, tickUrgent: 4500 \}/);   // only the tick is excepted
 });

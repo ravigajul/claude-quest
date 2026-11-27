@@ -2,7 +2,7 @@
 
 **Resume with:** "Read ~/Downloads/claude-quest/PLAN.md and continue the game." Open only the file you need below.
 
-**Live now (v2.1, 2026-11-27)**
+**Live now (v2.3, 2026-11-27; artifact v40; 54 tests)**
 - Artifact: https://claude.ai/artifact/ACLJPaKjgTxhyfcBvZabsZ. GitHub Pages: https://ravigajul.github.io/claude-quest/ (repo ravigajul/claude-quest)
 - Mission 1 *Release Day* (3 levels, time loop, the player directs Claude) and Mission 2 *The Vague Story* (prompt builder → test cases for Azure DevOps or Jira) are playable.
 - Mission 3 *Contract Drift* (find API drift, sort the changes, save /contract-check, run it headless in CI, choose a model) is playable: `game/mission3.js`, screens `#m3`/`#m3done`, violet theme.

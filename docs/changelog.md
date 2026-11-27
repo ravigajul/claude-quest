@@ -252,3 +252,13 @@ More time-loop missions (API contract drift, a flaky E2E suite, a security revie
   - "Lessons learned" and "Ravi's feedback log" sections are added to START HERE.
   - L10: tests now use tests/serve.js (a small Node UTF-8 server) instead of python's http.server, which sometimes never answered. Two full runs in a row: all tests pass.
   - L11: CI failed a check that passed locally (the built page header differs). The check now accepts both forms, and the commit hook also tests the built copy.
+- 2026-11-27 (v2.3) **Sound redesign** (F8, L12).
+  - Soft sine and triangle voices in one key (C major pentatonic), filtered noise instead of raw static, a light reverb (skipped by quick sounds) and a limiter.
+  - Sound full / soft / off, remembered between visits. Audio pauses when the tab is hidden.
+  - Measured: brightness went from ~11 kHz static to under 900 Hz. Event sounds are balanced within 7 dB; tick and typing sit 10–20 dB below them.
+  - sounds.html is a sound board for comparing old and new by ear (old voices kept in game/sfx-legacy.js).
+  - tests/audio.spec.js measures every sound on every commit.
+  - A Sound button is now on every screen.
+  - Ravi's sound board round 1 (F9) is applied: tick +5 dB; card, clue and win −4 dB; pour, blackout and portal redesigned.
+  - Hybrid sound: recorded CC0 takes from Kenney (wooden tick, soft drop for cards, impact for blackout), level-matched, with the hand-made voices as fallback. The sound board lets Ravi try recorded A/B/C or hand-made per slot (L13).
+  - Ravi's round 2 (F10): every sound rated Better. Uses recorded tick B, card C and clue A; typing, wrong answer and blackout are hand-made.

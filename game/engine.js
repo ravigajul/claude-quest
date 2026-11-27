@@ -1,11 +1,11 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127180909';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127180909';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127180909';
-import { startMission2 } from './mission2.js?v=20261127180909';
-import { startMission3 } from './mission3.js?v=20261127180909';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127180909';
-import { track, statsOn } from './stats.js?v=20261127180909';
+import { MISSION as M } from './mission.js?v=20261127185114';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127185114';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127185114';
+import { startMission2 } from './mission2.js?v=20261127185114';
+import { startMission3 } from './mission3.js?v=20261127185114';
+import { sfx, initAudio, soundLevel, setSoundLevel, wait } from './fx.js?v=20261127185114';
+import { track, statsOn } from './stats.js?v=20261127185114';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -19,7 +19,7 @@ const BOOT3D_TIMEOUT_MS = 10000;   // never let a slow or stuck 3D download keep
 async function boot3d() {
   try {
     const mod = await Promise.race([
-      import('./scene3d.js?v=20261127180909'),
+      import('./scene3d.js?v=20261127185114'),
       new Promise((_, no) => setTimeout(() => no(new Error('3D took too long to load')), BOOT3D_TIMEOUT_MS)),
     ]);
     scene = mod.createScene($('#world'));
@@ -1346,18 +1346,26 @@ async function main() {
   $('#start').disabled = false;
   $('#start').removeAttribute('aria-busy');
   $('#start').textContent = 'Wake up';
-  $('#mute').addEventListener('click', () => {
-    initAudio();
-    setMuted(!isMuted());
-    $('#mute').textContent = isMuted() ? 'Sound off' : 'Sound on';
-    $('#mute').setAttribute('aria-pressed', String(isMuted()));
+  // Sound: full -> soft -> off -> full. Remembered between visits.
+  const SOUND_LABEL = { full: 'Sound: full', soft: 'Sound: soft', off: 'Sound: off' };
+  // One Sound button on every screen (top bar, mission list, Missions 2 and 3), all kept in sync.
+  const showSound = () => document.querySelectorAll('.sound-btn').forEach(btn => {
+    btn.textContent = SOUND_LABEL[soundLevel()];
+    btn.setAttribute('aria-label', `${SOUND_LABEL[soundLevel()]}. Click to change.`);
   });
+  showSound();
+  document.querySelectorAll('.sound-btn').forEach(btn => btn.addEventListener('click', () => {
+    initAudio();
+    setSoundLevel({ full: 'soft', soft: 'off', off: 'full' }[soundLevel()]);
+    showSound();
+    if (soundLevel() !== 'off') sfx.card();   // a sample at the new volume
+  }));
   $('#m-again').addEventListener('click', resetGame);
   $('#m-hub').addEventListener('click', goHub);
   $('#go-m1').addEventListener('click', playMission1);
   $('#hub-primer').addEventListener('click', async () => { $('#hub').hidden = true; await showPrimer(); $('#hub').hidden = false; });
   $('#go-m2').addEventListener('click', playMission2);
-$('#go-m3').addEventListener('click', playMission3);
+  $('#go-m3').addEventListener('click', playMission3);
   setupTextSize();
   setupFullscreen();
   setupLikes();

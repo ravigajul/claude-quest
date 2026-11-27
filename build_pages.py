@@ -35,7 +35,7 @@ shutil.copytree(SRC / 'vendor', dst / 'vendor', ignore=shutil.ignore_patterns('.
 # PLAN.md : backup of the roadmap and change log, refreshed on every deploy
 shutil.copy2(SRC / 'PLAN.md', dst / 'PLAN.md')
 shutil.copy2(SRC / 'README.md', dst / 'README.md')
-for f in ('LICENSE', 'social.png', 'pages_head.html', '.gitignore', 'CLAUDE.md', 'build_pages.py'):
+for f in ('LICENSE', 'social.png', 'pages_head.html', '.gitignore', 'CLAUDE.md', 'build_pages.py', 'sounds.html'):
     shutil.copy2(SRC / f, dst / f)
 # tests/ and the review skill travel with the repo, so GitHub Actions (and anyone who clones it) can run them
 shutil.rmtree(dst / 'tests', ignore_errors=True)
