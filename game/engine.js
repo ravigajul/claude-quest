@@ -1,9 +1,9 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127124722';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127124722';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127124722';
-import { startMission2 } from './mission2.js?v=20261127124722';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127124722';
+import { MISSION as M } from './mission.js?v=20261127124942';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127124942';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127124942';
+import { startMission2 } from './mission2.js?v=20261127124942';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127124942';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -15,7 +15,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127124722');
+    const mod = await import('./scene3d.js?v=20261127124942');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -181,8 +181,8 @@ const TOUR = [
   { sel: '.board', t: 'The evidence board', p: 'Clues Claude finds appear here. This is what Claude knows right now, and it is wiped when the session ends.' },
   { sel: '.progress', t: 'Your goal for the day', p: 'Day 1 can\u2019t be won. Find clues and notice which moves waste time. The checklist here updates as you play.' },
 ];
-function runTour() {
-  try { if (localStorage.getItem('cq-tour-m1')) return Promise.resolve(); } catch (e) {}
+function runTour(force = false) {
+  try { if (!force && localStorage.getItem('cq-tour-m1')) return Promise.resolve(); } catch (e) {}
   const box = $('#tour'), ring = $('#tour-ring'), bub = $('#tour-bubble');
   let i = 0;
   return new Promise(res => {
@@ -1214,6 +1214,7 @@ async function main() {
   applyTheme(1, false);
   renderGuideCount();
   $('#guide-btn').addEventListener('click', openGuide);
+  $('#tour-btn').addEventListener('click', () => { if ($('#tour').hidden) runTour(true); });
   $('#g-close').addEventListener('click', () => { $('#guide').hidden = true; });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#guide').hidden) $('#guide').hidden = true; });
   renderHud();
