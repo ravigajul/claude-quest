@@ -1,9 +1,9 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127141219';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127141219';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127141219';
-import { startMission2 } from './mission2.js?v=20261127141219';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127141219';
+import { MISSION as M } from './mission.js?v=20261127141358';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127141358';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127141358';
+import { startMission2 } from './mission2.js?v=20261127141358';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127141358';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -15,7 +15,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127141219');
+    const mod = await import('./scene3d.js?v=20261127141358');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -187,7 +187,9 @@ let tourNudged = false;
 function nudgeTourBtn() {
   if (tourNudged) return; tourNudged = true;
   const b = $('#tour-btn'); if (!b || !b.offsetParent) return;
-  b.dataset.tip = 'Lost? Replay the tour here any time';
+  let done = false; try { done = localStorage.getItem('cq-tour-m1') === 'done'; } catch (e) {}
+  // Only say "replay" to players who actually went through the whole tour.
+  b.dataset.tip = done ? 'Lost? Replay the tour here any time' : 'New here? Take the 1-minute tour';
   b.classList.add('attn');
   const off = () => b.classList.remove('attn');
   setTimeout(off, 4500);
@@ -199,7 +201,7 @@ function runTour(force = false) {
   const box = $('#tour'), ring = $('#tour-ring'), bub = $('#tour-bubble');
   let i = 0;
   return new Promise(res => {
-    const end = () => { box.hidden = true; window.removeEventListener('resize', place); try { localStorage.setItem('cq-tour-m1', '1'); } catch (e) {} res(); };
+    const end = (done) => { box.hidden = true; window.removeEventListener('resize', place); try { if (done || localStorage.getItem('cq-tour-m1') !== 'done') localStorage.setItem('cq-tour-m1', done ? 'done' : 'skipped'); } catch (e) {} res(); };
     const place = () => {
       const st = TOUR[i];
       const el = document.querySelector(st.sel);
@@ -217,8 +219,8 @@ function runTour(force = false) {
       if (r.width > vw * 0.6 && r.height > vh * 0.3) { top = r.top + 20; left = r.left + 20; }
       Object.assign(bub.style, { top: `${top}px`, left: `${left}px` });
     };
-    $('#tour-next').onclick = () => { i++; if (i >= TOUR.length) end(); else place(); };
-    $('#tour-skip').onclick = end;
+    $('#tour-next').onclick = () => { i++; if (i >= TOUR.length) end(true); else place(); };
+    $('#tour-skip').onclick = () => end(false);
     window.addEventListener('resize', place);
     box.hidden = false;
     place();
