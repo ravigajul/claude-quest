@@ -64,15 +64,23 @@ export function startMission2(api) {
     const wrap = $('#m2-parts'); wrap.textContent = '';
     for (const g of GROUPS) {
       const sec = document.createElement('div'); sec.className = 'm2-group';
-      const h = document.createElement('span'); h.className = 'r-lbl'; h.textContent = g.name; sec.appendChild(h);
-      const row = document.createElement('div'); row.className = 'm2-chips';
+      const single = g.ids.some(id => part(id).group);
+      const h = document.createElement('span'); h.className = 'r-lbl';
+      h.textContent = g.name + ' · ';
+      const mode = document.createElement('em'); mode.className = 'm2-mode ' + (single ? 'one' : 'any');
+      mode.textContent = single ? 'pick one' : 'add any';
+      h.appendChild(mode);
+      sec.appendChild(h);
+      const row = document.createElement('div'); row.className = 'm2-chips' + (single ? ' seg' : '');
+      if (single) row.setAttribute('role', 'radiogroup');
       for (const id of g.ids) {
         const p = part(id);
         if (p.auto && !answered) continue;
         const b = document.createElement('button');
         b.type = 'button';
         b.className = 'm2-chip' + (on.has(id) ? ' on' : '') + (p.group ? ' radio' : '');
-        b.setAttribute('aria-pressed', String(on.has(id)));
+        if (p.group) { b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(on.has(id))); }
+        else b.setAttribute('aria-pressed', String(on.has(id)));
         b.textContent = p.label;
         b.onclick = () => {
           if (done) return;

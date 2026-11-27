@@ -642,6 +642,22 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 .od-learn li { display: grid; gap: .25rem; padding: .7rem .8rem; border-radius: 8px; background: rgba(255,255,255,.04); border: 1px solid rgba(125,255,178,.35); font-size: calc(.88rem * var(--rs)); line-height: 1.45; color: #d6e9fb; }
 .od-learn b { color: #fff; font-size: calc(1rem * var(--rs)); }
 .od-learn b::before { content: "\2605  "; color: #7dffb2; }
+
+/* Mission 2: make "pick one" vs "add any" unmistakable */
+.m2-mode { font-style: normal; font-weight: 700; padding: .05rem .4rem; border-radius: 3px; margin-left: .1rem; }
+.m2-mode.one { background: #ffcf5c; color: #1a1030; }
+.m2-mode.any { background: rgba(92,200,255,.2); color: #bfe6ff; }
+.m2-chip.on::before { content: none; }
+/* add any: square check boxes */
+.m2-chip:not(.radio)::before { content: "\2610"; margin-right: .45rem; font-size: 1.05em; }
+.m2-chip:not(.radio).on::before { content: "\2611"; }
+/* pick one: one connected bar with radio dots */
+.m2-chips.seg { gap: 0; flex-direction: column; flex-wrap: nowrap; border: 1px solid rgba(255,207,92,.55); border-radius: 10px; overflow: hidden; }
+.m2-chips.seg .m2-chip { border-radius: 0; border: 0; border-bottom: 1px solid rgba(255,207,92,.25); background: rgba(255,207,92,.04); width: 100%; }
+.m2-chips.seg .m2-chip:last-child { border-bottom: 0; }
+.m2-chips.seg .m2-chip::before { content: "\25CB"; margin-right: .45rem; font-size: 1.05em; }
+.m2-chips.seg .m2-chip.on { background: #ffcf5c; color: #1a1030; }
+.m2-chips.seg .m2-chip.on::before { content: "\25C9"; }
 </style>
 </head>
 <body>
