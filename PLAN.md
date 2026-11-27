@@ -262,3 +262,4 @@ More time-loop missions (API contract drift, a flaky E2E suite, a security revie
 - 2026-11-27: PLAN.md is backed up to the GitHub repo (public). build_pages.py copies it on every deploy.
 - 2026-11-27 (v1.9.8): play statistics built (game/stats.js, vendor/goatcounter, 👍/👎 row + feedback link on both end screens), off until GOATCOUNTER_CODE is set. README updated (developer framing, How to play, Coming soon table, Privacy and statistics); the README is now kept in this folder and copied to the repo on deploy. The ← Missions reload waits 400 ms so the exit event is sent first.
 - 2026-11-27: GoatCounter is switched on (code ravigajul-claudequest) on the GitHub Pages build.
+- 2026-11-27: .top has position: relative; z-index: 5, so the How to play callout is no longer hidden behind the evidence board (each .panel's backdrop-filter gives it its own stacking layer).

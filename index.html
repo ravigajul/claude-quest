@@ -90,7 +90,7 @@ h1.title em { font-style: normal; color: var(--amber); }
 body.playing #hud { opacity: 1; }
 #hud > * { pointer-events: auto; }
 
-.top { grid-area: top; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.top { grid-area: top; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; position: relative; z-index: 5; }  /* above the board, so the How to play callout is not covered */
 .stat { display: grid; gap: .2rem; min-width: 0; }
 .stat .lbl { font-family: var(--f-mono); font-size: .68rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
 .loop-n { font-family: var(--f-display); font-weight: 800; font-size: 2rem; line-height: 1; color: var(--violet); }
@@ -1248,7 +1248,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 
 <div id="toast" class="toast" role="status"></div>
 
-<script type="module" src="game/engine.js?v=20261127150826"></script>
+<script type="module" src="game/engine.js?v=20261127155400"></script>
 
 </body>
 </html>
