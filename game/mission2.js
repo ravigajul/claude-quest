@@ -400,7 +400,7 @@ export function startMission2(api) {
     sfx.win();
     render();
     await showResult({ title: 'All 10 covered. Nothing invented.', concept: 'Priya is importing your tests',
-      body: 'One quick check of what you know now, then your results.' });
+      body: 'Next: a quick knowledge check (skipped if you already aced it), then your results.' });
     const q = await runQuiz('m2', 'post');
     showOutcome(q);
   }
@@ -421,6 +421,7 @@ export function startMission2(api) {
     stat('Requirements covered', `${f.coverage}/10`, '10/10');
     stat('Rules Claude made up', f.invented, 0);
     stat('Sessions used', null, `${runs} of ${MAX_RUNS}`);
+    if (q && q.aced) stat('Knowledge check', null, '5/5 earlier');
     if (q && q.score != null) stat('Knowledge check', q.before != null ? `${q.before}/${q.total}` : null, `${q.score}/${q.total}`);
     $('#od-first').textContent = f.prompt;
     $('#od-final').textContent = final.prompt.replace(/\[image[^\]]*\]/, '[paste your design screenshot here]');

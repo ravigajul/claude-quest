@@ -41,6 +41,9 @@ export const QUIZ = {
 const $ = s => document.querySelector(s);
 
 function key(m) { return `cq-quiz-${m}-pre`; }
+function postKey(m) { return `cq-quiz-${m}-post`; }
+export function postScore(m) { try { const v = localStorage.getItem(postKey(m)); return v == null ? null : Number(v); } catch (e) { return null; } }
+const autoSkipped = {};   // missions whose checks are skipped this round because the player already aced them
 export function preScore(m) { try { const v = localStorage.getItem(key(m)); return v == null ? null : Number(v); } catch (e) { return null; } }
 
 // phase 'pre': no feedback, can be skipped. phase 'post': feedback per question, then before→after.
@@ -48,6 +51,11 @@ export function runQuiz(mission, phase) {
   const qs = QUIZ[mission];
   const box = $('#quiz');
   let i = 0, score = 0;
+  const last = postScore(mission);
+  // Already answered everything right at the end of a previous run: don't ask the same questions again.
+  if (phase === 'pre' && last === qs.length) { autoSkipped[mission] = true; return Promise.resolve({ skipped: true, aced: true }); }
+  if (phase === 'pre') autoSkipped[mission] = false;
+  if (phase === 'post' && autoSkipped[mission]) return Promise.resolve({ skipped: true, aced: true });
   return new Promise(resolve => {
     const finish = () => {
       if (phase === 'pre') {
@@ -56,6 +64,7 @@ export function runQuiz(mission, phase) {
         resolve({ score, total: qs.length });
         return;
       }
+      try { localStorage.setItem(postKey(mission), String(score)); } catch (e) {}
       const before = preScore(mission);
       $('#qz-tag').textContent = 'Knowledge check · results';
       $('#qz-pips').textContent = '';
@@ -75,10 +84,12 @@ export function runQuiz(mission, phase) {
       const pips = $('#qz-pips'); pips.textContent = '';
       qs.forEach((_, k) => { const p = document.createElement('i'); if (k < i) p.className = 'on'; pips.appendChild(p); });
       $('#qz-q').textContent = q.q;
-      $('#qz-sub').textContent = phase === 'pre' && i === 0 ? 'Quick check of what you know now. No feedback yet: you will answer the same questions at the end and see what changed.' : '';
+      $('#qz-sub').textContent = phase === 'pre' && i === 0
+        ? (last != null ? `Last time you scored ${last}/${qs.length} at the end. Retake it to see what stuck, or skip it.` : 'Quick check of what you know now. No feedback yet: you will answer the same questions at the end and see what changed.')
+        : '';
       $('#qz-fb').hidden = true;
       $('#qz-next').hidden = true;
-      $('#qz-skip').hidden = phase !== 'pre';
+      $('#qz-skip').hidden = false;
       const opts = $('#qz-opts'); opts.textContent = '';
       q.options.forEach((t, k) => {
         const b = document.createElement('button');
@@ -103,7 +114,10 @@ export function runQuiz(mission, phase) {
         opts.appendChild(b);
       });
     };
-    $('#qz-skip').onclick = () => { try { localStorage.removeItem(key(mission)); } catch (e) {} box.hidden = true; resolve({ skipped: true }); };
+    $('#qz-skip').onclick = () => {
+      if (phase === 'pre') { try { localStorage.removeItem(key(mission)); } catch (e) {} }
+      box.hidden = true; resolve({ skipped: true });
+    };
     box.hidden = false;
     show();
   });

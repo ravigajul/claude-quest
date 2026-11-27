@@ -4,7 +4,7 @@ import { EffectComposer } from '../vendor/three/jsm/postprocessing/EffectCompose
 import { RenderPass } from '../vendor/three/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from '../vendor/three/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from '../vendor/three/jsm/postprocessing/OutputPass.js';
-import { tween, tickTweens, ease, wait } from './fx.js?v=20261127120905';
+import { tween, tickTweens, ease, wait } from './fx.js?v=20261127121515';
 
 const NIGHT_BG = new THREE.Color('#070a1f');
 const NIGHT_FOG = new THREE.Color('#0d1236');

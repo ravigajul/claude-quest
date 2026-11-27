@@ -1,9 +1,9 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127120905';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127120905';
-import { runQuiz } from './quiz.js?v=20261127120905';
-import { startMission2 } from './mission2.js?v=20261127120905';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127120905';
+import { MISSION as M } from './mission.js?v=20261127121515';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127121515';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127121515';
+import { startMission2 } from './mission2.js?v=20261127121515';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127121515';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -15,7 +15,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127120905');
+    const mod = await import('./scene3d.js?v=20261127121515');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -898,6 +898,7 @@ function showMirror(q) {
   let v = `${S.loop} loops. You fixed it, proved it, and taught the next session how not to repeat it.`;
   v += S.wrongGuesses ? ` ${S.wrongGuesses} wrong diagnosis${S.wrongGuesses > 1 ? 'es' : ''}.` : ' Every diagnosis matched the evidence.';
   v += S.hintsUsed ? ` ${S.hintsUsed} hint${S.hintsUsed > 1 ? 's' : ''} used.` : ' No hints used.';
+  if (q && q.aced) v += ' Knowledge check: already 5/5 from an earlier run.';
   if (q && q.score != null) v += q.before != null ? ` Knowledge check: ${q.before}/${q.total} before, ${q.score}/${q.total} now.` : ` Knowledge check: ${q.score}/${q.total}.`;
   $('#m-verdict').textContent = v;
 
@@ -1027,8 +1028,10 @@ function showHub() {
   document.body.classList.remove('playing', 'dawn');
   applyTheme(1);
   $('#hub-count').textContent = `${learned.size}/${GUIDE.length}`;
-  $('#st-m1').textContent = isDone('m1') ? '\u2713 Completed · play again any time' : '';
-  $('#st-m2').textContent = isDone('m2') ? '\u2713 Completed · play again any time' : '';
+  const status = m => !isDone(m) ? '' : '\u2713 Completed · play again any time' +
+    (postScore(m) === QUIZ[m].length ? ' · knowledge check 5/5, so it is skipped next time' : '');
+  $('#st-m1').textContent = status('m1');
+  $('#st-m2').textContent = status('m2');
   $('#hub').hidden = false;
   $('#hub').scrollTop = 0;
   (isDone('m1') && !isDone('m2') ? $('#go-m2') : $('#go-m1')).focus({ preventScroll: true });
@@ -1052,7 +1055,8 @@ async function playMission1() {
   scene.resetDay();
   applyTheme(1);
   renderHud();
-  await runQuiz('m1', 'pre');
+  const pre1 = await runQuiz('m1', 'pre');
+  if (pre1.aced) toast('You aced this knowledge check last time, so it is skipped.');
   await showBrief();
   document.body.classList.add('playing');
   startLoop();
@@ -1062,7 +1066,8 @@ async function playMission2() {
   $('#hub').hidden = true;
   document.body.dataset.level = 'm2';
   scene.setTheme && scene.setTheme('#04122a', '#0b3a66');
-  await runQuiz('m2', 'pre');
+  const pre2 = await runQuiz('m2', 'pre');
+  if (pre2.aced) toast('You aced this knowledge check last time, so it is skipped.');
   startMission2({
     $, learn, BY_ID, showResult, showChoice, sfx, toast, runQuiz, goHub, markDone,
   });
