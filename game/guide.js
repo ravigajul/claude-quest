@@ -6,6 +6,10 @@ export const MISSIONS = [
   { id: 'm2', name: 'The Vague Story', status: 'live' },
   { id: 'm3', name: 'Contract Drift', status: 'soon' },
   { id: 'm4', name: 'Night Shift', status: 'soon' },
+  { id: 'm5', name: 'Flaky Friday', status: 'soon' },
+  { id: 'm6', name: 'The Legacy Repo', status: 'soon' },
+  { id: 'm7', name: 'Red Team', status: 'soon' },
+  { id: 'm8', name: 'The Review Bot', status: 'soon' },
 ];
 
 export const GUIDE = [
@@ -106,6 +110,26 @@ export const GUIDE = [
   { id: 'worktrees', mission: 'm4', name: 'Parallel sessions with worktrees', what: 'Several Claude sessions working on separate branches at once.', how: '', tryIt: '' },
   { id: 'agents', mission: 'm4', name: 'Custom subagents', what: 'Your own specialist agents, such as a test writer or reviewer.', how: '', tryIt: '' },
   { id: 'plugins', mission: 'm4', name: 'Plugins', what: 'Share bundles of skills, commands, hooks and MCP setups with your team.', how: '', tryIt: '' },
+  // ---- Mission 5: Flaky Friday ----
+  { id: 'browser', mission: 'm5', name: 'Browser testing', what: 'Claude can drive a real browser (Claude in Chrome or a Playwright MCP server) to click through a flow and see what the user sees.', how: '', tryIt: '' },
+  { id: 'traces', mission: 'm5', name: 'Screenshots and traces', what: 'Give Claude the failure screenshot or trace, not just the stack, so it sees the state the test saw.', how: '', tryIt: '' },
+  { id: 'rerun', mission: 'm5', name: 'Re-run only what failed', what: 'Narrow the loop: reproduce one failing test many times instead of the whole suite once.', how: '', tryIt: '' },
+  { id: 'flakyfix', mission: 'm5', name: 'Fix the cause, not the retry', what: 'Waits and retries hide flakiness. Find the race or shared state that causes it.', how: '', tryIt: '' },
+  // ---- Mission 6: The Legacy Repo ----
+  { id: 'init', mission: 'm6', name: '/init', what: 'Have Claude read the repo and write a starter CLAUDE.md for you.', how: '', tryIt: '' },
+  { id: 'askcode', mission: 'm6', name: 'Asking about a codebase', what: 'Ask how things work before you change them: where is X handled, what calls Y.', how: '', tryIt: '' },
+  { id: 'explore', mission: 'm6', name: 'The Explore subagent', what: 'A read-only helper that searches a big codebase and returns only what matters.', how: '', tryIt: '' },
+  { id: 'shortmd', mission: 'm6', name: 'Keeping CLAUDE.md short', what: 'Every line is read every session. Keep only what Claude keeps getting wrong.', how: '', tryIt: '' },
+  // ---- Mission 7: Red Team ----
+  { id: 'secreview', mission: 'm7', name: '/security-review', what: 'A built-in review that looks for security problems in your changes.', how: '', tryIt: '' },
+  { id: 'denyrules', mission: 'm7', name: 'Deny rules for secrets', what: 'Block Claude from reading files like .env with deny rules in settings.', how: '', tryIt: '' },
+  { id: 'sandbox', mission: 'm7', name: 'Sandboxing', what: 'Limit what commands can touch on disk and on the network.', how: '', tryIt: '' },
+  { id: 'injection', mission: 'm7', name: 'Prompt injection', what: 'Text Claude reads (a web page, an issue) can contain instructions. Treat it as data.', how: '', tryIt: '' },
+  // ---- Mission 8: The Review Bot ----
+  { id: 'ghactions', mission: 'm8', name: 'Claude in GitHub Actions', what: 'Run Claude in your CI to review or fix pull requests.', how: '', tryIt: '' },
+  { id: 'atclaude', mission: 'm8', name: '@claude in pull requests', what: 'Mention @claude in a PR or issue comment to ask it for a change or a review.', how: '', tryIt: '' },
+  { id: 'reviewrules', mission: 'm8', name: 'Review rules in CLAUDE.md', what: 'Write down what reviewers check, so the bot checks the same things.', how: '', tryIt: '' },
+  { id: 'humanapprove', mission: 'm8', name: 'Humans approve', what: 'Claude reviews first, a person approves and merges. Never let a bot merge on its own.', how: '', tryIt: '' },
 ];
 
 export const BY_ID = Object.fromEntries(GUIDE.map(g => [g.id, g]));

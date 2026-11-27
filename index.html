@@ -805,6 +805,9 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 @media (max-width: 820px) { .obj-cue { position: static; display: inline-block; margin-top: .4rem; } }
 
 .tour { position: fixed; inset: 0; z-index: 80; }
+.exit-dlg { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: rgba(4,6,20,.72); }
+.exit-dlg[hidden] { display: none; }
+.exit-dlg .exit-box { position: static; }
 .tour-ring { position: fixed; border-radius: 12px; box-shadow: 0 0 0 9999px rgba(3,4,14,.72), 0 0 0 3px #ffb547, 0 0 30px rgba(255,181,71,.6); transition: all .35s cubic-bezier(.2,.9,.3,1); pointer-events: none; }
 .tour-bubble { position: fixed; width: min(24rem, calc(100vw - 2rem)); display: grid; gap: .5rem; padding: 1rem 1.1rem; border-radius: 12px; background: #12163a; border: 1px solid #ffb547; box-shadow: 0 20px 60px rgba(0,0,0,.6); transition: top .35s, left .35s; }
 .tour-n { font-family: var(--f-mono); font-size: .72rem; letter-spacing: .12em; text-transform: uppercase; color: #ffb547; }
@@ -867,6 +870,30 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
         <b>Night Shift</b>
         <span class="m-pitch">Three tasks, one night, several Claudes at once.</span>
         <span class="m-learn">Resuming sessions · worktrees · custom subagents · plugins</span>
+      </div>
+      <div class="mission locked">
+        <span class="m-num">Mission 5 · coming soon</span>
+        <b>Flaky Friday</b>
+        <span class="m-pitch">The end-to-end suite fails one run in five. Nobody can reproduce it, and the demo is Monday.</span>
+        <span class="m-learn">Browser testing with Claude in Chrome or Playwright MCP · reading screenshots and traces · re-running only what failed</span>
+      </div>
+      <div class="mission locked">
+        <span class="m-num">Mission 6 · coming soon</span>
+        <b>The Legacy Repo</b>
+        <span class="m-pitch">Day one on a 15-year-old codebase with no docs. Your first ticket is due Friday.</span>
+        <span class="m-learn">/init · asking questions about a codebase · the Explore subagent · keeping CLAUDE.md short</span>
+      </div>
+      <div class="mission locked">
+        <span class="m-num">Mission 7 · coming soon</span>
+        <b>Red Team</b>
+        <span class="m-pitch">A web page Claude reads contains hidden instructions, and there is a secret in the .env file.</span>
+        <span class="m-learn">/security-review · deny rules for secrets · sandboxing · prompt injection</span>
+      </div>
+      <div class="mission locked">
+        <span class="m-num">Mission 8 · coming soon</span>
+        <b>The Review Bot</b>
+        <span class="m-pitch">Your team gets 40 pull requests a day. Put Claude on the first review pass without letting it merge anything.</span>
+        <span class="m-learn">Claude in GitHub Actions · @claude in pull requests · review rules in CLAUDE.md · humans approve</span>
       </div>
     </div>
   </div>
@@ -965,6 +992,15 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
   </div>
 </section>
 
+<div id="exit-dlg" class="exit-dlg" hidden role="dialog" aria-modal="true" aria-labelledby="exit-t">
+  <div class="tour-bubble exit-box">
+    <span class="tour-n">Leave mission</span>
+    <b id="exit-t">Go back to the mission list?</b>
+    <p>This day&rsquo;s progress in the mission is lost. Your Field Guide and knowledge-check scores are kept.</p>
+    <div class="btn-row"><button id="exit-yes" class="btn-primary small" type="button">Yes, leave</button><button id="exit-no" class="btn" type="button">Keep playing</button></div>
+  </div>
+</div>
+
 <div id="tour" class="tour" hidden role="dialog" aria-modal="true" aria-labelledby="tour-t">
   <div id="tour-ring" class="tour-ring"></div>
   <div id="tour-bubble" class="tour-bubble">
@@ -992,6 +1028,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
         <div class="row"><span>Dana's trust</span><span id="trust-num">100</span></div>
         <div class="bar"><i id="trust-fill"></i></div>
       </div>
+      <button id="exit-btn" class="icon-btn" type="button" title="Leave this mission and go back to the mission list">&larr; Missions</button>
       <button id="tour-btn" class="icon-btn" type="button" title="Replay the quick tour of this screen">How to play</button>
       <button id="guide-btn" class="icon-btn guide-btn" type="button">Field guide <b id="guide-count">0/28</b></button>
       <button id="fullscreen" class="icon-btn" type="button" aria-pressed="false">Full screen</button>
@@ -1203,7 +1240,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 
 <div id="toast" class="toast" role="status"></div>
 
-<script type="module" src="game/engine.js?v=20261127141358"></script>
+<script type="module" src="game/engine.js?v=20261127144038"></script>
 
 </body>
 </html>

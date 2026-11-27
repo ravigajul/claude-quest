@@ -1,9 +1,9 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127141358';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127141358';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127141358';
-import { startMission2 } from './mission2.js?v=20261127141358';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127141358';
+import { MISSION as M } from './mission.js?v=20261127144038';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127144038';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127144038';
+import { startMission2 } from './mission2.js?v=20261127144038';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127144038';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -15,7 +15,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127141358');
+    const mod = await import('./scene3d.js?v=20261127144038');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -1230,8 +1230,15 @@ async function main() {
   renderGuideCount();
   $('#guide-btn').addEventListener('click', openGuide);
   $('#tour-btn').addEventListener('click', () => { if ($('#tour').hidden) runTour(true); });
+  // Leave Mission 1 at any point. The day runs as a long chain of timed steps, so the cleanest way out is a fresh page that opens on the mission list.
+  $('#exit-btn').addEventListener('click', () => { $('#exit-dlg').hidden = false; $('#exit-no').focus({ preventScroll: true }); });
+  $('#exit-no').addEventListener('click', () => { $('#exit-dlg').hidden = true; });
+  $('#exit-yes').addEventListener('click', () => {
+    try { sessionStorage.setItem('cq-open-hub', '1'); location.reload(); }
+    catch (e) { $('#exit-dlg').hidden = true; goHub(); }
+  });
   $('#g-close').addEventListener('click', () => { $('#guide').hidden = true; });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#guide').hidden) $('#guide').hidden = true; });
+  document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('#exit-dlg').hidden) $('#exit-dlg').hidden = true; else if (!$('#guide').hidden) $('#guide').hidden = true; });
   renderHud();
   $('#start').addEventListener('click', () => {
     enterFullscreen();
@@ -1252,6 +1259,8 @@ async function main() {
   $('#go-m2').addEventListener('click', playMission2);
   setupTextSize();
   setupFullscreen();
+  let toHub = false; try { toHub = sessionStorage.getItem('cq-open-hub') === '1'; sessionStorage.removeItem('cq-open-hub'); } catch (e) {}
+  if (toHub) { $('#intro').hidden = true; showHub(); document.addEventListener('pointerdown', () => initAudio(), { once: true }); }
 }
 
 // Full screen: entered from the Wake up click; optional everywhere (some viewers refuse it).
