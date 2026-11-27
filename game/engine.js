@@ -1,9 +1,9 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127123407';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127123407';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127123407';
-import { startMission2 } from './mission2.js?v=20261127123407';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127123407';
+import { MISSION as M } from './mission.js?v=20261127123814';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127123814';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127123814';
+import { startMission2 } from './mission2.js?v=20261127123814';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127123814';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -15,7 +15,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127123407');
+    const mod = await import('./scene3d.js?v=20261127123814');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -53,7 +53,7 @@ function line(kind, text, { instant = false } = {}) {
   if (kind === 'cmd' || kind === 'you') return Promise.resolve();
   const el = document.createElement('div');
   el.className = `ln ln-${kind}`;
-  const who = { dana: `${M.human} · your user`, sys: 'narrator', you: 'you · Claude', past: 'your notes · CLAUDE.md', cmd: 'tool call' }[kind] || '';
+  const who = { dana: `${M.human} · your teammate`, sys: 'narrator', you: 'Claude', past: 'your notes · CLAUDE.md', cmd: 'Claude ran' }[kind] || '';
   const w = document.createElement('span');
   w.className = 'who';
   w.textContent = who;
@@ -98,11 +98,11 @@ function renderGuideCount() { $('#guide-count').textContent = `${learned.size}/$
 
 const LEVELS = {
   1: { name: 'Amnesia', bg: '#070a1f', fog: '#0d1236',
-       goal: 'Each day is one Claude session, and at 5:00 it ends and you forget it. You can\u2019t fix it today. Find as many clues as you can before 5:00, then choose 3 notes to keep. Click the cards at the bottom to act.',
+       goal: 'Each day is one Claude session. At 5:00 it ends and Claude forgets everything. You can\u2019t fix it today: ask Claude to find clues, then write 3 notes (its CLAUDE.md) for tomorrow. Click the cards at the bottom to tell Claude what to do.',
        news: [], teaches: [] },
   2: { name: 'The Clone and the Portal', bg: '#2a0636', fog: '#6a1466',
-       goal: 'Your 3 notes are back. Use them to diagnose, fix and prove it before 5:00 PM.',
-       news: ['Your notes are read at the start of the day, like CLAUDE.md', 'Send clone: a helper explores and reports back (subagent)', 'Open portal: pull in the ops ticket from outside the repo (MCP)'],
+       goal: 'A new session: Claude starts empty again, but reads your 3 notes first. Use them to diagnose, fix and prove it before 5:00 PM.',
+       news: ['Claude reads your notes at the start of the session, like CLAUDE.md', 'Send clone: a helper explores and reports back (subagent)', 'Open portal: pull in the ops ticket from outside the repo (MCP)'],
        teaches: ['memory', 'rewind'] },
   3: { name: 'Make It Stick', bg: '#022a20', fog: '#0a6a4e',
        goal: 'Fixing it once was not enough. Fix it, prove it, and set up the repo so the next session cannot get it wrong.',
@@ -175,10 +175,10 @@ function openGuide() {
 
 // ---------- first-time tour of the Mission 1 screen ----------
 const TOUR = [
-  { sel: '#hand', t: 'These are your moves', p: 'Click a card to use it. Each card shows what it costs: minutes from your 12, and context it adds to your memory.' },
-  { sel: '#clock-wrap', t: 'The clock', p: 'Each day is one Claude session: 12 minutes, from 4:48 to 5:00. At 5:00 the session ends and you forget it all, just as Claude remembers nothing from yesterday\u2019s chat. Only 3 notes (your CLAUDE.md) carry over.' },
-  { sel: '.ctxp', t: 'The jar: your context window', p: 'Everything you read pours into this jar, with its size. Big reads fill it fast. Past 70k you slow down; past 100k you black out and lose details, just like Claude when its context fills up. In Claude Code, /context shows the same breakdown.' },
-  { sel: '.board', t: 'The evidence board', p: 'Clues you find appear here. You will use them to work out why the tests fail.' },
+  { sel: '#hand', t: 'Tell Claude what to do', p: 'Each card is a request you can give Claude. Click one and Claude does it. Each shows its cost: minutes from your 12, and how much it adds to Claude\u2019s context.' },
+  { sel: '#clock-wrap', t: 'The clock', p: 'Each day is one Claude session: 12 minutes, from 4:48 to 5:00. At 5:00 the session ends and Claude forgets it all, just as real Claude remembers nothing from yesterday\u2019s chat. Only the 3 notes you write (CLAUDE.md) carry over.' },
+  { sel: '.ctxp', t: 'The jar: Claude\u2019s context window', p: 'Everything Claude reads pours into this jar, with its size. Big reads fill it fast. Past 70k Claude slows down; past 100k it blacks out and loses details. In Claude Code, /context shows the same breakdown.' },
+  { sel: '.board', t: 'The evidence board', p: 'Clues Claude finds appear here. This is what Claude knows right now, and it is wiped when the session ends.' },
   { sel: '.progress', t: 'Your goal for the day', p: 'Day 1 can\u2019t be won. Find clues and notice which moves waste time. The checklist here updates as you play.' },
 ];
 function runTour() {
@@ -238,13 +238,13 @@ function renderHud() {
   const lv = level();
   $('#goal-h').textContent = `Level ${lv} goal · ${LEVELS[lv].name}`;
   $('#goal-lead').textContent = lv === 1
-    ? 'You can\u2019t fix it today. Find as many clues as you can before 5:00, and notice which cards waste time.'
+    ? 'You can\u2019t fix it today. Ask Claude to find as many clues as it can before 5:00, and notice which requests waste time.'
     : lv === 2 ? 'Fix the tests and prove it before 5:00 PM.'
     : 'Fix it, prove it, and leave a skill and a hook behind.';
   const rows = lv === 1 ? [
     [n >= 1, `Find your first clue (${n} of 5 found)`],
     [n >= 3, 'Find at least 3 clues'],
-    [false, 'At 5:00, choose 3 notes to keep for day 2'],
+    [false, 'At 5:00, write 3 notes for tomorrow\u2019s Claude'],
   ] : sticking() ? [
     [S.usedLoop.has('plan'), 'Plan the route (optional, saves time)'],
     [S.fixed, 'Fix it'],
@@ -276,7 +276,7 @@ function renderHud() {
       d.className = 'slot found' + (nev.has(id) ? ' noted' : '');
       const h = document.createElement('div'); h.className = 'slot-h';
       const t = document.createElement('b'); t.textContent = e.title;
-      const src = document.createElement('span'); src.textContent = nev.has(id) ? 'from your notes' : e.src;
+      const src = document.createElement('span'); src.textContent = nev.has(id) ? 'from CLAUDE.md' : e.src;
       h.append(t, src);
       const pre = document.createElement('pre'); pre.textContent = e.text;
       d.append(h, pre);
@@ -336,8 +336,8 @@ function renderHand() {
       const n = M.cards.filter(x => !x.phase && cardState(x) === 'locked').length;
       const b = document.createElement('div');
       b.className = 'card s-locked';
-      b.innerHTML = '<span class="kind">locked</span><span class="name"></span><span class="target">Wake up after your first loop.</span>';
-      b.querySelector('.name').textContent = `${n} powers`;
+      b.innerHTML = '<span class="kind">locked</span><span class="name"></span><span class="target">Unlocks on day 2.</span>';
+      b.querySelector('.name').textContent = `${n} new features`;
       hand.appendChild(b);
       continue;
     }
@@ -347,7 +347,7 @@ function renderHand() {
     b.className = `card k-${c.kind} s-${st}`;
     b.innerHTML = `<span class="try">Try this</span><span class="kind"></span><span class="name"></span><span class="target"></span>
       <span class="blurb"></span><span class="warn" hidden></span><span class="cost"><i class="c-min"></i><i class="c-tok"></i></span>`;
-    const kindLabel = { power: 'power', fix: 'action', think: 'think', trap: 'tool', tool: 'tool' }[c.kind];
+    const kindLabel = { power: 'Claude feature', fix: 'ask Claude to', think: 'ask Claude to', trap: 'ask Claude to', tool: 'ask Claude to' }[c.kind];
     b.querySelector('.kind').textContent = st === 'known' ? 'already found' : st === 'spent' ? 'used' : kindLabel;
     b.querySelector('.name').textContent = c.name;
     b.querySelector('.target').textContent = c.target;
@@ -358,7 +358,7 @@ function renderHand() {
     if (w.has(c.id)) {
       const wn = b.querySelector('.warn');
       wn.hidden = false;
-      wn.textContent = `Past you: ${w.get(c.id)}`;
+      wn.textContent = `Your note: ${w.get(c.id)}`;
     }
     if (st === 'spent') b.disabled = true;
     b.addEventListener('click', () => play(c, b));
@@ -379,13 +379,13 @@ function objective() {
     if (S.fixed && !S.verified) return { step: 'Prove it', text: 'Run the tests.', hint: 'Evidence first, then the rest.', card: 'verify' };
     if (S.verified && !S.skill) return { step: 'Make it stick', text: 'Teach every future session how to triage this.', hint: 'Carve a skill with concrete steps.', card: 'skill' };
     if (S.verified && !S.hook) return { step: 'Make it stick', text: 'Make the tests run on their own after every change.', hint: 'Set a hook on the right event.', card: 'hook' };
-    if (!S.diagnosed && S.ev.size < M.minEvidenceToDiagnose) return { step: 'Investigate', text: 'You forgot the cause. Find the evidence again, fast.', hint: 'Your clone and the portal are quick.', card: 'clone' };
+    if (!S.diagnosed && S.ev.size < M.minEvidenceToDiagnose) return { step: 'Investigate', text: 'Claude forgot the cause. Find the evidence again, fast.', hint: 'The clone and the portal are quick.', card: 'clone' };
     if (!S.diagnosed) return { step: 'Diagnose', text: 'Explain why it fails.', hint: 'Morning, 17:00, UTC.', card: 'diagnose' };
   }
   if (S.fixed) return { step: 'Prove it', text: 'Show that your fix works before you tell Dana.', hint: 'Claims need evidence. What would prove it?', card: 'verify' };
   if (S.diagnosed) return { step: 'Fix it', text: 'Choose a fix that works at any hour.', hint: 'A fix that hides the failure is not a fix.', card: 'fix' };
   if (S.ev.size < M.minEvidenceToDiagnose) {
-    if (!has('fail')) return { step: 'Investigate', text: 'Start by finding out exactly what is failing.', hint: l1 ? 'Failures are recorded in the CI log. You do not need all 60,000 lines of it.' : 'Your clone can investigate the code in its own context.', card: l1 ? 'grep' : 'clone' };
+    if (!has('fail')) return { step: 'Investigate', text: 'Start by finding out exactly what is failing.', hint: l1 ? 'Failures are recorded in the CI log. You do not need all 60,000 lines of it.' : 'The clone (a subagent) can investigate the code in its own context.', card: l1 ? 'grep' : 'clone' };
     return { step: 'Investigate', text: 'One failure. Now find out what makes it fail.', hint: 'The person who asked often knows when it started. Or look at the code the test depends on.', card: 'ask' };
   }
   if (!has('morning')) return { step: 'Investigate or diagnose', text: 'Do you know enough to explain the failure?', hint: 'Dana knows something the logs do not. When did it start?', card: 'ask' };
@@ -495,6 +495,35 @@ function showChoice(spec) {
   });
 }
 
+const PRIMER = [
+  { t: 'You ask. Claude does the work.', p: 'Claude Code is an AI assistant that runs in your terminal. You type a request in plain English. Claude decides the steps, then <b>reads files, runs commands and edits code</b> for you. Each of those steps is called a <b>tool call</b>.' },
+  { t: 'Everything it reads fills its context.', p: 'Claude&rsquo;s <b>context window</b> is its working memory for this session: your messages plus everything it has read. It has a size limit, measured in <b>tokens</b> (pieces of words). A quick search adds a little. Reading a whole log adds a lot. When it gets too full, Claude slows down, and older details get squashed into a summary.' },
+  { t: 'A new session starts with no memory.', p: 'When a session ends, Claude <b>forgets all of it</b>. Tomorrow&rsquo;s session knows nothing about today. The fix is a file called <b>CLAUDE.md</b> in your project: Claude reads it at the start of every session, so anything written there carries over.' },
+  { t: 'It can sound sure and still be wrong.', p: 'Claude writes the most likely-sounding answer. Usually that&rsquo;s right, but sometimes a confident answer is wrong. That&rsquo;s called a <b>hallucination</b>. Your job is to ask for <b>proof</b>: run the tests, show the output.' },
+  { t: 'That\u2019s all you need for this game.', p: 'You play the <b>developer</b>. Each card is a request you give Claude. Watch its context jar fill. When the day (the session) ends, write the 3 notes Claude will need tomorrow.' },
+];
+function showPrimer() {
+  return new Promise(res => {
+    let i = 0;
+    const box = $('#primer');
+    const draw = () => {
+      $('#pr-n').textContent = `${i + 1} of ${PRIMER.length}`;
+      $('#pr-t').textContent = PRIMER[i].t;
+      $('#pr-p').innerHTML = PRIMER[i].p;   // static text written in this file
+      box.querySelectorAll('.pr-scene').forEach(sc => sc.classList.toggle('on', Number(sc.dataset.s) === i + 1));
+      $('#pr-back').hidden = i === 0;
+      $('#pr-next').textContent = i + 1 < PRIMER.length ? 'Next' : 'Got it';
+    };
+    const end = () => { box.hidden = true; try { localStorage.setItem('cq-primer', '1'); } catch (e) {} res(); };
+    $('#pr-next').onclick = () => { if (++i >= PRIMER.length) end(); else draw(); };
+    $('#pr-back').onclick = () => { if (i > 0) { i--; draw(); } };
+    $('#pr-skip').onclick = end;
+    box.hidden = false; draw();
+    $('#pr-next').focus({ preventScroll: true });
+  });
+}
+const primerSeen = () => { try { return !!localStorage.getItem('cq-primer'); } catch (e) { return false; } };
+
 function showBrief() {
   return new Promise(res => {
     $('#brief').hidden = false;
@@ -517,7 +546,7 @@ async function play(c, el) {
   const cost = costOf(c);
   S.used.add(c.id); S.usedLoop.add(c.id);
   if (c.cmd && c.id !== 'verify') { S.log.push(c.cmd); line('cmd', c.cmd, { instant: true }); }
-  if (rot) line('sys', 'Your context is past 70%. Thinking is slower: +1 minute.', { instant: true });
+  if (rot) line('sys', 'Claude\u2019s context is past 70%. It is slower: +1 minute.', { instant: true });
 
   if (c.id === 'clone') scene.sendClone('tests/conftest.py');
   if (c.id === 'portal') { sfx.portal(); scene.openPortal(); }
@@ -683,7 +712,7 @@ async function chooseFix() {
 
 async function planMode() {
   document.body.classList.add('frozen');
-  line('sys', 'Plan mode. The clock stops. You can look, but not touch.', { instant: true });
+  line('sys', 'Plan mode. The clock stops. Claude can look, but not touch.', { instant: true });
   const o = await showChoice(M.plan);
   document.body.classList.remove('frozen');
   if (o.correct) {
@@ -783,11 +812,11 @@ async function blackout() {
   await advanceClock(1);
   document.body.classList.remove('blackout');
   S.log.push('# context full: auto-compacted. Details summarized away.');
-  line('sys', 'BLACKOUT. Your context overflowed and was compacted.', { instant: true });
+  line('sys', 'BLACKOUT. Claude\u2019s context overflowed and was compacted.', { instant: true });
   renderHud();
   await showResult({
-    title: 'Blackout: your context overflowed', concept: 'Compaction', tone: 'bad',
-    body: 'You tried to hold more than your context window allows. Everything was squashed into a short summary and the details were lost.' +
+    title: 'Blackout: Claude\u2019s context overflowed', concept: 'Compaction', tone: 'bad',
+    body: 'Claude tried to hold more than its context window allows. Everything was squashed into a short summary and the details were lost.' +
       (keep.size ? ' Evidence from your CLAUDE.md notes survived, because memory files are re-read after compaction.' : ''),
     found: lostNow.map(id => `Lost: ${M.evidence[id].title}`),
     lesson: 'Claude Code sessions do the same when they fill up. Search and use subagents instead of reading everything.',
@@ -806,7 +835,7 @@ async function hallucinate() {
   renderHud();
   await showResult({
     title: 'Dana: "still red?? did you actually run it?"', concept: 'Hallucination', tone: 'bad',
-    body: 'The failure happens every time, so retrying just fails three times. You told your user it was fixed without any evidence.',
+    body: 'The failure happens every time, so retrying just fails three times. Claude said it was fixed without any evidence, and you passed that on to Dana.',
     found: ['Trust -30'],
     lesson: 'A confident "fixed" with no test output is a hallucination. Always ask Claude to show the passing run.',
     cmd: 'Edit(@retry(3))  # never ran the tests',
@@ -815,7 +844,7 @@ async function hallucinate() {
 
 // ---------- loop lifecycle ----------
 async function startLoop() {
-  S.ctxItems = [{ label: S.loop > 1 ? 'Start: system prompt, Dana\u2019s message, your notes' : 'Start: system prompt and Dana\u2019s message', tok: M.baseContext, c: '#5c6a9e' }];
+  S.ctxItems = [{ label: S.loop > 1 ? 'Start: system prompt, Dana\u2019s request, your notes' : 'Start: system prompt and Dana\u2019s request', tok: M.baseContext, c: '#5c6a9e' }];
   S.minute = M.startMinute; S.ctx = M.baseContext; S.fixed = false; S.lastEv = null;
   S.ev = new Set(noted('ev')); S.lost = new Set(); S.usedLoop = new Set(); S.log = [];
   S.diagnosed = noted('diag').size > 0;
@@ -831,17 +860,17 @@ async function startLoop() {
   if (S.loop === 1) await runTour();
 
   if (S.loop === 1) {
-    await line('sys', 'You wake up inside a terminal. 4:48 PM. You have no memory of anything before this message. That is normal: every Claude session starts empty.');
+    await line('sys', '4:48 PM. You open a new Claude Code session. Claude knows nothing yet: every session starts empty. Your job is to tell it what to look at.');
   } else {
-    await line('sys', `4:48 PM. Again. Day ${S.loop} is a brand-new session: everything you read yesterday is gone. Only your notes survive, the way CLAUDE.md does.`);
-    S.log.push(`Read(CLAUDE.md)  # ${S.notes.length + (S.freeNote ? 1 : 0)} notes from past you`);
+    await line('sys', `4:48 PM. Again. Day ${S.loop} is a brand-new Claude session: everything Claude read yesterday is gone. It reads your notes first, the way it reads CLAUDE.md.`);
+    S.log.push(`Read(CLAUDE.md)  # ${S.notes.length + (S.freeNote ? 1 : 0)} notes you wrote`);
     line('cmd', 'Read(CLAUDE.md)', { instant: true });
     for (const n of S.notes) await line('past', noteText(n));
     if (S.freeNote) await line('past', S.freeNote);
-    if (S.loop === 2) await line('sys', 'Something new stirs. Two powers woke up: Send clone and Open portal.');
+    if (S.loop === 2) await line('sys', 'Two new Claude features unlocked: Send clone (a subagent) and Open portal (an MCP connector).');
     if (sticking() && !S.stickIntroDone) {
       S.stickIntroDone = true;
-      await line('sys', 'New powers: Plan mode, Carve a skill, Set a hook. The fix only counts if the next session cannot get it wrong.');
+      await line('sys', 'New Claude features: Plan mode, Carve a skill, Set a hook. The fix only counts if the next session cannot get it wrong.');
     }
     if (S.skill || S.hook) await line('past', `Still here from earlier loops: ${[S.skill && 'your skill', S.hook && 'your hook'].filter(Boolean).join(' and ')}.`);
   }
@@ -879,7 +908,7 @@ function showEtch() {
   if (S.diagnosed) opts.push({ type: 'diag', id: 'tz', tag: 'root cause', text: M.diagnosis.options.find(o => o.correct).text });
   for (const id of EV_IDS) {
     if (S.ev.has(id)) opts.push({ type: 'ev', id, tag: 'evidence', text: noteText({ type: 'ev', id }) });
-    else if (S.lost.has(id)) opts.push({ type: 'ev', id, tag: 'lost', text: 'You knew something here, but the blackout took it.', disabled: true });
+    else if (S.lost.has(id)) opts.push({ type: 'ev', id, tag: 'lost', text: 'Claude knew something here, but the blackout took it.', disabled: true });
   }
   const lessons = new Set(S.lessonsEarned);
   if (S.used.has('readLog')) lessons.add('grep');
@@ -933,7 +962,7 @@ async function falseDawn() {
   setTimeout(() => document.body.classList.remove('glitch'), 900);
   await showResult({
     title: 'The clock stops at 5:00. And rewinds.', concept: 'The loop holds', tone: 'bad',
-    body: 'CI is green, but nothing you did will survive the night. Tomorrow a fresh session hits this bug again and starts from zero, just like you did. The loop breaks only when the fix sticks.',
+    body: 'CI is green, but nothing you did will survive the night. Tomorrow a fresh session hits this bug again and starts from zero, just like Claude did today. The loop breaks only when the fix sticks.',
     found: ['Unlocked next loop: Plan mode, Carve a skill, Set a hook'],
     lesson: 'Fixing a bug once is not enough. Teach the setup (memory, skills, hooks) so the next session gets it right.',
   });
@@ -1158,6 +1187,7 @@ async function playMission1() {
   renderHud();
   const pre1 = await runQuiz('m1', 'pre');
   if (pre1.aced) toast('You aced this knowledge check last time, so it is skipped.');
+  if (!primerSeen()) await showPrimer();
   await showBrief();
   document.body.classList.add('playing');
   startLoop();
@@ -1199,6 +1229,7 @@ async function main() {
   $('#m-again').addEventListener('click', resetGame);
   $('#m-hub').addEventListener('click', goHub);
   $('#go-m1').addEventListener('click', playMission1);
+  $('#hub-primer').addEventListener('click', async () => { $('#hub').hidden = true; await showPrimer(); $('#hub').hidden = false; });
   $('#go-m2').addEventListener('click', playMission2);
   setupTextSize();
   setupFullscreen();

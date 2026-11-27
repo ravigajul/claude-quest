@@ -10,7 +10,7 @@ Created by **[Ravi Gajul](https://github.com/ravigajul)**, designed and built to
 
 ## The idea
 
-You are the AI agent. It's release day, 4:48 PM, the checkout tests are red, and your user wants them fixed before the 5:00 release.
+You play a developer working with Claude, your AI pair. Release day keeps repeating, and every day Claude starts a new session with no memory, so you have to decide what to write down for it (its CLAUDE.md). A 1-minute "How Claude works" intro explains the basics first, so no AI background is needed.
 When the clock hits 5:00, the day rewinds and you forget everything. **Only what you write down survives.**
 
 That isn't a metaphor laid over Claude. It's how Claude actually works:

@@ -738,6 +738,46 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 .od-card-h { display: flex; justify-content: space-between; align-items: center; gap: .8rem; flex-wrap: wrap; }
 .od-card-h .btn { padding: .45rem .9rem; }
 
+/* ---------- primer: how Claude works ---------- */
+#primer { background: rgba(6,8,26,.95); z-index: 40; }
+.pr-inner { width: 100%; max-width: 44rem; display: grid; gap: 1rem; }
+.pr-inner h2 { font-family: var(--f-display); font-size: clamp(2rem, 6vw, 3.2rem); line-height: .95; margin: 0; color: #fff; }
+.pr-inner p { margin: 0; font-size: calc(1.05rem * var(--rs)); line-height: 1.6; color: #e2e4fa; }
+.pr-inner p b { color: var(--token); font-weight: 600; }
+.hub-primer { justify-self: start; border-color: var(--token); color: var(--token); }
+.pr-stage { position: relative; height: 12.5rem; border-radius: 12px; background: rgba(12,16,48,.9); border: 1px solid var(--line); overflow: hidden; }
+.pr-scene { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; gap: 2rem; padding: 1rem; }
+.pr-scene.on { display: flex; }
+.pr-term { width: min(100%, 30rem); display: grid; gap: .5rem; padding: 1rem 1.2rem; border-radius: 8px; background: #05061a; border: 1px solid rgba(255,255,255,.15); font-family: var(--f-mono); font-size: .9rem; }
+.pr-you { color: var(--amber); }
+.pr-cl { color: var(--token); }
+.pr-cl.bad { color: var(--hot); }
+.pr-scene.on .l1, .pr-scene.on .l2, .pr-scene.on .l3 { opacity: 0; animation: prin .4s ease-out forwards; }
+.pr-scene.on .l1 { animation-delay: .5s; } .pr-scene.on .l2 { animation-delay: 1.4s; } .pr-scene.on .l3 { animation-delay: 2.3s; }
+@keyframes prin { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.pr-jar { display: flex; flex-direction: column; align-items: center; }
+.pr-lid { width: 3.4rem; height: .5rem; border-radius: 3px; background: linear-gradient(#c9d4ff, #6d7bb8); margin-bottom: 2px; }
+.pr-glass { width: 5rem; height: 8.5rem; border: 2px solid rgba(200,215,255,.5); border-radius: 10px 10px 20px 20px; display: flex; flex-direction: column-reverse; overflow: hidden; }
+.pr-glass i { display: block; height: 0; }
+.pr-glass .a { background: #b49cff; } .pr-glass .b { background: #7cf0a8; } .pr-glass .c { background: #ff8f6b; }
+.pr-scene.on .pr-glass .a { animation: fa .6s .5s forwards; } .pr-scene.on .pr-glass .b { animation: fb .6s 1.4s forwards; } .pr-scene.on .pr-glass .c { animation: fc 1s 2.3s forwards; }
+@keyframes fa { to { height: 6%; } } @keyframes fb { to { height: 16%; } } @keyframes fc { to { height: 74%; } }
+.pr-tags { display: grid; gap: .6rem; font-family: var(--f-mono); font-size: .9rem; }
+.pr-tags span { opacity: 0; } .pr-tags .t1 { color: #b49cff; } .pr-tags .t2 { color: #7cf0a8; } .pr-tags .t3 { color: #ff8f6b; }
+.pr-scene.on .pr-tags .t1 { animation: prin .4s .5s forwards; } .pr-scene.on .pr-tags .t2 { animation: prin .4s 1.4s forwards; } .pr-scene.on .pr-tags .t3 { animation: prin .4s 2.3s forwards; }
+.pr-days { display: flex; align-items: center; gap: 1.4rem; }
+.pr-day { display: grid; justify-items: center; gap: .5rem; font-family: var(--f-mono); font-size: .85rem; color: var(--muted); }
+.pr-day b { color: #fff; }
+.pr-mini { width: 3.6rem; height: 6rem; border: 2px solid rgba(200,215,255,.5); border-radius: 8px 8px 16px 16px; background: linear-gradient(to top, #7cf0a8 70%, transparent 70%); }
+.pr-mini.empty { background: none; }
+.pr-arrow { font-family: var(--f-mono); color: var(--amber); font-size: .85rem; }
+.pr-file { font-family: var(--f-mono); font-size: .8rem; color: #1a1030; background: var(--amber); padding: .2rem .5rem; border-radius: 4px; opacity: 0; }
+.pr-scene.on .pr-file { animation: prin .5s 1.2s forwards; }
+.pr-map { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: .6rem; width: 100%; }
+.pr-map span { padding: .6rem .8rem; border-radius: 8px; background: rgba(127,227,255,.08); border: 1px solid rgba(127,227,255,.3); font-size: .95rem; color: #e2e4fa; }
+.pr-map b { color: var(--token); }
+@media (prefers-reduced-motion: reduce) { .pr-scene.on * { animation-duration: .01s !important; animation-delay: 0s !important; } }
+
 /* ---------- Mission 1 clarity ---------- */
 .brief-why { display: grid; gap: .45rem; padding: .85rem 1rem; border-radius: 8px; background: rgba(127,227,255,.08); border: 1px solid rgba(127,227,255,.4); font-size: calc(.95rem * var(--rs)); line-height: 1.5; color: #e6e4ff; }
 .brief-why > b { color: #fff; font-size: calc(1.05rem * var(--rs)); }
@@ -773,12 +813,12 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
   <div class="intro-inner">
     <span class="eyebrow">A time-loop game about working with Claude</span>
     <h1 class="title">5:00 PM<br><em>Forever</em></h1>
-    <p class="pitch">You are <b>the AI agent</b>. It is release day, 4:48 PM, and the checkout tests are red. When the clock hits 5:00 the day rewinds and you forget everything. <b>Only what you write down survives.</b></p>
+    <p class="pitch">You are a developer and <b>Claude is your AI pair</b>. It is release day, 4:48 PM, and the checkout tests are red. The day keeps repeating, and every day Claude starts with no memory. <b>Only what you write down for it survives.</b></p>
     <ul class="rules">
       <li>Cards cost minutes</li>
-      <li>Reading fills your context tank</li>
+      <li>Everything Claude reads fills its context jar</li>
       <li>Overflow means blackout</li>
-      <li>3 notes survive each loop</li>
+      <li>3 notes for Claude survive each day</li>
     </ul>
     <button id="start" class="btn-primary" type="button">Wake up</button>
     <span class="proto-note">Prototype · one mission · about 12 minutes · opens full screen, sound on</span>
@@ -790,12 +830,13 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
   <div class="hub-in">
     <span class="eyebrow">Choose a mission</span>
     <h2 class="hub-title">Every mission teaches different Claude skills</h2>
+    <button id="hub-primer" class="btn hub-primer" type="button">New to AI? How Claude works, in 1 minute</button>
     <p class="hub-sub">Each one starts and ends with the same 5 quick questions, so you can see what you learned. Your Field Guide fills in as you play: <b id="hub-count">0/29</b> concepts.</p>
     <div class="hub-grid">
       <button class="mission" id="go-m1" type="button" data-m="m1">
         <span class="m-num">Mission 1 · 3 levels · about 12 min</span>
         <b>Release Day</b>
-        <span class="m-pitch">You are the AI agent in a time loop. Fix the failing tests before 5:00 PM. Only your notes survive.</span>
+        <span class="m-pitch">Work with Claude to fix the failing tests before 5:00 PM. Claude forgets each day; only the notes you write for it survive.</span>
         <span class="m-learn">Context window · CLAUDE.md memory · compaction · subagents · MCP · plan mode · permissions · skills · hooks</span>
         <span class="m-status" id="st-m1"></span>
       </button>
@@ -970,7 +1011,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
     </div>
     <span class="ctxp-sub">What&rsquo;s in the jar</span>
     <ol id="cx-list" class="ctxp-list"></ol>
-    <p class="ctxp-foot">Every card you play adds what it read here. In Claude Code, run <code>/context</code> to see this for real.</p>
+    <p class="ctxp-foot">Every request adds what Claude read here. In Claude Code, run <code>/context</code> to see this for real.</p>
   </section>
 
   <section class="board" aria-label="Evidence board">
@@ -991,8 +1032,8 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
     <span class="obj-lbl">Your job right now · <span id="obj-step"></span></span>
     <span id="obj-text" class="obj-text"></span>
     <span id="obj-hint" class="obj-hint"></span>
-    <span class="obj-cue" aria-hidden="true">Pick a card below &darr;</span>
-    <span class="obj-key">Each card costs <b>minutes</b> and fills your <b>context</b>. If context overflows, you black out and lose details. Saying &ldquo;fixed&rdquo; without proof costs <b>Dana&rsquo;s trust</b>.</span>
+    <span class="obj-cue" aria-hidden="true">Ask Claude: pick a card &darr;</span>
+    <span class="obj-key">Each card is a request to Claude. It costs <b>minutes</b> and fills Claude&rsquo;s <b>context</b>. If the context overflows, Claude blacks out and loses details. Telling Dana &ldquo;fixed&rdquo; without proof costs <b>Dana&rsquo;s trust</b>.</span>
   </div>
   <nav id="hand" aria-label="Your cards"></nav>
 </div>
@@ -1000,8 +1041,8 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 <section id="etch" class="screen" hidden aria-label="Carve your memory">
   <div class="etch-inner">
     <span class="eyebrow">5:00 PM · day <span id="etch-loop">1</span>&rsquo;s session has ended</span>
-    <h2>Carve what <em>survives</em></h2>
-    <p>Out of time. That was expected. The session is over, so the next day starts as a brand-new session and you forget everything, <b>except 3 notes</b>. Click up to 3 tablets to keep. Anything you keep, you will not have to find again.</p>
+    <h2>Write what Claude <em>keeps</em></h2>
+    <p>Out of time. That was expected. The session is over. Tomorrow is a brand-new Claude session, and Claude will remember nothing, <b>except 3 notes you write for it</b>. Click up to 3 tablets to keep. Anything you keep, Claude will not have to find again.</p>
     <p>In real Claude Code, this is <b>CLAUDE.md</b>: a file of notes that every new session reads first, because Claude starts each session with no memory.</p>
     <div id="etch-options"></div>
     <div class="etch-free">
@@ -1047,27 +1088,55 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
   </div>
 </section>
 
+<section id="primer" class="screen" hidden aria-label="How Claude works">
+  <div class="pr-inner">
+    <span class="eyebrow">How Claude works · <span id="pr-n">1 of 5</span></span>
+    <div class="pr-stage" aria-hidden="true">
+      <div class="pr-scene" data-s="1">
+        <div class="pr-term"><span class="pr-you">you&gt; fix the failing checkout test</span><span class="pr-cl l1">Claude: Searching ci.log for "FAIL"…</span><span class="pr-cl l2">Claude: Reading tests/conftest.py…</span><span class="pr-cl l3">Claude: Found it. Here is my plan…</span></div>
+      </div>
+      <div class="pr-scene" data-s="2">
+        <div class="pr-jar"><div class="pr-lid"></div><div class="pr-glass"><i class="a"></i><i class="b"></i><i class="c"></i></div></div>
+        <div class="pr-tags"><span class="t1">+2k  grep result</span><span class="t2">+12k  checkout.py</span><span class="t3">+60k  the whole log</span></div>
+      </div>
+      <div class="pr-scene" data-s="3">
+        <div class="pr-days"><div class="pr-day"><b>Monday</b><div class="pr-mini full"></div></div><span class="pr-arrow">session ends &rarr;</span><div class="pr-day"><b>Tuesday</b><div class="pr-mini empty"></div><span class="pr-file">CLAUDE.md</span></div></div>
+      </div>
+      <div class="pr-scene" data-s="4">
+        <div class="pr-term"><span class="pr-cl l1 bad">Claude: Fixed! I added a retry.</span><span class="pr-you l2">you&gt; run the tests and show me</span><span class="pr-cl l3 bad">3 failed</span></div>
+      </div>
+      <div class="pr-scene" data-s="5">
+        <div class="pr-map"><span><b>You</b> = the developer</span><span><b>Cards</b> = what you ask Claude to do</span><span><b>The jar</b> = Claude&rsquo;s context</span><span><b>Each day</b> = one Claude session</span><span><b>3 notes</b> = CLAUDE.md</span></div>
+      </div>
+    </div>
+    <h2 id="pr-t"></h2>
+    <p id="pr-p"></p>
+    <div class="btn-row"><button id="pr-next" class="btn-primary" type="button">Next</button><button id="pr-back" class="btn" type="button">Back</button><button id="pr-skip" class="btn" type="button">Skip</button></div>
+  </div>
+</section>
+
 <section id="brief" class="screen" hidden aria-label="How to play">
   <div class="brief-inner">
     <span class="eyebrow">How to play · Mission 1</span>
-    <h2>You are Claude. It&rsquo;s release day, and the tests are red.</h2>
-    <p class="brief-lead">Dana, a developer, asks you to fix the failing checkout tests before the 5:00 PM release. Every day starts at 4:48 PM, so you get 12 minutes. At 5:00 the day resets and you forget everything, except 3 notes you choose to keep.</p>
+    <h2>You&rsquo;re the developer. Claude is your AI pair.</h2>
+    <p class="brief-lead">Your teammate Dana needs the failing checkout tests fixed before the 5:00 PM release. You work with Claude Code: you tell Claude what to do, and it reads files and runs commands for you. Release day keeps repeating from 4:48 PM, so you get 12 minutes a day. Each new day is a new Claude session, and Claude remembers nothing from the day before, except 3 notes you write for it.</p>
     <ol class="steps">
-      <li><b>Day 1 · Amnesia.</b> You can&rsquo;t fix it today, nobody can. Your goal is to find clues and learn which moves waste time. At 5:00 you keep 3 notes.</li>
-      <li><b>Day 2 · The Clone and the Portal.</b> Your notes are back and you get two new powers. Work out the cause, fix it, and prove it with the tests before 5:00.</li>
+      <li><b>Day 1 · Amnesia.</b> You can&rsquo;t fix it today, nobody can. Point Claude at clues and learn which requests waste time. At 5:00 you write 3 notes for tomorrow&rsquo;s Claude.</li>
+      <li><b>Day 2 · The Clone and the Portal.</b> Claude reads your notes first, and you can use two new Claude features. Work out the cause, fix it, and prove it with the tests before 5:00.</li>
       <li><b>Day 3 · Make It Stick.</b> Fix it again, then set things up so the next session can&rsquo;t make the same mistake.</li>
     </ol>
     <div class="brief-why">
-      <b>Why do you forget everything each day? Because Claude does.</b>
+      <b>Why does Claude forget everything each day? Because that is how it really works.</b>
       <ul>
         <li><b>A day</b> in this game = one <b>Claude Code session</b>.</li>
         <li><b>The 5:00 reset</b> = the session ends and a new one starts. Claude keeps <b>no memory</b> of earlier chats.</li>
-        <li><b>Your 3 notes</b> = <b>CLAUDE.md</b>, a file Claude reads at the start of every session. It&rsquo;s the only thing that carries over.</li>
+        <li><b>The 3 notes you write</b> = <b>CLAUDE.md</b>, a file Claude reads at the start of every session. It&rsquo;s the only thing that carries over.</li>
         <li><b>The jar</b> = Claude&rsquo;s <b>context window</b>, everything it has read in this session. It holds only so much.</li>
+        <li><b>The evidence board</b> = what Claude knows right now. It is wiped when the session ends.</li>
       </ul>
-      <span>So the game is really about one skill: deciding what is worth writing down for the next session.</span>
+      <span>So the game is really about one skill: deciding what is worth writing down so the next Claude session doesn&rsquo;t start from zero.</span>
     </div>
-    <p class="brief-how"><b>How you play:</b> click the cards at the bottom of the screen. Each card costs minutes and fills your context. The panel on the right always shows your goal for the day.</p>
+    <p class="brief-how"><b>How you play:</b> each card at the bottom is something you can ask Claude to do. Click one and Claude does it. It costs minutes and fills Claude&rsquo;s context jar. The panel on the right always shows your goal for the day.</p>
     <button id="brief-go" class="btn-primary" type="button">Start</button>
   </div>
 </section>
@@ -1124,7 +1193,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 
 <div id="toast" class="toast" role="status"></div>
 
-<script type="module" src="game/engine.js?v=20261127123407"></script>
+<script type="module" src="game/engine.js?v=20261127123814"></script>
 
 </body>
 </html>
