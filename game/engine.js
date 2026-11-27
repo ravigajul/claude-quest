@@ -1,9 +1,9 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127121644';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127121644';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127121644';
-import { startMission2 } from './mission2.js?v=20261127121644';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127121644';
+import { MISSION as M } from './mission.js?v=20261127122712';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127122712';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127122712';
+import { startMission2 } from './mission2.js?v=20261127122712';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127122712';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -15,7 +15,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127121644');
+    const mod = await import('./scene3d.js?v=20261127122712');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -98,7 +98,7 @@ function renderGuideCount() { $('#guide-count').textContent = `${learned.size}/$
 
 const LEVELS = {
   1: { name: 'Amnesia', bg: '#070a1f', fog: '#0d1236',
-       goal: 'Find out why the checkout tests fail. You will probably run out of time: this first day is about learning what is worth writing down.',
+       goal: 'You can\u2019t fix it today. Find as many clues as you can before 5:00, then choose 3 notes to keep. Click the cards at the bottom to act.',
        news: [], teaches: [] },
   2: { name: 'The Clone and the Portal', bg: '#2a0636', fog: '#6a1466',
        goal: 'Your 3 notes are back. Use them to diagnose, fix and prove it before 5:00 PM.',
@@ -173,6 +173,46 @@ function openGuide() {
   $('#g-close').focus({ preventScroll: true });
 }
 
+// ---------- first-time tour of the Mission 1 screen ----------
+const TOUR = [
+  { sel: '#hand', t: 'These are your moves', p: 'Click a card to use it. Each card shows what it costs: minutes from your 12, and context it adds to your memory.' },
+  { sel: '#clock-wrap', t: 'The clock', p: 'Every day starts at 4:48 PM. At 5:00 the day resets and you forget everything except 3 notes.' },
+  { sel: '.meters .meter', t: 'Your context', p: 'Reading big files fills it fast. If it overflows you black out and lose details, just like Claude when its context window fills up.' },
+  { sel: '.board', t: 'The evidence board', p: 'Clues you find appear here. You will use them to work out why the tests fail.' },
+  { sel: '.progress', t: 'Your goal for the day', p: 'Day 1 can\u2019t be won. Find clues and notice which moves waste time. The checklist here updates as you play.' },
+];
+function runTour() {
+  try { if (localStorage.getItem('cq-tour-m1')) return Promise.resolve(); } catch (e) {}
+  const box = $('#tour'), ring = $('#tour-ring'), bub = $('#tour-bubble');
+  let i = 0;
+  return new Promise(res => {
+    const end = () => { box.hidden = true; window.removeEventListener('resize', place); try { localStorage.setItem('cq-tour-m1', '1'); } catch (e) {} res(); };
+    const place = () => {
+      const st = TOUR[i];
+      const el = document.querySelector(st.sel);
+      const r = el.getBoundingClientRect();
+      const pad = 6;
+      Object.assign(ring.style, { left: `${r.left - pad}px`, top: `${r.top - pad}px`, width: `${r.width + pad * 2}px`, height: `${r.height + pad * 2}px` });
+      $('#tour-n').textContent = `Quick tour · ${i + 1} of ${TOUR.length}`;
+      $('#tour-t').textContent = st.t;
+      $('#tour-p').textContent = st.p;
+      $('#tour-next').textContent = i + 1 < TOUR.length ? 'Next' : 'Start playing';
+      const bw = bub.offsetWidth, bh = bub.offsetHeight, vw = innerWidth, vh = innerHeight;
+      let top = r.bottom + 14 + bh < vh ? r.bottom + 14 : r.top - bh - 14;
+      if (top < 10) top = Math.min(vh - bh - 10, r.top + 10);
+      let left = Math.min(Math.max(10, r.left + r.width / 2 - bw / 2), vw - bw - 10);
+      if (r.width > vw * 0.6 && r.height > vh * 0.3) { top = r.top + 20; left = r.left + 20; }
+      Object.assign(bub.style, { top: `${top}px`, left: `${left}px` });
+    };
+    $('#tour-next').onclick = () => { i++; if (i >= TOUR.length) end(); else place(); };
+    $('#tour-skip').onclick = end;
+    window.addEventListener('resize', place);
+    box.hidden = false;
+    place();
+    $('#tour-next').focus({ preventScroll: true });
+  });
+}
+
 // ---------- HUD ----------
 const fmtClock = m => (m >= 60 ? '5:00' : `4:${String(m).padStart(2, '0')}`);
 
@@ -194,7 +234,17 @@ function renderHud() {
   const steps = $('#steps');
   steps.textContent = '';
   const n = S.ev.size;
-  const rows = sticking() ? [
+  const lv = level();
+  $('#goal-h').textContent = `Level ${lv} goal · ${LEVELS[lv].name}`;
+  $('#goal-lead').textContent = lv === 1
+    ? 'You can\u2019t fix it today. Find as many clues as you can before 5:00, and notice which cards waste time.'
+    : lv === 2 ? 'Fix the tests and prove it before 5:00 PM.'
+    : 'Fix it, prove it, and leave a skill and a hook behind.';
+  const rows = lv === 1 ? [
+    [n >= 1, `Find your first clue (${n} of 5 found)`],
+    [n >= 3, 'Find at least 3 clues'],
+    [false, 'At 5:00, choose 3 notes to keep for day 2'],
+  ] : sticking() ? [
     [S.usedLoop.has('plan'), 'Plan the route (optional, saves time)'],
     [S.fixed, 'Fix it'],
     [S.verified, 'Prove it with the tests'],
@@ -303,7 +353,7 @@ function renderHand() {
     b.querySelector('.blurb').textContent = c.blurb;
     b.title = c.blurb;
     b.querySelector('.c-min').textContent = c.id === 'plan' ? 'time frozen' : `${costOf(c)} min`;
-    b.querySelector('.c-tok').textContent = `+${c.tok}k tokens`;
+    b.querySelector('.c-tok').textContent = `+${c.tok}k context`;
     if (w.has(c.id)) {
       const wn = b.querySelector('.warn');
       wn.hidden = false;
@@ -493,10 +543,10 @@ async function play(c, el) {
       sfx.glitch(); scene.shake(0.4);
       await showResult({ title: 'The tests cannot even start', concept: 'Permissions', tone: 'bad',
         body: 'OSError: No space left on device. The runner disk is full: test-results/ has grown to 40 GB, one batch of reports from every loop you lived through.',
-        found: ['New card: Clean up test-results/'], cost: `${cost} min · +${c.tok}k tokens` });
+        found: ['New card: Clean up test-results/'], cost: `${cost} min · +${c.tok}k context` });
     } else {
       S.log.push(c.cmd);
-      await showResult({ title: 'Run the tests', concept: c.concept, body: '14 passed. CI is green.', cmd: c.cmd, lesson: c.lesson, cost: `${cost} min · +${c.tok}k tokens` });
+      await showResult({ title: 'Run the tests', concept: c.concept, body: '14 passed. CI is green.', cmd: c.cmd, lesson: c.lesson, cost: `${cost} min · +${c.tok}k context` });
       if (!sticking()) { await win(); return; }
       S.verified = true;
     }
@@ -511,7 +561,7 @@ async function play(c, el) {
     renderHud();
     await showResult({
       title: `${c.name}: ${c.target}`, concept: c.concept, ev: got, cmd: c.cmd, lesson: c.lesson,
-      cost: `${cost} min · +${c.tok}k tokens`,
+      cost: `${cost} min · +${c.tok}k context`,
       nothing: c.reveal.length && !got.length ? 'Nothing new. You already had this.' : '',
     });
   }
@@ -728,6 +778,7 @@ async function startLoop() {
   renderHud(); renderHand();
   $('#hand').classList.add('busy');
   await showLevel();
+  if (S.loop === 1) await runTour();
 
   if (S.loop === 1) {
     await line('sys', 'You wake up inside a terminal. 4:48 PM. You have no memory of anything before this message.');
