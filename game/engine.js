@@ -1,10 +1,10 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127155610';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127155610';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127155610';
-import { startMission2 } from './mission2.js?v=20261127155610';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127155610';
-import { track, statsOn } from './stats.js?v=20261127155610';
+import { MISSION as M } from './mission.js?v=20261127160429';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127160429';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127160429';
+import { startMission2 } from './mission2.js?v=20261127160429';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127160429';
+import { track, statsOn } from './stats.js?v=20261127160429';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -16,7 +16,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127155610');
+    const mod = await import('./scene3d.js?v=20261127160429');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -235,7 +235,7 @@ const fmtClock = m => (m >= 60 ? '5:00' : `4:${String(m).padStart(2, '0')}`);
 function renderHud() {
   $('#loop-n').textContent = `${level()}/3`;
   $('#lvl-name').textContent = LEVELS[level()].name;
-  $('#loop-sub').textContent = `· day ${S.loop}`;
+  $('#loop-sub').textContent = `Day ${S.loop}`;
   $('#clock').textContent = fmtClock(S.minute);
   $('#clock-wrap').classList.toggle('urgent', S.minute >= 56 && !S.won);
   $('#mins-left').textContent = `${Math.max(0, M.endMinute - S.minute)} min left`;

@@ -38,7 +38,7 @@ export const QUIZ = {
   ],
 };
 
-import { track } from './stats.js?v=20261127155610';
+import { track } from './stats.js?v=20261127160429';
 
 const $ = s => document.querySelector(s);
 

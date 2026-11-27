@@ -90,7 +90,14 @@ h1.title em { font-style: normal; color: var(--amber); }
 body.playing #hud { opacity: 1; }
 #hud > * { pointer-events: auto; }
 
-.top { grid-area: top; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; position: relative; z-index: 5; }  /* above the board, so the How to play callout is not covered */
+/* Top bar: two labelled columns side by side, LEVEL (1/3, name) and DAY N (clock, minutes left), tops aligned;
+   meters and buttons on the right. */
+.top { grid-area: top; display: grid; grid-template-columns: auto auto minmax(0, 1fr); grid-template-areas: "lvl clock meters";
+  column-gap: 2rem; row-gap: .6rem; align-items: start; position: relative; z-index: 5; }  /* z-index: above the board, so the How to play callout is not covered */
+.top .stat.lvl { grid-area: lvl; }
+.top #clock-wrap { grid-area: clock; text-align: left; }
+.top .meters { grid-area: meters; margin-left: 0; align-self: center; }
+@media (max-width: 760px) { .top { grid-template-columns: auto auto minmax(0, 1fr); grid-template-areas: "lvl clock ." "meters meters meters"; } }
 .stat { display: grid; gap: .2rem; min-width: 0; }
 .stat .lbl { font-family: var(--f-mono); font-size: .68rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
 .loop-n { font-family: var(--f-display); font-weight: 800; font-size: 2rem; line-height: 1; color: var(--violet); }
@@ -100,7 +107,7 @@ body.playing #hud { opacity: 1; }
 #clock-wrap.urgent #clock { color: var(--hot); text-shadow: 0 0 28px rgba(255,77,109,.7); animation: pulse .5s ease-in-out infinite alternate; }
 @keyframes pulse { to { opacity: .65; } }
 #mins-left { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); }
-.meters { display: flex; gap: .8rem 1.25rem; align-items: center; flex-wrap: wrap; flex: 1 1 22rem; min-width: 0; justify-content: flex-end; }  /* wrap the buttons inside this group, so the clock stays next to the level */
+.meters { display: flex; gap: .8rem 1.25rem; align-items: center; flex-wrap: wrap; flex: 1 1 22rem; min-width: 0; justify-content: flex-end; margin-left: auto; }  /* wrap the buttons inside this group, so the clock stays next to the level */
 @media (max-width: 760px) { .meters { justify-content: flex-start; } }
 .meter { width: 11rem; display: grid; gap: .3rem; }
 .bar { height: 8px; border-radius: 4px; background: rgba(255,255,255,.08); overflow: hidden; }
@@ -399,6 +406,7 @@ body.rewinding #hud { opacity: .15; }
 .objective .obj-lbl { grid-column: 1 / -1; }
 .objective .obj-text { grid-column: 1 / -1; }
 .objective .obj-hint { grid-column: 1 / -1; }
+.objective .obj-key, .objective .obj-cue { grid-column: 1 / -1; }  /* full width; on phones the cue is in the flow and used to squeeze the key text into a narrow column */
 .card { max-width: none; flex: 1 1 0; min-width: 8rem; }
 #hand { flex-wrap: wrap; justify-content: stretch; max-height: none; overflow: visible; }
 
@@ -412,7 +420,8 @@ body.rewinding #hud { opacity: .15; }
 
 /* ---------- context window panel (like /context) ---------- */
 .ctxp { grid-area: tank; align-self: stretch; min-height: 0; display: flex; flex-direction: column; gap: .5rem; padding: .7rem .75rem;
-  background: rgba(9,12,38,.9); border: 1px solid var(--line); border-radius: 10px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  background: rgba(9,12,38,.9); border: 1px solid var(--line); border-radius: 10px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  overflow-y: auto; }  /* scroll inside the panel instead of spilling under the next one */
 .ctxp-h { display: grid; gap: .15rem; }
 .ctxp-h h2 { margin: 0; font-family: var(--f-mono); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 .ctxp-num { font-size: calc(.85rem * var(--rs)); color: var(--muted); }
@@ -446,6 +455,8 @@ body.rewinding #hud { opacity: .15; }
 .cx-line.full { bottom: calc(100% - 3px); border-top-color: var(--hot); }
 .cx-line span { position: absolute; left: calc(100% + 4px); top: -.55rem; white-space: nowrap; font-family: var(--f-mono); font-size: .62rem; color: var(--amber); display: none; }
 .ctxp-side { display: flex; flex-direction: column; justify-content: flex-end; gap: .5rem; min-height: 0; }
+/* Narrow desktops: the jar column is thin, so drop the two dashed-line notes (the tour and the 70%/100% lines still explain them). */
+@media (min-width: 821px) and (max-width: 1180px) { .ctxp-key { display: none; } }
 .ctxp-sub { font-family: var(--f-mono); font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
 .ctxp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: .25rem; overflow-y: auto; min-height: 2.5rem; max-height: 9rem; flex: 0 1 auto; }
 .ctxp-list li { display: grid; grid-template-columns: .65rem minmax(0, 1fr) auto; gap: .4rem; align-items: baseline; font-size: calc(.78rem * var(--rs)); line-height: 1.3; color: #e2e4fa; }
@@ -468,9 +479,11 @@ body.rewinding #hud { opacity: .15; }
 
 /* ---------- small screens ---------- */
 @media (max-width: 820px) {
-  #hud { grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: auto auto auto auto auto !important;
-    grid-template-areas: "top" "board" "obj" "hand" "side" !important; overflow-y: auto; }
-  .ctxp { grid-area: auto; order: -1; }
+  /* Phones: one column that scrolls. Every row is as tall as its content (max-content); with "auto" rows
+     the fixed-height screen squeezed the board and the side column to nothing and dropped the jar to the bottom. */
+  #hud { grid-template-columns: minmax(0, 1fr) !important; grid-template-rows: repeat(6, max-content) !important;
+    grid-template-areas: "top" "tank" "board" "obj" "hand" "side" !important; overflow-y: auto; }
+  .ctxp { grid-area: tank !important; }
   .ctxp-body { min-height: 6rem; }
   .board { max-height: 40vh; }
   .side .term { max-height: 30vh; }
@@ -526,8 +539,10 @@ body.rewinding #hud { opacity: .15; }
 .card { min-width: calc(7.5rem * var(--cs)); }
 @media (max-width: 820px) {
   .obj-text { font-size: calc(1.2rem * var(--rs)); }
-  #hud { grid-template-rows: auto auto auto auto auto !important; }
+  #hud { grid-template-rows: repeat(6, max-content) !important; }
 }
+/* Small phones: two cards per row instead of one tall stack. */
+@media (max-width: 560px) { #hand .card { flex: 1 1 calc(50% - 5px); min-width: 0; box-sizing: border-box; } #evidence { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; } }
 
 /* Evidence board: heading stays pinned; tiles scroll underneath it. */
 .board { padding-top: 0; }
@@ -808,7 +823,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 #hand.busy ~ * .obj-cue, .objective:has(~ #hand.busy) .obj-cue { opacity: .3; animation: none; }
 .obj-key { display: block; margin-top: .35rem; font-size: calc(.8rem * var(--rs)); line-height: 1.45; color: var(--muted); }
 .obj-key b { color: #fff; font-weight: 600; }
-@media (max-width: 820px) { .obj-cue { position: static; display: inline-block; margin-top: .4rem; } }
+@media (max-width: 1180px) { .obj-cue { position: static; display: inline-block; justify-self: start; margin-top: .4rem; } }
 
 .tour { position: fixed; inset: 0; z-index: 80; }
 .exit-dlg { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; background: rgba(4,6,20,.72); }
@@ -1021,8 +1036,9 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 
 <div id="hud">
   <header class="top">
-    <div class="stat lvl"><span class="lbl">Level <span id="loop-sub"></span></span><span class="loop-n" id="loop-n">1/3</span><span id="lvl-name" class="lvl-name"></span></div>
+    <div class="stat lvl"><span class="lbl">Level</span><span class="loop-n" id="loop-n">1/3</span><span id="lvl-name" class="lvl-name"></span></div>
     <div id="clock-wrap" class="stat" aria-live="polite">
+      <span class="lbl" id="loop-sub">Day 1</span>
       <div><span id="clock">4:48</span><span class="pm">PM</span></div>
       <span id="mins-left">12 min left</span>
     </div>
@@ -1249,7 +1265,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 
 <div id="toast" class="toast" role="status"></div>
 
-<script type="module" src="game/engine.js?v=20261127155610"></script>
+<script type="module" src="game/engine.js?v=20261127160429"></script>
 
 </body>
 </html>

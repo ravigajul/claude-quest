@@ -264,3 +264,9 @@ More time-loop missions (API contract drift, a flaky E2E suite, a security revie
 - 2026-11-27: GoatCounter is switched on (code ravigajul-claudequest) on the GitHub Pages build.
 - 2026-11-27: .top has position: relative; z-index: 5, so the How to play callout is no longer hidden behind the evidence board (each .panel's backdrop-filter gives it its own stacking layer).
 - 2026-11-27: top bar: .meters { flex: 1 1 22rem; justify-content: flex-end } (left-aligned on phones), so its buttons wrap inside the group and the clock stays beside the level. Before this, adding '← Missions' pushed the whole group onto a second line at ~1366px wide, and the clock was flung to the right corner.
+- 2026-11-27 (v1.9.11) layout fixes:
+  - Top bar is a grid with two labelled columns side by side, "LEVEL / 1/3 / name" and "DAY N / clock / min left" (#loop-sub now sits in #clock-wrap and reads "Day N"); meters and buttons go on the right. Ravi wants this alignment kept.
+  - Phones (≤820px): the HUD rows are max-content (top, jar, board, job, cards, side). With "auto" rows, the fixed-height screen squeezed the board and side column to 0 and pushed the jar to the bottom.
+  - Small phones (≤560px): cards and evidence tiles go 2 per row.
+  - "Your job" panel: the cue and key text span the full width. Below 1180px the cue is in the flow, so it no longer covers the title.
+  - Jar panel: overflow-y auto (it used to spill under "Your job"). From 821 to 1180px the dashed-line notes are hidden.
