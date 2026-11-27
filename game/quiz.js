@@ -38,6 +38,8 @@ export const QUIZ = {
   ],
 };
 
+import { track } from './stats.js?v=20261127145100';
+
 const $ = s => document.querySelector(s);
 
 function key(m) { return `cq-quiz-${m}-pre`; }
@@ -60,11 +62,13 @@ export function runQuiz(mission, phase) {
     const finish = () => {
       if (phase === 'pre') {
         try { localStorage.setItem(key(mission), String(score)); } catch (e) {}
+        track(`${mission}-quiz-before-${score}of${qs.length}`, `${mission} knowledge check before: ${score}/${qs.length}`);
         box.hidden = true;
         resolve({ score, total: qs.length });
         return;
       }
       try { localStorage.setItem(postKey(mission), String(score)); } catch (e) {}
+      track(`${mission}-quiz-after-${score}of${qs.length}`, `${mission} knowledge check after: ${score}/${qs.length}`);
       const before = preScore(mission);
       $('#qz-tag').textContent = 'Knowledge check · results';
       $('#qz-pips').textContent = '';
@@ -116,6 +120,7 @@ export function runQuiz(mission, phase) {
     };
     $('#qz-skip').onclick = () => {
       if (phase === 'pre') { try { localStorage.removeItem(key(mission)); } catch (e) {} }
+      track(`${mission}-quiz-${phase === 'pre' ? 'before' : 'after'}-skipped`, `${mission} knowledge check ${phase === 'pre' ? 'before' : 'after'}: skipped`);
       box.hidden = true; resolve({ skipped: true });
     };
     box.hidden = false;

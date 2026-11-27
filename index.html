@@ -262,6 +262,11 @@ body.rewinding #hud { opacity: .15; }
 .btn-row { display: flex; gap: .6rem; flex-wrap: wrap; }
 .btn { cursor: pointer; border-radius: 6px; padding: .6rem 1rem; font-family: var(--f-mono); font-size: .8rem; font-weight: 600; border: 1px solid rgba(255,200,150,.4); background: rgba(255,255,255,.04); color: #fff4e2; }
 .btn.solid { background: var(--amber); color: #1a1030; border-color: var(--amber); }
+.like { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin: .4rem 0; font-size: calc(.95rem * var(--rs)); color: #ffe2c9; }
+.like .btn[disabled] { opacity: .45; cursor: default; }
+.like .btn.picked { opacity: 1; border-color: var(--amber); }
+.like-thanks { color: #7dffb2; font-family: var(--f-mono); font-size: .8rem; }
+.like-fb { color: var(--amber); font-family: var(--f-mono); font-size: .8rem; margin-left: auto; }
 .feedback { font-size: .88rem; color: #ffe2c9; line-height: 1.5; margin: 0; }
 
 /* ---------- prompt banner ---------- */
@@ -988,6 +993,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
       <ul id="od-learn" class="od-learn"></ul>
     </div>
     <div class="btn-row"><button id="od-hub" class="btn" type="button">Back to missions</button><button id="od-again" class="btn" type="button">Play again</button></div>
+    <div class="like" data-m="m2"><span class="like-q">Did this help you learn Claude?</span><button type="button" class="btn" data-v="yes">&#128077; Yes</button><button type="button" class="btn" data-v="no">&#128078; Not really</button><span class="like-thanks" hidden>Thanks! It helps Ravi decide what to build next.</span><a class="like-fb" href="https://github.com/ravigajul/claude-quest/issues/new?title=Feedback%20on%205%3A00%20PM%20Forever" target="_blank" rel="noopener">Tell Ravi what you think &rarr;</a></div>
     <p class="feedback">Created by <b>Ravi Gajul</b>, built together with Claude.</p>
   </div>
 </section>
@@ -1131,6 +1137,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
       <div id="m-files" class="mfiles"></div>
       <div class="btn-row"><button id="m-again" class="btn" type="button">Play again</button><button id="m-hub" class="btn solid" type="button">Next mission</button></div>
     </div>
+    <div class="like" data-m="m1"><span class="like-q">Did this help you learn Claude?</span><button type="button" class="btn" data-v="yes">&#128077; Yes</button><button type="button" class="btn" data-v="no">&#128078; Not really</button><span class="like-thanks" hidden>Thanks! It helps Ravi decide what to build next.</span><a class="like-fb" href="https://github.com/ravigajul/claude-quest/issues/new?title=Feedback%20on%205%3A00%20PM%20Forever" target="_blank" rel="noopener">Tell Ravi what you think &rarr;</a></div>
     <p class="feedback">Created by <b>Ravi Gajul</b>, built together with Claude. Prototype: more missions coming.</p>
   </div>
 </section>
@@ -1240,7 +1247,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 
 <div id="toast" class="toast" role="status"></div>
 
-<script type="module" src="game/engine.js?v=20261127144707"></script>
+<script type="module" src="game/engine.js?v=20261127145100"></script>
 
 </body>
 </html>

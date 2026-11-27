@@ -1,9 +1,10 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127144707';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127144707';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127144707';
-import { startMission2 } from './mission2.js?v=20261127144707';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127144707';
+import { MISSION as M } from './mission.js?v=20261127145100';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127145100';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127145100';
+import { startMission2 } from './mission2.js?v=20261127145100';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127145100';
+import { track, statsOn } from './stats.js?v=20261127145100';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -15,7 +16,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127144707');
+    const mod = await import('./scene3d.js?v=20261127145100');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -859,6 +860,7 @@ async function hallucinate() {
 
 // ---------- loop lifecycle ----------
 async function startLoop() {
+  if (S.loop > 1) track(`m1-day-${S.loop}`, `Mission 1 reached day ${S.loop}`);
   S.ctxItems = [{ label: S.loop > 1 ? 'Start: system prompt, Dana\u2019s request, your notes' : 'Start: system prompt and Dana\u2019s request', tok: M.baseContext, c: '#5c6a9e' }];
   S.minute = M.startMinute; S.ctx = M.baseContext; S.fixed = false; S.lastEv = null;
   S.ev = new Set(noted('ev')); S.lost = new Set(); S.usedLoop = new Set(); S.log = [];
@@ -1169,7 +1171,7 @@ function resetGame() {
 }
 
 // ---------- missions ----------
-function markDone(m) { try { localStorage.setItem(`cq-done-${m}`, '1'); } catch (e) {} }
+function markDone(m) { track(`${m}-done`, `${m === 'm1' ? 'Mission 1' : 'Mission 2'} completed`); try { localStorage.setItem(`cq-done-${m}`, '1'); } catch (e) {} }
 function isDone(m) { try { return localStorage.getItem(`cq-done-${m}`) === '1'; } catch (e) { return false; } }
 
 function showHub() {
@@ -1197,6 +1199,7 @@ function goHub() {
 }
 
 async function playMission1() {
+  track('m1-start', 'Mission 1 started');
   $('#hub').hidden = true;
   Object.assign(S, fresh());
   shownLevel = 0;
@@ -1212,6 +1215,7 @@ async function playMission1() {
 }
 
 async function playMission2() {
+  track('m2-start', 'Mission 2 started');
   $('#hub').hidden = true;
   document.body.dataset.level = 'm2';
   scene.setTheme && scene.setTheme('#04122a', '#0b3a66');
@@ -1219,6 +1223,26 @@ async function playMission2() {
   if (pre2.aced) toast('You aced this knowledge check last time, so it is skipped.');
   startMission2({
     $, learn, BY_ID, showResult, showChoice, sfx, toast, runQuiz, goHub, markDone,
+  });
+}
+
+// ---------- likes and feedback (end screens) ----------
+// Thumbs only appear where play statistics are on (GitHub Pages). The feedback link works everywhere.
+function setupLikes() {
+  document.querySelectorAll('.like').forEach(row => {
+    const m = row.dataset.m, key = `cq-liked-${m}`;
+    const btns = row.querySelectorAll('button');
+    const thanks = row.querySelector('.like-thanks');
+    let done = null; try { done = localStorage.getItem(key); } catch (e) {}
+    if (!statsOn()) { row.querySelector('.like-q').hidden = true; btns.forEach(b => { b.hidden = true; }); return; }
+    const mark = () => { btns.forEach(b => { b.disabled = true; }); thanks.hidden = false; };
+    if (done) mark();
+    btns.forEach(b => b.addEventListener('click', () => {
+      const v = b.dataset.v;
+      track(`${m}-like-${v}`, `${m === 'm1' ? 'Mission 1' : 'Mission 2'}: ${v === 'yes' ? 'liked it' : 'not for me'}`);
+      try { localStorage.setItem(key, v); } catch (e) {}
+      b.classList.add('picked'); mark();
+    }));
   });
 }
 
@@ -1234,7 +1258,9 @@ async function main() {
   $('#exit-btn').addEventListener('click', () => { $('#exit-dlg').hidden = false; $('#exit-no').focus({ preventScroll: true }); });
   $('#exit-no').addEventListener('click', () => { $('#exit-dlg').hidden = true; });
   $('#exit-yes').addEventListener('click', () => {
-    try { sessionStorage.setItem('cq-open-hub', '1'); location.reload(); }
+    track(`m1-left-day-${S.loop}`, `Left Mission 1 on day ${S.loop}`);
+    // Short pause so the "left on day N" count is sent before the page reloads.
+    try { sessionStorage.setItem('cq-open-hub', '1'); setTimeout(() => location.reload(), statsOn() ? 400 : 0); }
     catch (e) { $('#exit-dlg').hidden = true; goHub(); }
   });
   $('#g-close').addEventListener('click', () => { $('#guide').hidden = true; });
@@ -1259,6 +1285,7 @@ async function main() {
   $('#go-m2').addEventListener('click', playMission2);
   setupTextSize();
   setupFullscreen();
+  setupLikes();
   let toHub = false; try { toHub = sessionStorage.getItem('cq-open-hub') === '1'; sessionStorage.removeItem('cq-open-hub'); } catch (e) {}
   if (toHub) { $('#intro').hidden = true; showHub(); document.addEventListener('pointerdown', () => initAudio(), { once: true }); }
 }
