@@ -1037,6 +1037,7 @@ function goHub() {
   shownLevel = 0;
   $('#mirror').hidden = true;
   $('#m2').hidden = true;
+  $('#m2done').hidden = true;
   scene.resetDay();
   renderHud();
   showHub();

@@ -53,7 +53,7 @@ const MAX_RUNS = 6;
 export function startMission2(api) {
   const { $, learn, BY_ID, showResult, sfx, toast, runQuiz, goHub, markDone } = api;
   const on = new Set(['vague', 'free', 'story']);
-  let runs = 0, answered = false, prev = null, done = false;
+  let runs = 0, answered = false, prev = null, done = false, first = null;
   const box = $('#m2');
 
   const order = ['role', 'vague', 'specific', 'story', 'ticket', 'design', 'answers', 'clarify', 'example', 'free', 'table', 'ado', 'guard'];
@@ -225,11 +225,19 @@ export function startMission2(api) {
     prev = { on: new Set(on), coverage: g.coverage };
     render();
 
+    if (!first) first = { prompt: buildPrompt(), coverage: g.coverage, invented: g.invented.length, usable: g.usable, importable: g.importable, run: runs };
     const win = g.coverage === REQS.length && !g.invented.length && g.usable && g.importable;
-    for (const e of changed) {
-      if (e.teach && BY_ID[e.teach]) {
-        await showResult({ title: 'What changed because of your prompt', concept: BY_ID[e.teach].name, body: e.text, teach: e.teach });
-      }
+    const teachable = changed.filter(e => e.teach && BY_ID[e.teach]);
+    if (win) {
+      teachable.forEach(e => learn(e.teach));   // the outcome screen explains them all
+    } else if (teachable.length === 1) {
+      const e = teachable[0];
+      await showResult({ title: 'What changed because of your prompt', concept: BY_ID[e.teach].name, body: e.text, teach: e.teach });
+    } else if (changed.length) {
+      const fresh = teachable.filter(e => learn(e.teach)).map(e => BY_ID[e.teach].name);
+      await showResult({ title: 'What changed because of your prompt', concept: `${changed.length} changes`,
+        body: 'Each part you added changed the answer in a different way:',
+        found: [...changed.map(e => e.text), ...(fresh.length ? [`Added to your Field Guide: ${fresh.join(', ')}`] : [])] });
     }
     if (!changed.length && runs > 1) toast('Nothing in your prompt changed, so neither did the answer.');
 
@@ -247,13 +255,45 @@ export function startMission2(api) {
     markDone('m2');
     sfx.win();
     render();
-    await showResult({ title: 'Priya: "These are perfect. Importing now."', concept: 'Mission complete',
-      body: `All ${REQS.length} requirements covered, nothing invented, steps a manual tester can follow, and it imports straight into Azure DevOps. You did it in ${runs} session${runs > 1 ? 's' : ''}.` });
+    await showResult({ title: 'All 10 covered. Nothing invented.', concept: 'Priya is importing your tests',
+      body: 'One quick check of what you know now, then your results.' });
     const q = await runQuiz('m2', 'post');
-    $('#m2-final').hidden = false;
-    $('#m2-final-prompt').textContent = buildPrompt().replace(/\n\n\[image[^\]]*\]/, '\n\n[paste your design screenshot here]');
-    $('#m2-final-score').textContent = q && q.before != null ? `Knowledge check: ${q.before}/${q.total} → ${q.score}/${q.total}` : q && q.score != null ? `Knowledge check: ${q.score}/${q.total}` : '';
-    $('#m2-final').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showOutcome(q);
+  }
+
+  // The outcome screen: what happened, before vs after, what you learned, what to take to work.
+  function showOutcome(q) {
+    const final = { prompt: buildPrompt(), coverage: REQS.length };
+    const f = first || { prompt: final.prompt, coverage: REQS.length, invented: 0 };
+    $('#od-title').textContent = 'Priya imported your 10 test cases.';
+    $('#od-sub').textContent = `It took you ${runs} of ${MAX_RUNS} sessions. Your first prompt got ${f.coverage} of 10 requirements${f.invented ? ` and made up ${f.invented} rule${f.invented > 1 ? 's' : ''}` : ''}. Your final prompt got all 10 and made up nothing.`;
+    const stats = $('#od-stats'); stats.textContent = '';
+    const stat = (label, a, b) => {
+      const d = document.createElement('div'); d.className = 'od-stat';
+      const l = document.createElement('span'); l.textContent = label;
+      const v = document.createElement('b'); v.textContent = a == null ? b : `${a} → ${b}`;
+      d.append(l, v); stats.appendChild(d);
+    };
+    stat('Requirements covered', `${f.coverage}/10`, '10/10');
+    stat('Rules Claude made up', f.invented, 0);
+    stat('Sessions used', null, `${runs} of ${MAX_RUNS}`);
+    if (q && q.score != null) stat('Knowledge check', q.before != null ? `${q.before}/${q.total}` : null, `${q.score}/${q.total}`);
+    $('#od-first').textContent = f.prompt;
+    $('#od-final').textContent = final.prompt.replace(/\[image[^\]]*\]/, '[paste your design screenshot here]');
+    const used = ['specific', 'mcp', 'images', 'clarify', 'role', 'examples', 'structure', 'grounding']
+      .filter(id => ({ specific: on.has('specific'), mcp: on.has('ticket'), images: on.has('design'), clarify: answered, role: on.has('role'), examples: on.has('example'), structure: on.has('ado'), grounding: on.has('guard') })[id]);
+    const ul = $('#od-learn'); ul.textContent = '';
+    for (const id of used) {
+      const g = BY_ID[id]; if (!g) continue;
+      learn(id);
+      const li = document.createElement('li');
+      const b = document.createElement('b'); b.textContent = g.name;
+      const p = document.createElement('span'); p.textContent = g.how;
+      li.append(b, p); ul.appendChild(li);
+    }
+    box.hidden = true;
+    $('#m2done').hidden = false;
+    $('#m2done').scrollTop = 0;
   }
 
   function reset() {
@@ -263,18 +303,19 @@ export function startMission2(api) {
     $('#m2-out').textContent = '';
     $('#m2-review').hidden = true;
     $('#m2-chat').hidden = true;
-    $('#m2-final').hidden = true;
+    $('#m2done').hidden = true;
+    first = null;
     render();
   }
 
   $('#m2-run').onclick = run;
   $('#m2-run-top').onclick = run;
-  $('#m2-copy').onclick = async () => {
-    try { await navigator.clipboard.writeText($('#m2-final-prompt').textContent); toast('Prompt copied'); } catch (e) { toast('Select the text and copy it'); }
+  $('#od-copy').onclick = async () => {
+    try { await navigator.clipboard.writeText($('#od-final').textContent); toast('Prompt copied'); } catch (e) { toast('Select the text and copy it'); }
   };
-  $('#m2-hub').onclick = () => { box.hidden = true; goHub(); };
+  $('#od-hub').onclick = () => { $('#m2done').hidden = true; goHub(); };
   $('#m2-back').onclick = () => { box.hidden = true; goHub(); };
-  $('#m2-again').onclick = reset;
+  $('#od-again').onclick = () => { reset(); box.hidden = false; box.scrollTop = 0; };
   reset();
   box.hidden = false;
   box.scrollTop = 0;
