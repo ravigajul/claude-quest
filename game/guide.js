@@ -1,0 +1,101 @@
+// The Field Guide: every Claude concept the game teaches, grouped by mission.
+// Each entry says what it is, how to do it in Claude Code, and a small exercise to try at work.
+
+export const MISSIONS = [
+  { id: 'm1', name: 'Release Day', status: 'live' },
+  { id: 'm2', name: 'The Vague Story', status: 'soon' },
+  { id: 'm3', name: 'Contract Drift', status: 'soon' },
+  { id: 'm4', name: 'Night Shift', status: 'soon' },
+];
+
+export const GUIDE = [
+  // ---- Mission 1: Release Day ----
+  { id: 'context', mission: 'm1', name: 'Context window',
+    what: 'Claude only knows what is in its context right now. Every file, log and message you add uses up space, and a full context makes Claude slower and less accurate.',
+    how: 'Run /context to see what is filling it. Search with grep instead of pasting whole logs.',
+    tryIt: 'In a real session, run /context before and after reading a big file, and compare.' },
+  { id: 'mention', mission: 'm1', name: '@-mentions',
+    what: 'Point Claude at the exact file instead of letting it hunt, so it reads one file, not forty.',
+    how: 'Type @ followed by a path in your prompt, for example @tests/conftest.py.',
+    tryIt: 'Ask a question about one file using @path/to/file and notice how focused the answer is.' },
+  { id: 'clarify', mission: 'm1', name: 'Clarifying questions',
+    what: 'Vague prompts hide key facts. Claude can ask you questions before it starts, which beats guessing.',
+    how: 'Add "Ask me any questions you need before you start" to the prompt, or answer the multiple-choice questions Claude Code shows.',
+    tryIt: 'Give Claude your next vague task and ask it to interview you first. Count how many assumptions it would have made.' },
+  { id: 'compaction', mission: 'm1', name: 'Compaction, /compact and /clear',
+    what: 'When context fills up, older conversation is summarized and the details are lost. You can do this on purpose, at a good moment.',
+    how: '/compact keeps a summary (add a focus, for example /compact keep the test failures). /clear starts a fresh session.',
+    tryIt: 'After finishing one task in a long session, run /clear before starting the next one.' },
+  { id: 'memory', mission: 'm1', name: 'CLAUDE.md memory',
+    what: 'Each session starts with no memory. CLAUDE.md is read at the start of every session, so it is where lasting knowledge goes.',
+    how: '/init writes a starter CLAUDE.md from your repo. /memory opens it for editing. Commit the project one so your team shares it.',
+    tryIt: 'Run /init in a repo you work in, then add one rule Claude keeps getting wrong.' },
+  { id: 'rewind', mission: 'm1', name: 'Checkpoints and /rewind',
+    what: 'Claude Code checkpoints its edits as it works. Like the loop, you can go back in time to before a bad change.',
+    how: 'Press Esc twice, or run /rewind, to restore the code, the conversation, or both to an earlier point.',
+    tryIt: 'Next time Claude goes down a wrong path, rewind to before it started instead of arguing it back.' },
+  { id: 'subagent', mission: 'm1', name: 'Subagents',
+    what: 'A subagent works in its own context and hands back a short summary, so your main session stays small and focused.',
+    how: 'Ask "use a subagent to find where X is handled". The built-in Explore agent does codebase searches this way.',
+    tryIt: 'Ask Claude to use a subagent to map an unfamiliar folder, then check how little context it used.' },
+  { id: 'mcp', mission: 'm1', name: 'MCP connectors',
+    what: 'MCP lets Claude reach systems outside the repo, such as Azure DevOps, Jira, databases or browsers, instead of you copying things in.',
+    how: 'claude mcp add connects a server. /mcp shows which servers are connected.',
+    tryIt: 'Connect one tool your team uses for tickets, then ask Claude to summarize a ticket before you code.' },
+  { id: 'thinking', mission: 'm1', name: 'Extended thinking',
+    what: 'For hard problems, Claude can reason step by step before answering. It is slower but catches more.',
+    how: 'Turn thinking on or raise the effort level for tricky diagnoses, and ask Claude to list hypotheses and the evidence for each.',
+    tryIt: 'On your next puzzling bug, ask for three possible causes ranked by evidence before any fix.' },
+  { id: 'verify', mission: 'm1', name: 'Verify before claiming',
+    what: '"Fixed" without evidence is how hallucinations ship. Claims need proof: test output, logs, a reproduction.',
+    how: 'Ask Claude to run the tests and paste the output, or to quote the lines that support its explanation.',
+    tryIt: 'Make "show me the passing test output" your standard reply to "it is fixed".' },
+  { id: 'diffreview', mission: 'm1', name: 'Review every diff',
+    what: 'Told to "make CI green", an agent may weaken, skip or retry a test. You are the reviewer.',
+    how: 'Read each diff Claude proposes, especially changes to tests. Ask: "Did you change any assertion?"',
+    tryIt: 'Add "never change assertions to make tests pass" to your CLAUDE.md.' },
+  { id: 'plan', mission: 'm1', name: 'Plan mode',
+    what: 'Claude explores and proposes a plan without changing any files. You approve it before any edit.',
+    how: 'Press Shift+Tab to cycle into plan mode. Review the plan, then let Claude proceed.',
+    tryIt: 'Use plan mode for your next change that touches more than one file.' },
+  { id: 'perm', mission: 'm1', name: 'Permissions',
+    what: 'Claude Code asks before risky actions. The smallest permission that works is the right one.',
+    how: 'Approve destructive commands once. /permissions manages allow and deny rules; keep always-allow for safe commands only.',
+    tryIt: 'Open /permissions and check nothing destructive is on your always-allow list.' },
+  { id: 'skill', mission: 'm1', name: 'Skills',
+    what: 'A skill is a written procedure Claude loads when a task matches it, so every session follows the same proven steps.',
+    how: 'Create .claude/skills/<name>/SKILL.md with a name, a description of when to use it, and the steps.',
+    tryIt: 'Turn a procedure you explain often, such as triaging a failing test, into a SKILL.md.' },
+  { id: 'hook', mission: 'm1', name: 'Hooks',
+    what: 'Hooks run commands automatically on events, so checks never depend on anyone remembering.',
+    how: 'Add hooks in .claude/settings.json, for example PostToolUse on Edit|Write to run tests. /hooks helps you set them up.',
+    tryIt: 'Add a hook that runs your linter or unit tests after every edit.' },
+
+  // ---- Mission 2: The Vague Story ----
+  { id: 'specific', mission: 'm2', name: 'Specific prompts', what: 'Say what you want, for whom, and what done looks like.', how: '', tryIt: '' },
+  { id: 'examples', mission: 'm2', name: 'Giving examples', what: 'One good example beats a paragraph of description.', how: '', tryIt: '' },
+  { id: 'structure', mission: 'm2', name: 'Structured output', what: 'Ask for tables, JSON or tagged sections you can paste straight into tools.', how: '', tryIt: '' },
+  { id: 'images', mission: 'm2', name: 'Screenshots as input', what: 'Paste a UI screenshot or a diagram instead of describing it.', how: '', tryIt: '' },
+  { id: 'role', mission: 'm2', name: 'Role and audience', what: 'Tell Claude who it is writing as and who will read it.', how: '', tryIt: '' },
+  // ---- Mission 3: Contract Drift ----
+  { id: 'review', mission: 'm3', name: '/review and /security-review', what: 'Built-in reviews of a branch or pull request.', how: '', tryIt: '' },
+  { id: 'commands', mission: 'm3', name: 'Custom slash commands', what: 'Save a prompt you reuse as your own /command.', how: '', tryIt: '' },
+  { id: 'headless', mission: 'm3', name: 'Headless mode in CI', what: 'Run Claude from scripts and pipelines with claude -p.', how: '', tryIt: '' },
+  { id: 'model', mission: 'm3', name: 'Choosing a model', what: 'Bigger models for hard reasoning, faster ones for simple tasks.', how: '', tryIt: '' },
+  // ---- Mission 4: Night Shift ----
+  { id: 'resume', mission: 'm4', name: 'Resuming sessions', what: 'Pick up yesterday\'s session where you left off.', how: '', tryIt: '' },
+  { id: 'worktrees', mission: 'm4', name: 'Parallel sessions with worktrees', what: 'Several Claude sessions working on separate branches at once.', how: '', tryIt: '' },
+  { id: 'agents', mission: 'm4', name: 'Custom subagents', what: 'Your own specialist agents, such as a test writer or reviewer.', how: '', tryIt: '' },
+  { id: 'plugins', mission: 'm4', name: 'Plugins', what: 'Share bundles of skills, commands, hooks and MCP setups with your team.', how: '', tryIt: '' },
+];
+
+export const BY_ID = Object.fromEntries(GUIDE.map(g => [g.id, g]));
+
+// Which concept a card teaches the first time you play it.
+export const CARD_TEACHES = {
+  grep: 'context', readLog: 'context', readRepo: 'context',
+  conftest: 'mention', checkout: 'mention',
+  ask: 'clarify', clone: 'subagent', portal: 'mcp',
+  retry: 'verify', verify: 'verify', diagnose: 'thinking', fix: 'diffreview',
+  plan: 'plan', clean: 'perm', skill: 'skill', hook: 'hook',
+};
