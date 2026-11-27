@@ -309,6 +309,8 @@ body.rewinding #hud { opacity: .15; }
 #r-found li { font-size: .88rem; padding: .4rem .55rem; border-radius: 5px; background: rgba(127,227,255,.1); border: 1px solid rgba(127,227,255,.4); color: var(--token); }
 #r-found li.none { color: var(--muted); background: transparent; border-style: dashed; }
 .result.bad #r-found li { color: #ffc2cf; background: rgba(255,77,109,.1); border-color: rgba(255,77,109,.4); }
+.result.good .r-card { border-color: rgba(124,240,168,.7); box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 40px rgba(124,240,168,.25); }
+.result.good .r-concept { background: var(--mint, #7cf0a8); color: #06210f; }
 .r-lesson-wrap, .r-cmd-wrap { margin: 0; display: grid; gap: .2rem; font-size: .86rem; line-height: 1.45; color: var(--ink); }
 .r-lbl { font-family: var(--f-mono); font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; color: var(--amber); }
 #r-cmd { font-family: var(--f-mono); font-size: .78rem; color: var(--token); background: rgba(0,0,0,.35); padding: .45rem .55rem; border-radius: 5px; overflow-wrap: anywhere; }
@@ -1193,7 +1195,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 
 <div id="toast" class="toast" role="status"></div>
 
-<script type="module" src="game/engine.js?v=20261127123814"></script>
+<script type="module" src="game/engine.js?v=20261127124722"></script>
 
 </body>
 </html>

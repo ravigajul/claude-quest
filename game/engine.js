@@ -1,9 +1,9 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127123814';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127123814';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127123814';
-import { startMission2 } from './mission2.js?v=20261127123814';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127123814';
+import { MISSION as M } from './mission.js?v=20261127124722';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127124722';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127124722';
+import { startMission2 } from './mission2.js?v=20261127124722';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127124722';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -15,7 +15,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127123814');
+    const mod = await import('./scene3d.js?v=20261127124722');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -961,10 +961,13 @@ async function falseDawn() {
   document.body.classList.add('glitch');
   setTimeout(() => document.body.classList.remove('glitch'), 900);
   await showResult({
-    title: 'The clock stops at 5:00. And rewinds.', concept: 'The loop holds', tone: 'bad',
-    body: 'CI is green, but nothing you did will survive the night. Tomorrow a fresh session hits this bug again and starts from zero, just like Claude did today. The loop breaks only when the fix sticks.',
-    found: ['Unlocked next loop: Plan mode, Carve a skill, Set a hook'],
-    lesson: 'Fixing a bug once is not enough. Teach the setup (memory, skills, hooks) so the next session gets it right.',
+    title: 'Tests green. Level 2 done!', concept: 'Level 2 complete', tone: 'good',
+    body: 'You fixed the bug and proved it with the tests. Nice work. So why does release day start again? ' +
+      'Because the fix is saved in the code, but the know-how is not. It took Claude two sessions and your notes to find the right route. ' +
+      'Next week, when a new Claude session meets a failing test like this one, it starts from zero again and may reach for @retry, the wrong fix, all over again. ' +
+      'Level 3 is about making the lesson stick for every future session, not just today.',
+    found: ['Level 3 unlocks: Plan mode, Skills (the steps to follow) and Hooks (tests that run automatically after every edit)'],
+    lesson: 'At work: when you and Claude solve something the hard way, save how you did it (CLAUDE.md, a skill, a hook), so the next session gets it right first time.',
   });
   S.greenOnce = true;
   S.lessonsEarned.add('plan');
