@@ -1,9 +1,9 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127124942';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127124942';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127124942';
-import { startMission2 } from './mission2.js?v=20261127124942';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127124942';
+import { MISSION as M } from './mission.js?v=20261127125057';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127125057';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127125057';
+import { startMission2 } from './mission2.js?v=20261127125057';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127125057';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -15,7 +15,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127124942');
+    const mod = await import('./scene3d.js?v=20261127125057');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -179,6 +179,7 @@ const TOUR = [
   { sel: '#clock-wrap', t: 'The clock', p: 'Each day is one Claude session: 12 minutes, from 4:48 to 5:00. At 5:00 the session ends and Claude forgets it all, just as real Claude remembers nothing from yesterday\u2019s chat. Only the 3 notes you write (CLAUDE.md) carry over.' },
   { sel: '.ctxp', t: 'The jar: Claude\u2019s context window', p: 'Everything Claude reads pours into this jar, with its size. Big reads fill it fast. Past 70k Claude slows down; past 100k it blacks out and loses details. In Claude Code, /context shows the same breakdown.' },
   { sel: '.board', t: 'The evidence board', p: 'Clues Claude finds appear here. This is what Claude knows right now, and it is wiped when the session ends.' },
+  { sel: '.side .term', t: 'Messages', p: 'A running log of the session: Dana\u2019s replies, each command Claude ran (its tool calls) and the narrator. From day 2, this is also where Claude reads your notes (CLAUDE.md) at the start of the session.' },
   { sel: '.progress', t: 'Your goal for the day', p: 'Day 1 can\u2019t be won. Find clues and notice which moves waste time. The checklist here updates as you play.' },
 ];
 function runTour(force = false) {
