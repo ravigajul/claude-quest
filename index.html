@@ -110,6 +110,13 @@ body.playing #hud { opacity: 1; }
 #trust-fill { background: var(--mint); }
 .meter .row { display: flex; justify-content: space-between; gap: .5rem; font-family: var(--f-mono); font-size: .72rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 #ctx-rot { color: var(--hot); }
+#tour-btn { position: relative; }
+#tour-btn.attn { color: var(--ink, #fff); border-color: var(--lvl, var(--amber)); animation: tb-pulse 1s ease-in-out 4; }
+#tour-btn.attn::after { content: attr(data-tip); position: absolute; top: calc(100% + 10px); right: 0; z-index: 60; white-space: nowrap; background: var(--lvl, var(--amber)); color: #10131a; font-family: var(--f-mono); font-size: .72rem; font-weight: 700; padding: .45rem .65rem; border-radius: 4px; box-shadow: 0 6px 20px rgba(0,0,0,.45); pointer-events: none; animation: tb-tip .3s ease-out; }
+#tour-btn.attn::before { content: ''; position: absolute; top: calc(100% + 4px); right: 14px; z-index: 60; border: 6px solid transparent; border-top: 0; border-bottom-color: var(--lvl, var(--amber)); }
+@keyframes tb-pulse { 0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--lvl, var(--amber)) 70%, transparent); transform: scale(1); } 50% { box-shadow: 0 0 0 8px transparent; transform: scale(1.08); } }
+@keyframes tb-tip { from { opacity: 0; transform: translateY(-4px); } }
+@media (prefers-reduced-motion: reduce) { #tour-btn.attn, #tour-btn.attn::after { animation: none; } }
 .icon-btn { cursor: pointer; background: var(--panel); border: 1px solid var(--line); border-radius: 4px; padding: .4rem .6rem; font-family: var(--f-mono); font-size: .72rem; color: var(--muted); }
 
 .rail { grid-area: rail; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
@@ -1196,7 +1203,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 
 <div id="toast" class="toast" role="status"></div>
 
-<script type="module" src="game/engine.js?v=20261127125137"></script>
+<script type="module" src="game/engine.js?v=20261127141219"></script>
 
 </body>
 </html>

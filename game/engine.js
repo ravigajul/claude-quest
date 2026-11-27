@@ -1,9 +1,9 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127125137';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127125137';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127125137';
-import { startMission2 } from './mission2.js?v=20261127125137';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127125137';
+import { MISSION as M } from './mission.js?v=20261127141219';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127141219';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127141219';
+import { startMission2 } from './mission2.js?v=20261127141219';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127141219';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -15,7 +15,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127125137');
+    const mod = await import('./scene3d.js?v=20261127141219');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -182,6 +182,18 @@ const TOUR = [
   { sel: '.progress', t: 'Your goal for the day', p: 'Day 1 can\u2019t be won. Find clues and notice which moves waste time. The checklist here updates as you play.' },
   { sel: '.side .term', t: 'Messages', p: 'A running log of the session: Dana\u2019s replies, each command Claude ran (its tool calls) and the narrator. From day 2, this is also where Claude reads your notes (CLAUDE.md) at the start of the session.' },
 ];
+// Once per launch, point at "How to play" for a few seconds so players know the tour can be replayed.
+let tourNudged = false;
+function nudgeTourBtn() {
+  if (tourNudged) return; tourNudged = true;
+  const b = $('#tour-btn'); if (!b || !b.offsetParent) return;
+  b.dataset.tip = 'Lost? Replay the tour here any time';
+  b.classList.add('attn');
+  const off = () => b.classList.remove('attn');
+  setTimeout(off, 4500);
+  b.addEventListener('click', off, { once: true });
+}
+
 function runTour(force = false) {
   try { if (!force && localStorage.getItem('cq-tour-m1')) return Promise.resolve(); } catch (e) {}
   const box = $('#tour'), ring = $('#tour-ring'), bub = $('#tour-bubble');
@@ -858,7 +870,7 @@ async function startLoop() {
   renderHud(); renderHand();
   $('#hand').classList.add('busy');
   await showLevel();
-  if (S.loop === 1) await runTour();
+  if (S.loop === 1) { await runTour(); nudgeTourBtn(); }
 
   if (S.loop === 1) {
     await line('sys', '4:48 PM. You open a new Claude Code session. Claude knows nothing yet: every session starts empty. Your job is to tell it what to look at.');
