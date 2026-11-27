@@ -251,3 +251,4 @@ More time-loop missions (API contract drift, a flaky E2E suite, a security revie
   - index.html now has its own box-sizing reset.
   - "Lessons learned" and "Ravi's feedback log" sections are added to START HERE.
   - L10: tests now use tests/serve.js (a small Node UTF-8 server) instead of python's http.server, which sometimes never answered. Two full runs in a row: all tests pass.
+  - L11: CI failed a check that passed locally (the built page header differs). The check now accepts both forms, and the commit hook also tests the built copy.

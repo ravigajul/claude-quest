@@ -15,6 +15,7 @@ Each lesson is something that went wrong or nearly did, and the habit that now p
 8. **A button must not look ready before it works.** On a cold load, "Wake up" was clickable before the 3D library had loaded and before its click was wired up, so the first click did nothing. The tests hit it as random stalls, and so would a player on a slow connection. Now the button says "Loading…" and stays disabled until ready.
 9. **Nothing optional may block the start.** The 3D scene download sometimes never finished, leaving the game stuck on "Loading…". The 3D now has 10 seconds to load; after that the game starts in 2D mode.
 10. **Test with a server you can trust.** Python's `http.server` now and then never answered a request, so pages hung at random during the tests. The tests now use tests/serve.js, a 25-line Node server that also sends UTF-8. They wait for the page to be usable, not for every download.
+11. **Test what actually ships.** The hook tested the source folder, but GitHub tests the built copy, whose page header differs. A check passed locally and failed in CI. The hook now also runs the file and lessons checks on the built copy, and checks accept either form.
 
 **Ravi's feedback log (what he asked for, so it is never undone)**
 F1. Point out How to play on first launch; never say "replay" before the tour was taken.

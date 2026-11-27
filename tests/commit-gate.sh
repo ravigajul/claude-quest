@@ -19,7 +19,18 @@ if [ ! -d "$tests/node_modules" ]; then
 fi
 
 log=$(mktemp -t cq-tests)
-if (cd "$tests" && npx playwright test --reporter=line) >"$log" 2>&1; then
+# The built repo copy differs from the source (build_pages.py rewrites the page header), and that copy is
+# what GitHub Actions tests. So also run the quick file and lessons checks on it (lesson L11).
+built=$(printf '%s' "$cmd" | grep -oE '[^ ;&|"]*cq-repo' | head -1)
+[ -z "$built" ] && printf '%s' "$cwd" | grep -q 'cq-repo' && built="$cwd"
+check_built() {
+  [ -n "$built" ] && [ -d "$built/tests" ] || return 0
+  ln -sfn "$tests/node_modules" "$built/tests/node_modules"
+  (cd "$built/tests" && npx playwright test files.spec.js lessons.spec.js --reporter=line); s=$?
+  rm -f "$built/tests/node_modules"
+  return $s
+}
+if (cd "$tests" && npx playwright test --reporter=line) >"$log" 2>&1 && check_built >>"$log" 2>&1; then
   echo '{"systemMessage": "claude-quest play tests passed, so the commit/push can go ahead."}'
   rm -f "$log"
   exit 0

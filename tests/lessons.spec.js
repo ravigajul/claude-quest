@@ -46,9 +46,8 @@ test('L1: every live mission has a hub button, 5 quiz questions, a full Field Gu
 });
 
 test('L2: the page carries its own CSS reset, so local runs match the published site', () => {
-  const html = read('index.html');
-  const firstStyle = html.slice(html.indexOf('<style>'), html.indexOf('<style>') + 200);
-  expect(firstStyle).toMatch(/\*, \*::before, \*::after \{ box-sizing: border-box; \}/);
+  // Any spacing: the source writes it spaced out, the published page's header writes it compact.
+  expect(read('index.html')).toMatch(/\*,\s*\*::before,\s*\*::after\s*\{\s*box-sizing:\s*border-box;?\s*\}/);
 });
 
 test('L3: tests wait for things to happen, not for fixed long sleeps', () => {
@@ -114,6 +113,12 @@ test('L10: the tests use their own reliable UTF-8 server, not python\'s http.ser
   expect(read('tests/playwright.config.js')).not.toMatch(/command:.*http\.server/);
   const res = await request.get('/index.html');
   expect(res.headers()['content-type']).toBe('text/html; charset=utf-8');
+});
+
+test('L11: the commit hook also checks the built copy that GitHub tests', () => {
+  const gate = read('tests/commit-gate.sh');
+  expect(gate).toMatch(/check_built/);
+  expect(gate).toMatch(/files\.spec\.js lessons\.spec\.js/);
 });
 
 // ---------- Ravi's feedback ----------
