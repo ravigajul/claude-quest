@@ -4,7 +4,7 @@ import { EffectComposer } from '../vendor/three/jsm/postprocessing/EffectCompose
 import { RenderPass } from '../vendor/three/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from '../vendor/three/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from '../vendor/three/jsm/postprocessing/OutputPass.js';
-import { tween, tickTweens, ease, wait } from './fx.js?v=20261127123054';
+import { tween, tickTweens, ease, wait } from './fx.js?v=20261127123407';
 
 const NIGHT_BG = new THREE.Color('#070a1f');
 const NIGHT_FOG = new THREE.Color('#0d1236');
@@ -127,6 +127,7 @@ export function createScene(canvas) {
 
   // ---------- context tank ----------
   const tank = new THREE.Group();
+  tank.visible = false;   // the context jar is now drawn in the page (.ctxp), crisp and always visible
   scene.add(tank);
   const TANK_H = 7, TANK_R = 1.7, N = 1800;
   const glass = new THREE.Mesh(new THREE.CylinderGeometry(TANK_R, TANK_R, TANK_H, 40, 1, true),

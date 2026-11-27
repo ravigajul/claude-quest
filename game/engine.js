@@ -1,9 +1,9 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127123054';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127123054';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127123054';
-import { startMission2 } from './mission2.js?v=20261127123054';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127123054';
+import { MISSION as M } from './mission.js?v=20261127123407';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127123407';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127123407';
+import { startMission2 } from './mission2.js?v=20261127123407';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127123407';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -15,7 +15,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127123054');
+    const mod = await import('./scene3d.js?v=20261127123407');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -98,7 +98,7 @@ function renderGuideCount() { $('#guide-count').textContent = `${learned.size}/$
 
 const LEVELS = {
   1: { name: 'Amnesia', bg: '#070a1f', fog: '#0d1236',
-       goal: 'You can\u2019t fix it today. Find as many clues as you can before 5:00, then choose 3 notes to keep. Click the cards at the bottom to act.',
+       goal: 'Each day is one Claude session, and at 5:00 it ends and you forget it. You can\u2019t fix it today. Find as many clues as you can before 5:00, then choose 3 notes to keep. Click the cards at the bottom to act.',
        news: [], teaches: [] },
   2: { name: 'The Clone and the Portal', bg: '#2a0636', fog: '#6a1466',
        goal: 'Your 3 notes are back. Use them to diagnose, fix and prove it before 5:00 PM.',
@@ -176,8 +176,8 @@ function openGuide() {
 // ---------- first-time tour of the Mission 1 screen ----------
 const TOUR = [
   { sel: '#hand', t: 'These are your moves', p: 'Click a card to use it. Each card shows what it costs: minutes from your 12, and context it adds to your memory.' },
-  { sel: '#clock-wrap', t: 'The clock', p: 'Every day starts at 4:48 PM. At 5:00 the day resets and you forget everything except 3 notes.' },
-  { sel: '.ctxp', t: 'Your context window', p: 'Everything you read lands here, with its size. Big reads fill it fast. Past 70k you slow down; past 100k you black out and lose details, just like Claude when its context fills up. In Claude Code, /context shows the same breakdown.' },
+  { sel: '#clock-wrap', t: 'The clock', p: 'Each day is one Claude session: 12 minutes, from 4:48 to 5:00. At 5:00 the session ends and you forget it all, just as Claude remembers nothing from yesterday\u2019s chat. Only 3 notes (your CLAUDE.md) carry over.' },
+  { sel: '.ctxp', t: 'The jar: your context window', p: 'Everything you read pours into this jar, with its size. Big reads fill it fast. Past 70k you slow down; past 100k you black out and lose details, just like Claude when its context fills up. In Claude Code, /context shows the same breakdown.' },
   { sel: '.board', t: 'The evidence board', p: 'Clues you find appear here. You will use them to work out why the tests fail.' },
   { sel: '.progress', t: 'Your goal for the day', p: 'Day 1 can\u2019t be won. Find clues and notice which moves waste time. The checklist here updates as you play.' },
 ];
@@ -604,6 +604,7 @@ function renderContext() {
     it.fresh = false;
   }
   const free = Math.max(0, M.capacity - Math.round(S.ctx));
+  $('#cx-bar').style.setProperty('--fill', `${Math.min(100, (S.ctx / M.capacity) * 100) * 2}px`);
   $('#cx-free').textContent = free ? `${free}k free before blackout` : 'Full: blackout';
 }
 function bumpContext(tok, label) {
@@ -617,6 +618,8 @@ function bumpContext(tok, label) {
   b.style.left = `${r.left + 16}px`; b.style.top = `${r.top + (box && box.offsetParent ? 40 : 18)}px`;
   document.body.appendChild(b);
   setTimeout(() => b.remove(), 1500);
+  const pour = $('#cx-pour');
+  if (pour) { const last = S.ctxItems[S.ctxItems.length - 1]; pour.style.background = last ? last.c : 'var(--token)'; pour.classList.remove('go'); void pour.offsetWidth; pour.classList.add('go'); }
   if (box) { box.classList.add('flash'); setTimeout(() => box.classList.remove('flash'), 700); }
 }
 
@@ -828,9 +831,9 @@ async function startLoop() {
   if (S.loop === 1) await runTour();
 
   if (S.loop === 1) {
-    await line('sys', 'You wake up inside a terminal. 4:48 PM. You have no memory of anything before this message.');
+    await line('sys', 'You wake up inside a terminal. 4:48 PM. You have no memory of anything before this message. That is normal: every Claude session starts empty.');
   } else {
-    await line('sys', `4:48 PM. Again. Loop ${S.loop}. You remember nothing, except your notes.`);
+    await line('sys', `4:48 PM. Again. Day ${S.loop} is a brand-new session: everything you read yesterday is gone. Only your notes survive, the way CLAUDE.md does.`);
     S.log.push(`Read(CLAUDE.md)  # ${S.notes.length + (S.freeNote ? 1 : 0)} notes from past you`);
     line('cmd', 'Read(CLAUDE.md)', { instant: true });
     for (const n of S.notes) await line('past', noteText(n));

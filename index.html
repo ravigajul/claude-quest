@@ -404,19 +404,35 @@ body.rewinding #hud { opacity: .15; }
 .ctxp-num b { font-family: var(--f-display); font-size: calc(2rem * var(--rs)); line-height: 1; color: var(--token); font-weight: 400; margin-right: .15rem; transition: color .3s; }
 .ctxp[data-level="warm"] .ctxp-num b { color: var(--amber); }
 .ctxp[data-level="hot"] .ctxp-num b { color: var(--hot); }
-.ctxp-body { flex: 1; min-height: 9rem; display: grid; grid-template-columns: 2.4rem minmax(0, 1fr); gap: .6rem; }
-.ctxp-bar { position: relative; border-radius: 6px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.16); }
+.ctxp-body { flex: 1 1 8rem; min-height: 8rem; display: grid; grid-template-columns: 5rem minmax(0, 1fr); gap: .7rem; }
+.cx-jarwrap { position: relative; display: flex; flex-direction: column; align-items: center; padding-top: .9rem; }
+.cx-lid { width: 70%; height: .55rem; border-radius: 4px 4px 2px 2px; background: linear-gradient(#c9d4ff, #6d7bb8); box-shadow: 0 2px 6px rgba(0,0,0,.5); margin-bottom: 2px; }
+.ctxp-bar { position: relative; flex: 1; width: 100%; border-radius: 10px 10px 22px 22px; background: rgba(160,180,255,.07);
+  border: 2px solid rgba(200,215,255,.45); box-shadow: inset 0 0 18px rgba(127,227,255,.12), 0 0 22px rgba(127,227,255,.08); }
+.cx-segs { border-radius: 8px 8px 20px 20px; }
+.cx-seg:last-child { position: relative; }
+.cx-seg:last-child::before { content: ''; position: absolute; left: -10%; right: -10%; top: -4px; height: 8px; border-radius: 50%; background: inherit; filter: brightness(1.25); animation: wave 2.6s ease-in-out infinite; }
+@keyframes wave { 50% { transform: translateY(2px) scaleX(.96); } }
+.cx-gloss { position: absolute; left: 12%; top: 6%; width: 14%; height: 80%; border-radius: 10px; background: linear-gradient(rgba(255,255,255,.35), rgba(255,255,255,.04)); pointer-events: none; z-index: 3; }
+.cx-bubbles { position: absolute; inset: 0; overflow: hidden; border-radius: 8px 8px 20px 20px; pointer-events: none; z-index: 2; }
+.cx-bubbles b { position: absolute; bottom: 0; width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.55); animation: bub 4s linear infinite; opacity: 0; }
+.cx-bubbles b:nth-child(1) { left: 25%; animation-delay: 0s; } .cx-bubbles b:nth-child(2) { left: 55%; animation-delay: .9s; }
+.cx-bubbles b:nth-child(3) { left: 75%; animation-delay: 1.7s; } .cx-bubbles b:nth-child(4) { left: 40%; animation-delay: 2.5s; } .cx-bubbles b:nth-child(5) { left: 65%; animation-delay: 3.2s; }
+@keyframes bub { 0% { transform: translateY(0); opacity: 0; } 10% { opacity: .8; } 100% { transform: translateY(calc(-1 * var(--fill, 20px))); opacity: 0; } }
+.cx-pour { position: absolute; top: 0; left: 50%; width: 10px; margin-left: -5px; height: 0; border-radius: 5px; opacity: 0; z-index: 4; }
+.cx-pour.go { animation: pour 1.1s ease-in-out; }
+@keyframes pour { 0% { height: 0; opacity: 1; } 45% { height: 85%; opacity: 1; } 100% { height: 85%; opacity: 0; transform: translateY(20%); } }
 .cx-segs { position: absolute; inset: 0; display: flex; flex-direction: column-reverse; overflow: hidden; border-radius: 5px; }
 .cx-seg { flex: none; width: 100%; border-top: 1px solid rgba(5,6,20,.7); transition: height .6s cubic-bezier(.2,.9,.3,1); }
 .cx-seg.new { animation: cxin 1.2s ease-out; }
 @keyframes cxin { 0% { filter: brightness(2.2); } 100% { filter: none; } }
-.cx-line { position: absolute; left: -4px; right: -4px; height: 0; border-top: 2px dashed var(--amber); z-index: 2; }
+.cx-line { position: absolute; left: -6px; right: -6px; height: 0; border-top: 2px dashed var(--amber); z-index: 2; }
 .cx-line.slow { bottom: 70%; }
-.cx-line.full { bottom: calc(100% - 2px); border-top-color: var(--hot); }
+.cx-line.full { bottom: calc(100% - 3px); border-top-color: var(--hot); }
 .cx-line span { position: absolute; left: calc(100% + 4px); top: -.55rem; white-space: nowrap; font-family: var(--f-mono); font-size: .62rem; color: var(--amber); display: none; }
-.ctxp-side { display: flex; flex-direction: column; gap: .3rem; min-height: 0; }
+.ctxp-side { display: flex; flex-direction: column; justify-content: flex-end; gap: .5rem; min-height: 0; }
 .ctxp-sub { font-family: var(--f-mono); font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
-.ctxp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column-reverse; gap: .25rem; overflow-y: auto; min-height: 0; }
+.ctxp-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column-reverse; justify-content: flex-end; gap: .25rem; overflow-y: auto; min-height: 2.5rem; max-height: 9rem; flex: 0 1 auto; }
 .ctxp-list li { display: grid; grid-template-columns: .65rem minmax(0, 1fr) auto; gap: .4rem; align-items: baseline; font-size: calc(.78rem * var(--rs)); line-height: 1.3; color: #e2e4fa; }
 .ctxp-list li i { width: .65rem; height: .65rem; border-radius: 2px; align-self: center; }
 .ctxp-list li b { font-family: var(--f-mono); font-weight: 600; font-size: .72rem; color: #fff; }
@@ -723,6 +739,11 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 .od-card-h .btn { padding: .45rem .9rem; }
 
 /* ---------- Mission 1 clarity ---------- */
+.brief-why { display: grid; gap: .45rem; padding: .85rem 1rem; border-radius: 8px; background: rgba(127,227,255,.08); border: 1px solid rgba(127,227,255,.4); font-size: calc(.95rem * var(--rs)); line-height: 1.5; color: #e6e4ff; }
+.brief-why > b { color: #fff; font-size: calc(1.05rem * var(--rs)); }
+.brief-why ul { margin: 0; padding-left: 1.1rem; display: grid; gap: .25rem; }
+.brief-why li b { color: var(--token); font-weight: 600; }
+.brief-why span { color: var(--muted); }
 .brief-how { margin: 0; font-size: calc(1rem * var(--rs)); line-height: 1.55; color: #e6e4ff; padding: .8rem 1rem; border-radius: 8px; background: rgba(255,181,71,.1); border: 1px solid rgba(255,181,71,.4); }
 .goal-lead { padding: 0 14px; margin: 0 0 .4rem; font-size: calc(.9rem * var(--rs)); line-height: 1.45; color: #fff; }
 .goal-lead:empty { display: none; }
@@ -929,20 +950,26 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
   </header>
 
   <section class="ctxp" aria-label="Your context window">
-    <div class="ctxp-h"><h2>Your context window</h2><span class="ctxp-num"><b id="cx-used">8k</b> of 100k used</span></div>
+    <div class="ctxp-h"><h2>The jar · context window</h2><span class="ctxp-num"><b id="cx-used">8k</b> of 100k used</span></div>
     <div class="ctxp-body">
-      <div id="cx-bar" class="ctxp-bar">
-        <i class="cx-line full"><span>100k · blackout</span></i>
-        <i class="cx-line slow"><span>70k · slower</span></i>
-        <div id="cx-segs" class="cx-segs"></div>
+      <div class="cx-jarwrap">
+        <div class="cx-lid"></div>
+        <div id="cx-bar" class="ctxp-bar">
+          <div id="cx-segs" class="cx-segs"></div>
+          <i class="cx-line full"></i>
+          <i class="cx-line slow"></i>
+          <div class="cx-bubbles" aria-hidden="true"><b></b><b></b><b></b><b></b><b></b></div>
+          <div class="cx-gloss" aria-hidden="true"></div>
+        </div>
+        <div id="cx-pour" class="cx-pour" aria-hidden="true"></div>
       </div>
       <div class="ctxp-side">
-        <span class="ctxp-sub">What&rsquo;s in it</span>
-        <ol id="cx-list" class="ctxp-list"></ol>
         <span id="cx-free" class="ctxp-free"></span>
         <span class="ctxp-key"><i class="k-slow"></i>70k: every action takes +1 min<br><i class="k-full"></i>100k: blackout, details are lost</span>
       </div>
     </div>
+    <span class="ctxp-sub">What&rsquo;s in the jar</span>
+    <ol id="cx-list" class="ctxp-list"></ol>
     <p class="ctxp-foot">Every card you play adds what it read here. In Claude Code, run <code>/context</code> to see this for real.</p>
   </section>
 
@@ -972,9 +999,9 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 
 <section id="etch" class="screen" hidden aria-label="Carve your memory">
   <div class="etch-inner">
-    <span class="eyebrow">Loop <span id="etch-loop">1</span> collapsed</span>
+    <span class="eyebrow">5:00 PM · day <span id="etch-loop">1</span>&rsquo;s session has ended</span>
     <h2>Carve what <em>survives</em></h2>
-    <p>Out of time. That was expected. Now the day restarts and you forget everything, <b>except 3 notes</b>. Click up to 3 tablets to keep. Anything you keep, you will not have to find again.</p>
+    <p>Out of time. That was expected. The session is over, so the next day starts as a brand-new session and you forget everything, <b>except 3 notes</b>. Click up to 3 tablets to keep. Anything you keep, you will not have to find again.</p>
     <p>In real Claude Code, this is <b>CLAUDE.md</b>: a file of notes that every new session reads first, because Claude starts each session with no memory.</p>
     <div id="etch-options"></div>
     <div class="etch-free">
@@ -1030,6 +1057,16 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
       <li><b>Day 2 · The Clone and the Portal.</b> Your notes are back and you get two new powers. Work out the cause, fix it, and prove it with the tests before 5:00.</li>
       <li><b>Day 3 · Make It Stick.</b> Fix it again, then set things up so the next session can&rsquo;t make the same mistake.</li>
     </ol>
+    <div class="brief-why">
+      <b>Why do you forget everything each day? Because Claude does.</b>
+      <ul>
+        <li><b>A day</b> in this game = one <b>Claude Code session</b>.</li>
+        <li><b>The 5:00 reset</b> = the session ends and a new one starts. Claude keeps <b>no memory</b> of earlier chats.</li>
+        <li><b>Your 3 notes</b> = <b>CLAUDE.md</b>, a file Claude reads at the start of every session. It&rsquo;s the only thing that carries over.</li>
+        <li><b>The jar</b> = Claude&rsquo;s <b>context window</b>, everything it has read in this session. It holds only so much.</li>
+      </ul>
+      <span>So the game is really about one skill: deciding what is worth writing down for the next session.</span>
+    </div>
     <p class="brief-how"><b>How you play:</b> click the cards at the bottom of the screen. Each card costs minutes and fills your context. The panel on the right always shows your goal for the day.</p>
     <button id="brief-go" class="btn-primary" type="button">Start</button>
   </div>
@@ -1087,7 +1124,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 
 <div id="toast" class="toast" role="status"></div>
 
-<script type="module" src="game/engine.js?v=20261127123054"></script>
+<script type="module" src="game/engine.js?v=20261127123407"></script>
 
 </body>
 </html>
