@@ -5,7 +5,7 @@ description: Review and test the "5:00 PM Forever" game (claude-quest) before it
 
 # Game review: 5:00 PM Forever
 
-The game lives in `~/Downloads/claude-quest` (the source; not a git repo). `build_pages.py` copies it into a checkout of github.com/ravigajul/claude-quest, which deploys to https://ravigajul.github.io/claude-quest/. PLAN.md ("START HERE") has the current state and Ravi's design rules; read it first.
+The game lives in `~/Downloads/claude-quest` (the source; not a git repo). `build_pages.py` copies it into a checkout of github.com/ravigajul/claude-quest, which deploys to https://ravigajul.github.io/claude-quest/. CLAUDE.md links the docs. Read only what you need: PLAN.md for what is live, and docs/lessons.md before any review.
 
 ## 1. Automated play tests (always, before any commit or push)
 
@@ -16,13 +16,15 @@ npx playwright install chromium   # first time only
 npm test
 ```
 
-- `game.spec.js`: laptop size. Mission 1 played to the end by a bot, day 1 can't be won (A1), the tour is truthful (A4), the top-bar layout, the Missions button, keyboard (Tab stays in pop-ups, Escape continues), Mission 2 never strands the player (A2) and locks the prompt while Claude thinks (A6).
-- `phone.spec.js`: Pixel 7. Jar, board and side panels visible, card explanations shown, full-width "Your job" text, Level and Day side by side.
+- `game.spec.js`: laptop size. Mission 1 played to the end by a bot, day 1 can't be won (A1), the tour is truthful (A4), the top-bar layout, the Missions button, keyboard (Tab stays in pop-ups, Escape continues), Mission 2 never strands the player (A2) and locks the prompt while Claude thinks (A6), and Mission 3 played to the end.
+- `phone.spec.js`: Pixel 7. Jar, board and side panels visible, card explanations shown, full-width "Your job" text, Level and Day side by side, no mission screen wider than the phone.
 - `files.spec.js`: LICENSE is plain MIT, link preview tags and `social.png`, README credit and privacy note, and no private email in any shipped file.
 
 All must pass. A failing test blocks the commit (Claude Code hook) and the deploy (GitHub Actions `test` job). Never skip, weaken or delete a test to make it pass; fix the game, or ask Ravi if the test is wrong.
 
 **Every confirmed bug gets a test.** When a review finds a real bug, add a test named after it (e.g. `A7: ...`) in the matching spec file, then fix the bug so it passes.
+
+When building a new mission, follow the go-live checklist in docs/roadmap.md and add a playthrough test for it before shipping.
 
 ## 2. Review passes (when asked for a review, or after a big change)
 
@@ -49,4 +51,14 @@ After fixing: add or update tests, run `npm test` until green, then deploy both:
 1. Artifact: publish `index.html` with the changed `game/*.js` (Artifact tool, same file path).
 2. Pages: `python3 ~/Downloads/claude-quest/build_pages.py <repo checkout>`, commit, push, and watch the run. The `test` job must pass before `deploy` runs.
 
-Add a dated line to the end of PLAN.md for what changed.
+Add a dated entry to the end of docs/changelog.md for what changed, and update "Live now" in PLAN.md.
+
+## 4. Learn from this round (always, before you finish)
+
+The game should get better with each iteration, and so should this process.
+1. **Lessons.** For anything that went wrong or nearly did, add a numbered entry (L#) to docs/lessons.md: what happened and the habit that prevents it. Add a test named "L#: ..." to tests/lessons.spec.js. The guard test fails until you do.
+2. **Feedback.** Add every new request or correction from Ravi as F# in docs/lessons.md, in his words where possible, with a test named "F#: ..." in tests/lessons.spec.js.
+3. **This skill.** If the review process changed (a new check, a new trap, a better tool), edit this file. Keep it short.
+4. **Memory.** Update the claude-quest memory note if the live state, links or workflow changed.
+
+Read docs/lessons.md before starting any new mission or review.

@@ -34,3 +34,17 @@ test('phone: Level and Day sit side by side', async ({ page }) => {
   expect(Math.abs(b.lvl.top - b.day.top)).toBeLessThan(6);
   expect(b.day.left).toBeGreaterThan(b.lvl.right);
 });
+
+// Lesson (2026-11-27): a missing CSS reset made Mission 3 wider than the phone, cutting off the right edge.
+test('phone: no mission screen is wider than the phone', async ({ page }) => {
+  await (require('./helpers').openHub)(page);
+  const fits = sel => page.evaluate(s => { const e = document.querySelector(s); return e.scrollWidth <= document.documentElement.clientWidth + 1; }, sel);
+  expect(await fits('#hub')).toBe(true);
+  for (const m of ['m2', 'm3']) {
+    await page.click(`#go-${m}`);
+    await page.click('#qz-skip');
+    await page.waitForSelector(`#${m}:not([hidden])`);
+    expect(await fits(`#${m}`), `#${m} fits`).toBe(true);
+    await page.click(`#${m}-back`);
+  }
+});

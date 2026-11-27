@@ -42,6 +42,16 @@ At the end you can download a real `CLAUDE.md`, `SKILL.md` and `settings.json` h
 
 A product owner sends a one-line user story. Pick where your team keeps stories (Azure DevOps or Jira), then build a prompt from parts (role, task, the ticket through an MCP connector, a design screenshot, clarifying questions, an example, the output format and a "don't invent facts" rule) and send it. Each run shows what Claude produces and a QA lead's review: requirements covered, invented rules, whether manual testers can run it, and whether it imports into your tracker. Connecting the ticket and attaching the design ask you how to do it for real (`claude mcp add …`, Ctrl+V for images). You learn what each part of a prompt does by watching the output change. At the end you keep the prompt as a template.
 
+## Mission 3: Contract Drift
+
+On Monday the members app shows "Member since: undefined" for everyone, yet all 48 API tests pass: a pull request merged on Friday quietly changed the API. You direct Claude through four steps:
+1. Compare the real response with the contract (`openapi.yaml`).
+2. Sort each difference as *breaks apps*, *privacy risk* or *safe*. This is what `/code-review` and `/security-review` would have flagged.
+3. Save the check as a `/contract-check` command with `$ARGUMENTS`.
+4. Run it headless with `claude -p` on every pull request, choosing a model that fits the task.
+
+In the ending, your check blocks the next drifting pull request. You keep the command file and the GitHub Actions workflow to use at work.
+
 ## How to play
 
 - A short **tour** points out each part of the screen the first time you play. The **How to play** button in the top bar replays it.

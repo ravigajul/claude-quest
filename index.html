@@ -19,6 +19,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800;900&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
+*, *::before, *::after { box-sizing: border-box; }   /* same reset the artifact and GitHub Pages wrappers add, so local runs match */
 /* Layout: full-screen 3D night city behind a game HUD. Top bar = loop / clock / trust,
    right rail = what you know + terminal, bottom = hand of cards. Single deliberate dark world. */
 :root {
@@ -773,6 +774,62 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 .m2-chip .new-tag { margin-left: .5rem; font-family: var(--f-mono); font-size: .65rem; font-weight: 700; padding: .05rem .35rem; border-radius: 3px; background: #7dffb2; color: #04122a; }
 #choice.no-ev .c-cols { grid-template-columns: 1fr !important; }
 #choice.no-ev .c-card { max-width: 44rem; }
+/* ---------- Mission 3: Contract Drift (violet) ---------- */
+body[data-level="m3"] { --lvl: #c79bff; --amber: #c79bff; --night: #12062a; --panel: rgba(30, 12, 64, .9); --line: rgba(199, 155, 255, .4); --muted: #c6b4e6; }
+body:has(#m3:not([hidden])) #hud, body:has(#m3done:not([hidden])) #hud { opacity: 0 !important; pointer-events: none; }
+body:has(#m3:not([hidden])) .result { z-index: 45; }
+body:has(#m3:not([hidden])) .toast { z-index: 70; }
+.mission.m3c { border-color: rgba(199,155,255,.5); background: #170c33; }
+.mission.m3c:hover, .mission.m3c:focus-visible { border-color: #c79bff; box-shadow: 0 0 40px rgba(199,155,255,.22); }
+.m3c .m-learn { color: #dcc6ff; }
+.m3.m2, .m3.m2done { background: linear-gradient(180deg, rgba(18,6,42,.6), rgba(18,6,42,.94) 30%); }
+.m3 .m2-card, .m3 .od-stat { background: #160b33; border-color: rgba(199,155,255,.35); }
+.m3 .m2-story { border-color: #c79bff; }
+.m3 .od-good { border-color: #7dffb2; }
+.m3-pipe { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); min-width: 0; gap: .5rem; counter-reset: s; }
+.m3-pipe li { display: flex; align-items: center; gap: .55rem; padding: .55rem .7rem; border-radius: 8px; border: 1px dashed rgba(255,255,255,.2); color: var(--muted); font-size: calc(.86rem * var(--rs)); }
+.m3-pipe .pn { display: inline-grid; place-items: center; width: 1.6rem; height: 1.6rem; flex: none; border-radius: 50%; border: 1px solid currentColor; font-family: var(--f-mono); font-size: .8rem; }
+.m3-pipe li.now { border: 1px solid #c79bff; color: #fff; background: rgba(199,155,255,.12); box-shadow: 0 0 24px rgba(199,155,255,.2); }
+.m3-pipe li.done { border: 1px solid rgba(125,255,178,.6); color: #dfffee; }
+.m3-pipe li.done .pn { background: #7dffb2; color: #04122a; border-color: #7dffb2; }
+@media (max-width: 760px) { .m3-pipe { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.m3-grid { grid-template-columns: minmax(13rem, .75fr) minmax(0, 1.3fr) minmax(0, 1.3fr); }
+@media (max-width: 1050px) { .m3-grid { grid-template-columns: minmax(0, 1fr); } }
+.m3 .m2-pre { overflow-wrap: anywhere; }
+.m3-job { border-color: #c79bff !important; background: #231046 !important; }
+.m3-job h3 { margin: 0; font-family: var(--f-display); font-size: calc(1.6rem * var(--rs)); line-height: 1.1; color: #fff; }
+#m3-go { justify-self: start; }
+#m3-go:disabled { opacity: .5; cursor: not-allowed; }
+.m3-claude { margin: 0; font-family: var(--f-mono); font-size: calc(.8rem * var(--rs)); line-height: 1.5; color: #e9ddff; padding: .5rem .6rem; border-radius: 6px; background: rgba(0,0,0,.3); }
+.m3-compare { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+@media (min-width: 561px) and (max-width: 1050px) { .m3-compare { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.m3-resp .ln { display: block; }
+.m3-resp .ln.drift { border-radius: 3px; padding: 0 .2rem; margin: 0 -.2rem; }
+.m3-resp .ln.open { background: rgba(255,207,92,.16); outline: 1px dashed rgba(255,207,92,.6); }
+.m3-resp .ln.v-breaks { background: rgba(255,77,109,.2); }
+.m3-resp .ln.v-privacy { background: rgba(255,154,61,.22); }
+.m3-resp .ln.v-safe { background: rgba(125,255,178,.14); }
+.m3-sort { display: grid; gap: .55rem; }
+.m3-row { display: grid; gap: .45rem; padding: .7rem .8rem; border-radius: 8px; background: #160b33; border: 1px solid rgba(255,207,92,.5); }
+.m3-row.ok { border-color: rgba(125,255,178,.6); }
+.m3-row-h { display: flex; flex-wrap: wrap; gap: .3rem .7rem; align-items: baseline; }
+.m3-row-h code { font-family: var(--f-mono); font-size: calc(.9rem * var(--rs)); color: #fff; font-weight: 700; }
+.m3-row-h span { font-size: calc(.85rem * var(--rs)); color: #d9cdf2; }
+.m3-verdicts { display: flex; flex-wrap: wrap; gap: .4rem; }
+.m3-verdicts .m2-chip { border-radius: 999px; }
+.m3-verdicts .m2-chip::before { content: none !important; }
+.m3-verdicts .m2-chip:disabled { cursor: default; opacity: .55; }
+.m3-verdicts .m2-chip.on { opacity: 1; background: #7dffb2; border-color: #7dffb2; color: #04122a; }
+.m3-why { margin: 0; font-size: calc(.84rem * var(--rs)); line-height: 1.45; color: #dfffee; }
+.m3-row.shake { animation: m3shake .35s; }
+@keyframes m3shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+@media (prefers-reduced-motion: reduce) { .m3-row.shake { animation: none; } }
+.m3-ci .ln { display: block; }
+.m3-ci .ln.warn { color: #ffcf5c; }
+.m3-ci .ln.bad { color: #ff8da1; font-weight: 700; }
+.m3-cols { grid-template-columns: 1fr 1fr; }
+#start:disabled { opacity: .65; cursor: progress; }   /* enabled by engine.js once the game is ready */
+@media (max-width: 900px) { .m3-cols { grid-template-columns: 1fr; } }
 .od-card-h { display: flex; justify-content: space-between; align-items: center; gap: .8rem; flex-wrap: wrap; }
 .od-card-h .btn { padding: .45rem .9rem; }
 
@@ -864,7 +921,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
       <li>Overflow means blackout</li>
       <li>3 notes for Claude survive each day</li>
     </ul>
-    <button id="start" class="btn-primary" type="button">Wake up</button>
+    <button id="start" class="btn-primary" type="button" disabled aria-busy="true">Loading&hellip;</button>
     <span class="proto-note">Prototype · one mission · about 12 minutes · opens full screen, sound on</span>
     <span class="credit">Created by <b>Ravi Gajul</b>, built together with Claude</span>
   </div>
@@ -891,12 +948,13 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
         <span class="m-learn">Specific prompts · examples · structured output · screenshots · role and audience · clarifying questions · no invented facts</span>
         <span class="m-status" id="st-m2"></span>
       </button>
-      <div class="mission locked">
-        <span class="m-num">Mission 3 · coming soon</span>
+      <button class="mission m3c" id="go-m3" type="button" data-m="m3">
+        <span class="m-num">Mission 3 · new · about 7 min</span>
         <b>Contract Drift</b>
-        <span class="m-pitch">An API changed silently and the tests still pass.</span>
-        <span class="m-learn">/review · custom slash commands · headless claude -p in CI · choosing a model</span>
-      </div>
+        <span class="m-pitch">An API changed silently on Friday and every test still passes, but the app is broken. Find the drift, then make sure it can never sneak in again.</span>
+        <span class="m-learn">/code-review and /security-review · custom slash commands · headless claude -p in CI · choosing a model</span>
+        <span class="m-status" id="st-m3"></span>
+      </button>
       <div class="mission locked">
         <span class="m-num">Mission 4 · coming soon</span>
         <b>Night Shift</b>
@@ -1021,6 +1079,75 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
     </div>
     <div class="btn-row"><button id="od-hub" class="btn" type="button">Back to missions</button><button id="od-again" class="btn" type="button">Play again</button></div>
     <div class="like" data-m="m2"><span class="like-q">Did this help you learn Claude?</span><button type="button" class="btn" data-v="yes">&#128077; Yes</button><button type="button" class="btn" data-v="no">&#128078; Not really</button><span class="like-thanks" hidden>Thanks! It helps Ravi decide what to build next.</span><a class="like-fb" href="https://github.com/ravigajul/claude-quest/issues/new?title=Feedback%20on%205%3A00%20PM%20Forever" target="_blank" rel="noopener">Tell Ravi what you think &rarr;</a></div>
+    <p class="feedback">Created by <b>Ravi Gajul</b>, built together with Claude.</p>
+  </div>
+</section>
+
+<section id="m3" class="screen m2 m3" hidden aria-label="Mission 3: Contract Drift">
+  <div class="m2-in">
+    <header class="m2-head">
+      <div><span class="eyebrow">Mission 3 · Contract Drift</span><h2>The tests pass. The app is broken. Find out why.</h2></div>
+      <div class="m2-head-r"><span class="m2-runs">Support tickets: <b id="m3-tickets">37</b></span><button id="m3-back" class="btn" type="button">Missions</button></div>
+    </header>
+    <ol id="m3-pipe" class="m3-pipe" aria-label="Your progress"></ol>
+    <div class="m2-grid m3-grid">
+      <div class="m2-col">
+        <div class="m2-card">
+          <span class="r-lbl">Lena · support lead · Monday 9:02</span>
+          <p class="m2-msg">"Since Friday the members app says <b>Member since: undefined</b> for everyone. 37 tickets so far."</p>
+        </div>
+        <div class="m2-card">
+          <span class="r-lbl">Marco · backend developer</span>
+          <p class="m2-msg">"Weird. All 48 API tests pass. I only merged a tidy-up on Friday, pull request #212."</p>
+        </div>
+        <div class="m2-card">
+          <span class="r-lbl">What you have</span>
+          <ul class="m2-src">
+            <li><b>openapi.yaml</b> · the contract: what the API promises every app.</li>
+            <li><b>staging</b> · a test copy of the API you can call.</li>
+            <li><b>48 API tests</b> · they check that each call answers with status 200.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="m2-col">
+        <div class="m2-card m3-job">
+          <span class="r-lbl">Your job right now</span>
+          <h3 id="m3-job-h"></h3>
+          <p id="m3-job-p" class="m2-goal"></p>
+          <button id="m3-go" class="btn-primary small" type="button">Ask Claude →</button>
+          <p id="m3-claude" class="m3-claude" aria-live="polite"></p>
+        </div>
+        <div id="m3-sort" class="m3-sort" hidden></div>
+      </div>
+      <div class="m2-col">
+        <div class="m3-compare">
+          <div class="m2-card"><span class="r-lbl">The contract · openapi.yaml</span><pre id="m3-contract" class="m2-pre"></pre></div>
+          <div class="m2-card"><span class="r-lbl">The real response · staging</span><pre id="m3-resp" class="m2-pre m3-resp"></pre></div>
+        </div>
+        <div class="m2-card" id="m3-cmd-card" hidden><span class="r-lbl">New file · .claude/commands/contract-check.md</span><pre id="m3-cmd" class="m2-pre"></pre></div>
+        <div class="m2-card" id="m3-yml-card" hidden><span class="r-lbl">New file · the pipeline (GitHub Actions)</span><pre id="m3-yml" class="m2-pre"></pre></div>
+        <div class="m2-card" id="m3-ci-card" hidden><span class="r-lbl">CI · Monday 2:10 PM</span><pre id="m3-ci" class="m2-pre m3-ci"></pre></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="m3done" class="screen m2done m3" hidden aria-label="Mission 3 results">
+  <div class="od-in">
+    <span class="eyebrow">Mission 3 complete · Contract Drift</span>
+    <h2 class="od-title">Drift can&rsquo;t sneak in any more.</h2>
+    <p id="o3-sub" class="od-sub"></p>
+    <div id="o3-stats" class="od-stats"></div>
+    <div class="od-cols m3-cols">
+      <div class="m2-card od-good"><div class="od-card-h"><span class="r-lbl">.claude/commands/contract-check.md</span><button id="o3-copy-cmd" class="btn solid" type="button">Copy</button></div><pre id="o3-cmd" class="m2-pre"></pre></div>
+      <div class="m2-card od-good"><div class="od-card-h"><span class="r-lbl">.github/workflows/contract-check.yml</span><button id="o3-copy-yml" class="btn solid" type="button">Copy</button></div><pre id="o3-yml" class="m2-pre"></pre></div>
+    </div>
+    <div class="m2-card">
+      <span class="r-lbl">What you learned · and how to do it at work</span>
+      <ul id="o3-learn" class="od-learn"></ul>
+    </div>
+    <div class="btn-row"><button id="o3-hub" class="btn" type="button">Back to missions</button><button id="o3-again" class="btn" type="button">Play again</button></div>
+    <div class="like" data-m="m3"><span class="like-q">Did this help you learn Claude?</span><button type="button" class="btn" data-v="yes">&#128077; Yes</button><button type="button" class="btn" data-v="no">&#128078; Not really</button><span class="like-thanks" hidden>Thanks! It helps Ravi decide what to build next.</span><a class="like-fb" href="https://github.com/ravigajul/claude-quest/issues/new?title=Feedback%20on%205%3A00%20PM%20Forever" target="_blank" rel="noopener">Tell Ravi what you think &rarr;</a></div>
     <p class="feedback">Created by <b>Ravi Gajul</b>, built together with Claude.</p>
   </div>
 </section>
@@ -1276,7 +1403,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 
 <div id="toast" class="toast" role="status"></div>
 
-<script type="module" src="game/engine.js?v=20261127164823"></script>
+<script type="module" src="game/engine.js?v=20261127175725"></script>
 
 </body>
 </html>

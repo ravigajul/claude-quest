@@ -12,13 +12,13 @@ function watchErrors(page) {
 
 // Fresh browser storage, then the mission list. `seen` skips the primer and the tour.
 async function openHub(page, { seen = true } = {}) {
-  await page.goto('/index.html');
+  await page.goto('/index.html', { waitUntil: 'domcontentloaded' });   // don't wait for every download (L10)
   await page.evaluate(seen => {
     localStorage.clear(); sessionStorage.clear();
     if (seen) { localStorage.setItem('cq-primer', '1'); localStorage.setItem('cq-tour-m1', 'done'); }
   }, seen);
-  await page.reload();
-  await page.click('#start');
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  await page.click('#start');   // waits until the button is enabled (L8)
   await page.waitForSelector('#hub:not([hidden])');
 }
 

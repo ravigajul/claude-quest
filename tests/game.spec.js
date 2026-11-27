@@ -6,6 +6,7 @@ test('loads without errors and lists 8 missions', async ({ page }) => {
   const errors = watchErrors(page);
   await openHub(page);
   await expect(page.locator('.hub-grid .mission')).toHaveCount(8);
+  await expect(page.locator('.hub-grid .mission.locked')).toHaveCount(5);
   await expect(page.locator('#hub-count')).toHaveText(/\/45$/);
   expect(errors).toEqual([]);
 });
@@ -131,4 +132,98 @@ test('A6: the prompt is locked while Claude is thinking', async ({ page }) => {
   await page.waitForFunction(() => !document.querySelector('#m2-out-h').textContent.includes('thinking'));
   await closeResults(page);
   await expect(page.locator('#m2-runs')).toHaveText(/^5 of 6/);
+});
+
+// ---- Mission 3 ----
+// Picks the option whose text starts with `start` in the open choice pop-up.
+// Waits for the result pop-up, then continues past it.
+async function ok(page) {
+  await page.locator('#result:not([hidden])').waitFor();
+  await closeResults(page);
+}
+async function pick(page, start) {
+  await page.locator('#choice:not([hidden])').waitFor();
+  await page.locator('#c-options .c-opt', { hasText: start }).click();
+}
+
+test('Mission 3 can be played start to finish, with a wrong turn on the way', async ({ page }) => {
+  const errors = watchErrors(page);
+  await openHub(page);
+  await page.click('#go-m3');
+  await page.click('#qz-skip');
+  await expect(page.locator('#m3')).toBeVisible();
+  await expect(page.locator('#m3-pipe li.now')).toContainText('Find what changed');
+
+  // 1. Find: a wrong answer first costs support tickets, then the right one.
+  await page.click('#m3-go');
+  await pick(page, 'Are the API tests passing?');
+  await expect(page.locator('#r-title')).toHaveText('Not quite');
+  await ok(page);
+  await expect(page.locator('#m3-tickets')).toHaveText('46');
+  await pick(page, 'Call GET /members/42');
+  await ok(page);
+
+  // 2. Sort: a wrong verdict is refused; the right ones go through.
+  const row = i => page.locator('#m3-sort .m3-row').nth(i);
+  await row(0).locator('button', { hasText: 'Safe' }).click();
+  await expect(row(0)).not.toHaveClass(/ok/);
+  for (const [i, v] of [[0, 'Breaks apps'], [1, 'Breaks apps'], [2, 'Privacy risk'], [3, 'Safe']]) {
+    await row(i).locator('button', { hasText: v }).click();
+    await expect(row(i)).toHaveClass(/ok/);
+  }
+  await expect(page.locator('#r-title')).toHaveText('Two breaking changes and a privacy leak');
+  await ok(page);
+
+  // 3. Save as a command.
+  await page.click('#m3-go');
+  await pick(page, 'In the repo, as .claude/commands');
+  await pick(page, 'Write $ARGUMENTS');
+  await ok(page);
+  await expect(page.locator('#m3-cmd')).toContainText('$ARGUMENTS');
+
+  // 4. CI and model, then the finale blocks pull request #219.
+  await page.click('#m3-go');
+  await pick(page, 'Add a CI step that runs claude -p');
+  await pick(page, 'A fast, small model');
+  await ok(page);
+  await expect(page.locator('#m3-ci')).toContainText('RESULT: FAIL', { timeout: 15_000 });
+  await expect(page.locator('#r-title')).toHaveText('Pull request #219 was blocked before it merged', { timeout: 10_000 });
+  await ok(page);
+  await page.click('#qz-skip').catch(() => {});
+  await expect(page.locator('#m3done')).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('#o3-yml')).toContainText('secrets.ANTHROPIC_API_KEY');
+  await expect(page.locator('#o3-learn li')).toHaveCount(4);
+  expect(errors).toEqual([]);
+
+  // Back on the hub, Mission 3 shows as completed.
+  await page.click('#o3-hub');
+  await expect(page.locator('#st-m3')).toContainText('Completed');
+});
+
+test('Mission 2 can be played start to finish', async ({ page }) => {
+  const errors = watchErrors(page);
+  await startMission2(page);
+  const tap = async label => { await chip(page, label).click(); };
+  await tap('Set the role');
+  await tap('Task: cover every');
+  await tap('Attach ticket');                     // asks how to connect the tracker first
+  await pick(page, 'In your terminal run');
+  await ok(page);
+  await tap('Attach the design');                 // asks how to give Claude an image
+  await pick(page, 'Copy the image and paste');
+  await ok(page);
+  await tap('Ask me questions');
+  await tap('Give one example');
+  await tap('Output: CSV');
+  await tap('Only what you can trace');
+  await page.click('#m2-run');                    // Claude asks Priya first (free round)
+  await expect(page.locator('#r-title')).toHaveText('Claude asked instead of guessing', { timeout: 10_000 });
+  await ok(page);
+  await page.click('#m2-run');                    // now it writes the tests
+  await expect(page.locator('#r-title')).toHaveText('All 10 covered. Nothing invented.', { timeout: 10_000 });
+  await ok(page);
+  await page.click('#qz-skip').catch(() => {});
+  await expect(page.locator('#m2done')).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('#od-title')).toHaveText('Priya imported your 10 test cases.');
+  expect(errors).toEqual([]);
 });

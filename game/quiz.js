@@ -36,9 +36,26 @@ export const QUIZ = {
       options: ['A short essay', 'Bullet points', 'A CSV with named columns that match the import', 'Markdown headings'],
       a: 2, why: 'Ask for exactly the structure the next tool needs, and the output becomes copy-and-paste ready.' },
   ],
+  m3: [
+    { q: 'All the API tests pass, but an app is broken by an API change. What does that tell you?',
+      options: ['The app has a bug, not the API', 'The tests do not check what the API actually returns', 'The tests are flaky', 'Nothing, passing tests prove the API is fine'],
+      a: 1, why: 'Tests only prove what they check. Comparing the real response with the contract (openapi.yaml) finds what they miss.' },
+    { q: 'You type the same long prompt every week, and your team needs it too. What do you do?',
+      options: ['Keep it in a note on your desktop', 'Save it as .claude/commands/<name>.md in the repo and commit it', 'Put it in your personal ~/.claude folder', 'Retype it each time so it stays fresh'],
+      a: 1, why: 'A command file in the repo becomes a /command for everyone who clones it, including CI.' },
+    { q: 'How does one command file work for any endpoint, like /contract-check /orders?',
+      options: ['Make one file per endpoint', 'Put $ARGUMENTS where the endpoint goes', 'Let Claude guess the endpoint', 'Use a different model'],
+      a: 1, why: 'Whatever you type after the command replaces $ARGUMENTS.' },
+    { q: 'You want Claude Code to run a check on every pull request, with nobody at the keyboard. What do you use?',
+      options: ['claude -p in a CI step, with the API key as a CI secret', 'A reminder in the pull request template', 'The API key pasted into the pipeline file', 'A Claude Code window left open on the build server'],
+      a: 0, why: 'Headless mode (claude -p) runs one prompt and exits. Keep keys in the CI secret store, never in the repo.' },
+    { q: 'A simple, well-defined check runs 40 times a day. Which model fits best?',
+      options: ['Always the largest model', 'A small, fast model, moving up only if it misses things', 'It makes no difference', 'A different random model each time'],
+      a: 1, why: 'Small models are faster and cheaper for clear, repeated tasks. Save larger models for hard reasoning.' },
+  ],
 };
 
-import { track } from './stats.js?v=20261127164823';
+import { track } from './stats.js?v=20261127175725';
 
 const $ = s => document.querySelector(s);
 

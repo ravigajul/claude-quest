@@ -12,11 +12,13 @@ module.exports = defineConfig({
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? 'github' : 'list',
   // reducedMotion: the game's own fast path (short animations), so a full playthrough takes seconds, not minutes
-  use: { baseURL: `http://localhost:${PORT}`, viewport: { width: 1366, height: 768 }, reducedMotion: 'reduce' },
+  use: { baseURL: `http://127.0.0.1:${PORT}`, viewport: { width: 1366, height: 768 }, reducedMotion: 'reduce' },
+  // tests/serve.js: a tiny UTF-8 file server (python's http.server sometimes never answered: lesson L10)
   webServer: {
-    command: `python3 -m http.server ${PORT}`,
-    cwd: path.resolve(__dirname, '..'),
-    port: PORT,
+    command: `node serve.js`,
+    cwd: __dirname,
+    env: { PORT: String(PORT) },
+    url: `http://127.0.0.1:${PORT}/index.html`,
     reuseExistingServer: !process.env.CI,
     stdout: 'ignore', stderr: 'ignore',
   },

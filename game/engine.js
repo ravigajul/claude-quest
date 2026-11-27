@@ -1,10 +1,11 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127164823';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127164823';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127164823';
-import { startMission2 } from './mission2.js?v=20261127164823';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127164823';
-import { track, statsOn } from './stats.js?v=20261127164823';
+import { MISSION as M } from './mission.js?v=20261127175725';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127175725';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127175725';
+import { startMission2 } from './mission2.js?v=20261127175725';
+import { startMission3 } from './mission3.js?v=20261127175725';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127175725';
+import { track, statsOn } from './stats.js?v=20261127175725';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -14,9 +15,13 @@ const HINT_TEXT_MS = 12000, HINT_CARD_MS = 25000, CHOICE_NUDGE_MS = 15000;
 // ---------- 3D scene, with a stub when WebGL is unavailable ----------
 let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
+const BOOT3D_TIMEOUT_MS = 10000;   // never let a slow or stuck 3D download keep the game from starting
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127164823');
+    const mod = await Promise.race([
+      import('./scene3d.js?v=20261127175725'),
+      new Promise((_, no) => setTimeout(() => no(new Error('3D took too long to load')), BOOT3D_TIMEOUT_MS)),
+    ]);
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -1197,7 +1202,8 @@ function resetGame() {
 }
 
 // ---------- missions ----------
-function markDone(m) { track(`${m}-done`, `${m === 'm1' ? 'Mission 1' : 'Mission 2'} completed`); try { localStorage.setItem(`cq-done-${m}`, '1'); } catch (e) {} }
+const MNAME = m => `Mission ${m.slice(1)}`;
+function markDone(m) { track(`${m}-done`, `${MNAME(m)} completed`); try { localStorage.setItem(`cq-done-${m}`, '1'); } catch (e) {} }
 function isDone(m) { try { return localStorage.getItem(`cq-done-${m}`) === '1'; } catch (e) { return false; } }
 
 function showHub() {
@@ -1208,9 +1214,11 @@ function showHub() {
     (postScore(m) === QUIZ[m].length ? ' · knowledge check 5/5, so it is skipped next time' : '');
   $('#st-m1').textContent = status('m1');
   $('#st-m2').textContent = status('m2');
+  $('#st-m3').textContent = status('m3');
   $('#hub').hidden = false;
   $('#hub').scrollTop = 0;
-  (isDone('m1') && !isDone('m2') ? $('#go-m2') : $('#go-m1')).focus({ preventScroll: true });
+  const nextUp = !isDone('m1') ? 'm1' : !isDone('m2') ? 'm2' : !isDone('m3') ? 'm3' : 'm1';
+  $('#go-' + nextUp).focus({ preventScroll: true });
 }
 
 function goHub() {
@@ -1219,6 +1227,8 @@ function goHub() {
   $('#mirror').hidden = true;
   $('#m2').hidden = true;
   $('#m2done').hidden = true;
+  $('#m3').hidden = true;
+  $('#m3done').hidden = true;
   scene.resetDay();
   renderHud();
   showHub();
@@ -1252,6 +1262,18 @@ async function playMission2() {
   });
 }
 
+async function playMission3() {
+  track('m3-start', 'Mission 3 started');
+  $('#hub').hidden = true;
+  document.body.dataset.level = 'm3';
+  scene.setTheme && scene.setTheme('#12062a', '#4a1a7a');
+  const pre3 = await runQuiz('m3', 'pre');
+  if (pre3.aced) toast('You aced this knowledge check last time, so it is skipped.');
+  startMission3({
+    $, learn, BY_ID, showResult, showChoice, sfx, toast, runQuiz, goHub, markDone,
+  });
+}
+
 // ---------- likes and feedback (end screens) ----------
 // Thumbs only appear where play statistics are on (GitHub Pages). The feedback link works everywhere.
 function setupLikes() {
@@ -1265,7 +1287,7 @@ function setupLikes() {
     if (done) mark();
     btns.forEach(b => b.addEventListener('click', () => {
       const v = b.dataset.v;
-      track(`${m}-like-${v}`, `${m === 'm1' ? 'Mission 1' : 'Mission 2'}: ${v === 'yes' ? 'liked it' : 'not for me'}`);
+      track(`${m}-like-${v}`, `${MNAME(m)}: ${v === 'yes' ? 'liked it' : 'not for me'}`);
       try { localStorage.setItem(key, v); } catch (e) {}
       b.classList.add('picked'); mark();
     }));
@@ -1320,6 +1342,10 @@ async function main() {
     $('#intro').hidden = true;
     showHub();
   });
+  // The button stays disabled ("Loading…") until this point, so an early click is never lost.
+  $('#start').disabled = false;
+  $('#start').removeAttribute('aria-busy');
+  $('#start').textContent = 'Wake up';
   $('#mute').addEventListener('click', () => {
     initAudio();
     setMuted(!isMuted());
@@ -1331,6 +1357,7 @@ async function main() {
   $('#go-m1').addEventListener('click', playMission1);
   $('#hub-primer').addEventListener('click', async () => { $('#hub').hidden = true; await showPrimer(); $('#hub').hidden = false; });
   $('#go-m2').addEventListener('click', playMission2);
+$('#go-m3').addEventListener('click', playMission3);
   setupTextSize();
   setupFullscreen();
   setupLikes();
