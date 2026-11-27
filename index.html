@@ -100,7 +100,8 @@ body.playing #hud { opacity: 1; }
 #clock-wrap.urgent #clock { color: var(--hot); text-shadow: 0 0 28px rgba(255,77,109,.7); animation: pulse .5s ease-in-out infinite alternate; }
 @keyframes pulse { to { opacity: .65; } }
 #mins-left { font-family: var(--f-mono); font-size: .75rem; color: var(--muted); }
-.meters { display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap; }
+.meters { display: flex; gap: .8rem 1.25rem; align-items: center; flex-wrap: wrap; flex: 1 1 22rem; min-width: 0; justify-content: flex-end; }  /* wrap the buttons inside this group, so the clock stays next to the level */
+@media (max-width: 760px) { .meters { justify-content: flex-start; } }
 .meter { width: 11rem; display: grid; gap: .3rem; }
 .bar { height: 8px; border-radius: 4px; background: rgba(255,255,255,.08); overflow: hidden; }
 .bar > i { display: block; height: 100%; width: 0; transition: width .7s cubic-bezier(.2,.8,.2,1), background .4s; }
@@ -1248,7 +1249,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 
 <div id="toast" class="toast" role="status"></div>
 
-<script type="module" src="game/engine.js?v=20261127155400"></script>
+<script type="module" src="game/engine.js?v=20261127155610"></script>
 
 </body>
 </html>
