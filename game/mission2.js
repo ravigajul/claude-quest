@@ -153,32 +153,64 @@ export function startMission2(api) {
   }
 
   // ---------- review panel ----------
-  function renderReview(g) {
+  const LABEL = id => `"${part(id).label.replace(/^(Task|Output): /, '').replace(/"/g, '')}"`;
+
+  function renderReview(g, diff) {
     $('#m2-review').hidden = false;
-    $('#m2-cov').textContent = `${g.coverage} of ${REQS.length}`;
-    $('#m2-cov').className = g.coverage === REQS.length ? 'ok' : 'bad';
-    $('#m2-inv').textContent = String(g.invented.length);
-    $('#m2-inv').className = g.invented.length ? 'bad' : 'ok';
-    $('#m2-use').textContent = g.usable ? 'Yes' : 'No';
-    $('#m2-use').className = g.usable ? 'ok' : 'bad';
-    $('#m2-imp').textContent = g.importable ? 'Yes' : 'No';
-    $('#m2-imp').className = g.importable ? 'ok' : 'bad';
-    const notes = $('#m2-notes'); notes.textContent = '';
-    const add = (t, cls) => { const li = document.createElement('li'); li.textContent = t; if (cls) li.className = cls; notes.appendChild(li); };
-    for (const c of g.invented) add(`Invented: "${c.title}". ${c.why}`, 'bad');
-    const missing = REQS.length - g.coverage;
-    if (missing) {
-      const srcs = [];
-      if (!on.has('ticket')) srcs.push('the ticket');
-      if (!on.has('design')) srcs.push('the design');
-      if (!on.has('answers')) srcs.push('Priya\'s head');
-      add(srcs.length
-        ? `Your reviewer knows of ${missing} requirement${missing > 1 ? 's' : ''} you did not test. Some of them live in ${srcs.join(', ')}.`
-        : `${missing} known requirement${missing > 1 ? 's were' : ' was'} skipped. Claude stopped early: what did you actually ask it to cover?`);
-    }
-    if (!on.has('role')) add('Your manual testers asked: "What do we do with Python code?" Claude did not know who the tests were for.', 'bad');
-    else if (!on.has('example')) add('Steps like "check that it works" cannot be executed. Claude guessed the level of detail.', 'bad');
-    if (!on.has('ado')) add(on.has('table') ? 'A table reads well, but the Azure DevOps import needs CSV with named columns.' : 'Free text: someone now has to retype every case into Azure DevOps.', 'bad');
+    const ul = $('#m2-checks'); ul.textContent = '';
+    const row = (ok, title, html) => {
+      const li = document.createElement('li'); li.className = ok ? 'ok' : 'bad';
+      const ic = document.createElement('span'); ic.className = 'ic'; ic.textContent = ok ? '✓' : '✗';
+      const b = document.createElement('b'); b.textContent = title;
+      const w = document.createElement('span'); w.className = 'why';
+      // html is built only from our own strings (labels and fixed text), never from user input
+      w.innerHTML = html;
+      li.append(ic, b, w); ul.appendChild(li);
+    };
+    const E = t => `<em>${t}</em>`;
+
+    // 1. Coverage: where each requirement came from, and whether the task let Claude use them.
+    const bits = ['The story gave 2.'];
+    const missing = [];
+    if (on.has('ticket')) bits.push(`${E('Attach ticket')} (MCP) added 4.`); else missing.push('the ticket (4 more)');
+    if (on.has('design')) bits.push(`${E('Attach the design')} added 2.`); else missing.push('the design (2 more)');
+    if (on.has('answers')) bits.push(`${E('Priya’s answers')} added 2.`); else missing.push('Priya’s answers (2 more)');
+    let cov = bits.join(' ');
+    if (missing.length) cov += ` Not in your prompt: ${missing.join(', ')}.`;
+    const known = 2 + (on.has('ticket') ? 4 : 0) + (on.has('design') ? 2 : 0) + (on.has('answers') ? 2 : 0);
+    if (!on.has('specific') && known > 3) cov += ` But your task ${E(LABEL('vague'))} let Claude stop after 3 cases.`;
+    if (!on.has('answers') && !answered) cov += ' Priya only shares her answers if Claude asks.';
+    row(g.coverage === REQS.length, `Requirements covered: ${g.coverage} of ${REQS.length}`, cov);
+
+    // 2. Invented rules.
+    row(!g.invented.length, g.invented.length ? `Rules Claude made up: ${g.invented.length}` : 'Nothing made up',
+      g.invented.length
+        ? `Nothing in your prompt told Claude what to do when it didn\u2019t know, so it guessed. ${g.invented.map(c => `"${c.title}": ${c.why}`).join(' ')}`
+        : `${E('Only what you can trace')} sent unknowns to "Open questions" instead of tests.`);
+
+    // 3. Usable by manual testers.
+    row(g.usable, g.usable ? 'Manual testers can run it' : 'Manual testers can’t run it',
+      !on.has('role') ? `No ${E('role and reader')}: Claude didn’t know the tests were for manual testers, so it wrote Python code.`
+      : !on.has('example') ? `No ${E('example in our format')}: Claude guessed the detail level and wrote steps like "check that it works".`
+      : `${E('Role')} gave manual test cases, and ${E('one example')} made every step concrete.`);
+
+    // 4. Importable into Azure DevOps.
+    row(g.importable, g.importable ? 'Imports into Azure DevOps' : 'Doesn’t import into Azure DevOps',
+      on.has('ado') ? `${E(LABEL('ado'))} gave the exact columns the import needs.`
+      : on.has('table') ? `You picked ${E(LABEL('table'))}. It reads well, but the import needs CSV with named columns.`
+      : `You picked ${E(LABEL('free'))}, so Claude wrote chatty text that someone would have to retype.`);
+
+    const passed = [g.coverage === REQS.length, !g.invented.length, g.usable, g.importable].filter(Boolean).length;
+    $('#m2-verdict').textContent = passed === 4 ? 'All 4 done.' : `${passed} of 4 done. Each red line names the selection that caused it.`;
+
+    const d = $('#m2-diff');
+    if (diff && (diff.added.length || diff.removed.length)) {
+      const parts = [];
+      if (diff.added.length) parts.push(`<b>You added</b> ${diff.added.map(id => E(LABEL(id))).join(', ')}`);
+      if (diff.removed.length) parts.push(`<b>You removed</b> ${diff.removed.map(id => E(LABEL(id))).join(', ')}`);
+      d.innerHTML = `Since your last run: ${parts.join('. ')}. Requirements ${diff.covBefore} → ${g.coverage}, made-up rules ${diff.invBefore} → ${g.invented.length}.`;
+      d.hidden = false;
+    } else d.hidden = true;
   }
 
   // ---------- run ----------
@@ -221,7 +253,13 @@ export function startMission2(api) {
     const g = generate();
     $('#m2-out-h').textContent = `Session ${runs}: Claude's answer`;
     $('#m2-out').textContent = formatOutput(g);
-    renderReview(g);
+    const visible = id => id !== 'story' && id !== 'clarify';
+    const diff = prev ? {
+      added: [...on].filter(id => !prev.on.has(id) && visible(id) && !(part(id).group && ['vague', 'free'].includes(id))),
+      removed: [...prev.on].filter(id => !on.has(id) && visible(id) && !['vague', 'free'].includes(id)),
+      covBefore: prev.coverage, invBefore: prev.invented,
+    } : null;
+    renderReview(g, diff);
 
     // What changed because of the prompt: show each new effect once, and unlock its concept.
     const changed = [];
@@ -230,7 +268,7 @@ export function startMission2(api) {
       const wasOn = prev ? prev.on.has(e.id) : false;
       if (nowOn && !wasOn) changed.push(e);
     }
-    prev = { on: new Set(on), coverage: g.coverage };
+    prev = { on: new Set(on), coverage: g.coverage, invented: g.invented.length };
     render();
 
     if (!first) first = { prompt: buildPrompt(), coverage: g.coverage, invented: g.invented.length, usable: g.usable, importable: g.importable, run: runs };

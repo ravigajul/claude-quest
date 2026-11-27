@@ -658,6 +658,21 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 .m2-chips.seg .m2-chip::before { content: "\25CB"; margin-right: .45rem; font-size: 1.05em; }
 .m2-chips.seg .m2-chip.on { background: #ffcf5c; color: #1a1030; }
 .m2-chips.seg .m2-chip.on::before { content: "\25C9"; }
+
+/* Mission 2 review: each check says which selection caused it */
+.m2-review { border-color: rgba(255,207,92,.55); }
+.m2-verdict { margin: 0; font-size: calc(.98rem * var(--rs)); color: #fff; line-height: 1.45; }
+.m2-checks { margin: 0; padding: 0; list-style: none; display: grid; gap: .55rem; }
+.m2-checks li { display: grid; grid-template-columns: 1.6rem 1fr; gap: .1rem .5rem; padding: .6rem .7rem; border-radius: 8px; background: rgba(255,255,255,.04); border-left: 3px solid; }
+.m2-checks li.ok { border-color: #7dffb2; }
+.m2-checks li.bad { border-color: #ff7d93; }
+.m2-checks .ic { grid-row: span 2; font-size: 1.15rem; line-height: 1.2; }
+.m2-checks li.ok .ic { color: #7dffb2; } .m2-checks li.bad .ic { color: #ff7d93; }
+.m2-checks b { color: #fff; font-size: calc(.95rem * var(--rs)); }
+.m2-checks .why { font-size: calc(.85rem * var(--rs)); line-height: 1.5; color: #cfe0f2; }
+.m2-checks .why em { font-style: normal; color: #ffcf5c; font-weight: 600; }
+.m2-diff { font-size: calc(.84rem * var(--rs)); line-height: 1.5; color: #cfe0f2; padding: .55rem .7rem; border-radius: 6px; background: rgba(92,200,255,.08); }
+.m2-diff b { color: var(--lvl); }
 </style>
 </head>
 <body>
@@ -773,19 +788,15 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
         </div>
       </div>
       <div class="m2-col">
+        <div class="m2-card m2-review" id="m2-review" hidden>
+          <span class="r-lbl">What your prompt got you · Priya needs all 4</span>
+          <p id="m2-verdict" class="m2-verdict"></p>
+          <ul id="m2-checks" class="m2-checks"></ul>
+          <div id="m2-diff" class="m2-diff" hidden></div>
+        </div>
         <div class="m2-card">
           <span class="r-lbl" id="m2-out-h"></span>
           <pre id="m2-out" class="m2-pre out"></pre>
-        </div>
-        <div class="m2-card" id="m2-review" hidden>
-          <span class="r-lbl">Review by your QA lead</span>
-          <div class="m2-score">
-            <div><span>Requirements covered</span><b id="m2-cov"></b></div>
-            <div><span>Invented rules</span><b id="m2-inv"></b></div>
-            <div><span>Manual testers can run it</span><b id="m2-use"></b></div>
-            <div><span>Imports into Azure DevOps</span><b id="m2-imp"></b></div>
-          </div>
-          <ul id="m2-notes" class="m2-notes"></ul>
         </div>
       </div>
     </div>
