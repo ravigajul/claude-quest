@@ -673,6 +673,9 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 .m2-checks .why em { font-style: normal; color: #ffcf5c; font-weight: 600; }
 .m2-diff { font-size: calc(.84rem * var(--rs)); line-height: 1.5; color: #cfe0f2; padding: .55rem .7rem; border-radius: 6px; background: rgba(92,200,255,.08); }
 .m2-diff b { color: var(--lvl); }
+.m2-chip.fresh { box-shadow: 0 0 0 3px rgba(125,255,178,.55); animation: fresh 1.2s ease-in-out 3; }
+@keyframes fresh { 50% { box-shadow: 0 0 0 6px rgba(125,255,178,.25); } }
+.m2-chip .new-tag { margin-left: .5rem; font-family: var(--f-mono); font-size: .65rem; font-weight: 700; padding: .05rem .35rem; border-radius: 3px; background: #7dffb2; color: #04122a; }
 </style>
 </head>
 <body>

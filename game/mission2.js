@@ -53,7 +53,7 @@ const MAX_RUNS = 6;
 export function startMission2(api) {
   const { $, learn, BY_ID, showResult, sfx, toast, runQuiz, goHub, markDone } = api;
   const on = new Set(['vague', 'free', 'story']);
-  let runs = 0, answered = false, prev = null, done = false, first = null;
+  let runs = 0, answered = false, prev = null, done = false, first = null, newChip = null;
   const box = $('#m2');
 
   const order = ['role', 'vague', 'specific', 'story', 'ticket', 'design', 'answers', 'clarify', 'example', 'free', 'table', 'ado', 'guard'];
@@ -82,6 +82,7 @@ export function startMission2(api) {
         if (p.group) { b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(on.has(id))); }
         else b.setAttribute('aria-pressed', String(on.has(id)));
         b.textContent = p.label;
+        if (newChip === id) { b.classList.add('fresh'); const t = document.createElement('span'); t.className = 'new-tag'; t.textContent = 'NEW'; b.appendChild(t); }
         b.onclick = () => {
           if (done) return;
           if (p.group) { PARTS.filter(x => x.group === p.group).forEach(x => on.delete(x.id)); on.add(id); }
@@ -245,11 +246,14 @@ export function startMission2(api) {
       sfx.clue();
       render();
       await showResult({ title: 'Claude asked instead of guessing', concept: 'Clarifying questions', teach: 'clarify',
-        body: 'Priya answered all three in the chat. Those answers are now part of the conversation, so they are in every prompt you send from here.',
-        found: ['Not case-sensitive', 'Not valid on gift cards', 'One code per order'] });
+        body: 'Instead of guessing, Claude asked Priya 3 questions and she answered them. You don\u2019t need to do anything with them: her answers are now ticked under Context as "Priya\u2019s answers" and go into your next prompt automatically.',
+        found: ['Her answers: not case-sensitive · never on gift cards · one code per order', 'Next: click "Send revised prompt". This time Claude writes the tests.'] });
+      newChip = 'answers';
+      render();
       return;
     }
 
+    newChip = null;
     const g = generate();
     $('#m2-out-h').textContent = `Session ${runs}: Claude's answer`;
     $('#m2-out').textContent = formatOutput(g);
