@@ -29,7 +29,7 @@ const PARTS = [
   { id: 'vague', group: 'task', label: 'Task: "Test this story."', line: 'Test this story.' },
   { id: 'specific', group: 'task', label: 'Task: cover every criterion and edge case', line: 'Write manual test cases that cover every acceptance criterion, boundary and error case for this story.' },
   { id: 'story', fixed: true, label: 'The story', line: `Story: "${STORY}"` },
-  { id: 'ticket', src: true, label: 'Attach ticket ADO-4821 (via MCP)', line: '@ado:ADO-4821  (acceptance criteria pulled through the Azure DevOps MCP connector)' },
+  { id: 'ticket', src: true, label: 'Attach ticket ADO-4821 (via MCP)', line: 'Read work item ADO-4821 and its acceptance criteria using the Azure DevOps MCP tools.' },
   { id: 'design', src: true, label: 'Attach the design screenshot', line: '[image: checkout-promo-design.png]' },
   { id: 'answers', src: true, auto: true, label: 'Priya\'s answers (in the conversation)', line: 'Priya\'s answers: codes are not case-sensitive; codes cannot be used on gift cards; one code per order.' },
   { id: 'clarify', label: 'Ask me questions before you start', line: 'Before writing anything, ask me the questions you need answered.' },
@@ -51,9 +51,9 @@ const GROUPS = [
 const MAX_RUNS = 6;
 
 export function startMission2(api) {
-  const { $, learn, BY_ID, showResult, sfx, toast, runQuiz, goHub, markDone } = api;
+  const { $, learn, BY_ID, showResult, showChoice, sfx, toast, runQuiz, goHub, markDone } = api;
   const on = new Set(['vague', 'free', 'story']);
-  let runs = 0, answered = false, prev = null, done = false, first = null, newChip = null;
+  let runs = 0, answered = false, prev = null, done = false, first = null, newChip = null, mcpReady = false, imgReady = false;
   const box = $('#m2');
 
   const order = ['role', 'vague', 'specific', 'story', 'ticket', 'design', 'answers', 'clarify', 'example', 'free', 'table', 'ado', 'guard'];
@@ -83,8 +83,11 @@ export function startMission2(api) {
         else b.setAttribute('aria-pressed', String(on.has(id)));
         b.textContent = p.label;
         if (newChip === id) { b.classList.add('fresh'); const t = document.createElement('span'); t.className = 'new-tag'; t.textContent = 'NEW'; b.appendChild(t); }
-        b.onclick = () => {
+        b.onclick = async () => {
           if (done) return;
+          // Attaching the ticket or the design first needs the player to know HOW in Claude Code.
+          if (id === 'ticket' && !on.has('ticket') && !mcpReady) { if (!(await setupMcp())) return; }
+          if (id === 'design' && !on.has('design') && !imgReady) { if (!(await setupImage())) return; }
           if (p.group) { PARTS.filter(x => x.group === p.group).forEach(x => on.delete(x.id)); on.add(id); }
           else if (on.has(id)) on.delete(id); else on.add(id);
           sfx.card();
@@ -108,6 +111,56 @@ export function startMission2(api) {
     $('#m2-src-ticket').classList.toggle('used', on.has('ticket'));
     $('#m2-src-design').classList.toggle('used', on.has('design'));
     $('#m2-src-priya').classList.toggle('used', answered);
+  }
+
+  // ---------- how-to steps: connecting MCP and giving Claude an image ----------
+  const MCP_CHOICE = {
+    question: 'Claude: "I can\u2019t see ADO-4821. No Azure DevOps connector is set up." How do you give Claude access to your tickets?',
+    nudge: 'MCP servers are added to Claude Code once, from your terminal, and then work in every session.',
+    options: [
+      { id: 'add', correct: true, text: 'In your terminal run: claude mcp add azure-devops -- npx -y @azure-devops/mcp <your-org>. Then type /mcp in Claude Code to check it is connected.',
+        why: 'That registers Microsoft\u2019s Azure DevOps MCP server with Claude Code. You sign in with your own Azure account, and Claude can now read (and, if you allow it, update) work items in any session.' },
+      { id: 'password', text: 'Put your Azure DevOps username and password in the prompt so Claude can log in.',
+        why: 'Never put credentials in a prompt. They end up in the conversation history, and Claude still has no tool to log in with.' },
+      { id: 'url', text: 'Paste the ticket\u2019s URL into the prompt and ask Claude to open it.',
+        why: 'Your Azure DevOps is private. Without a connector Claude can\u2019t sign in, so it gets a login page, or worse, guesses what the ticket says.' },
+      { id: 'copy', text: 'Copy the ticket\u2019s text from the browser and paste it into every prompt.',
+        why: 'It works for one ticket, but you\u2019ll repeat it for every ticket forever, and it goes stale when the ticket changes. A connector reads the live ticket whenever Claude needs it.' },
+    ],
+  };
+  const IMG_CHOICE = {
+    question: 'You have checkout-promo-design.png. How do you get it into Claude Code?',
+    nudge: 'Claude Code runs in your terminal, but it can still read images.',
+    options: [
+      { id: 'paste', correct: true, text: 'Copy the image and paste it with Ctrl+V (Ctrl, even on a Mac), or drag the file into the terminal, or type its path.',
+        why: 'Claude Code takes images by paste (Ctrl+V, not Cmd+V, on a Mac), by drag and drop, or by file path. Claude then reads the field limits and button states straight from the design.' },
+      { id: 'describe', text: 'Describe the design in words: "there is a promo field and an Apply button".',
+        why: 'You will forget the details that matter, like the 12-character limit and the disabled state. That is exactly what the image carries.' },
+      { id: 'link', text: 'Upload it to a shared drive and paste the link.',
+        why: 'Claude can\u2019t open links that need your sign-in. Give it the image itself.' },
+      { id: 'cant', text: 'You can\u2019t. Claude Code is text-only, so ask a developer to read the design.',
+        why: 'Claude reads images: designs, screenshots of errors, diagrams. You can hand it the picture directly.' },
+    ],
+  };
+
+  async function setupMcp() {
+    const o = await showChoice(MCP_CHOICE);
+    if (!o.correct) { sfx.glitch(); await showResult({ title: 'That won\u2019t get Claude the ticket', concept: 'MCP connectors', tone: 'bad', body: o.why, found: ['Try again: tick "Attach ticket" to choose differently.'] }); return false; }
+    mcpReady = true;
+    sfx.clue();
+    await showResult({ title: 'Azure DevOps connected', concept: 'MCP connectors', teach: 'mcp', body: o.why,
+      found: ['Claude can now read ADO-4821 and its acceptance criteria.'],
+      cmd: 'claude mcp add azure-devops -- npx -y @azure-devops/mcp <your-org>' });
+    return true;
+  }
+  async function setupImage() {
+    const o = await showChoice(IMG_CHOICE);
+    if (!o.correct) { sfx.glitch(); await showResult({ title: 'Claude still can\u2019t see the design', concept: 'Screenshots as input', tone: 'bad', body: o.why, found: ['Try again: tick "Attach the design screenshot" to choose differently.'] }); return false; }
+    imgReady = true;
+    sfx.clue();
+    await showResult({ title: 'Design attached', concept: 'Screenshots as input', teach: 'images', body: o.why,
+      cmd: 'Ctrl+V   (or drag checkout-promo-design.png into the terminal)' });
+    return true;
   }
 
   // ---------- what Claude produces for the current prompt ----------
@@ -217,8 +270,8 @@ export function startMission2(api) {
   // ---------- run ----------
   const EFFECTS = [
     { id: 'specific', text: 'You asked for every criterion, boundary and error case, so Claude stopped stopping at three.', teach: 'specific' },
-    { id: 'ticket', text: 'Claude pulled ADO-4821 through MCP: four rules from the acceptance criteria are now covered.', teach: 'mcp' },
-    { id: 'design', text: 'Claude read the screenshot: the 12-character limit and the disabled Apply button only exist in the design.', teach: 'images' },
+    { id: 'ticket', text: 'Claude pulled ADO-4821 through MCP: four rules from the acceptance criteria are now covered.', teach: null },
+    { id: 'design', text: 'Claude read the screenshot: the 12-character limit and the disabled Apply button only exist in the design.', teach: null },
     { id: 'answers', text: 'Priya\'s answers turned two guesses into facts.', teach: null },
     { id: 'role', text: 'Claude now knows who will read this: manual test cases, not Python code.', teach: 'role' },
     { id: 'example', text: 'One example and every step is now concrete enough to execute.', teach: 'examples' },
@@ -354,7 +407,7 @@ export function startMission2(api) {
     $('#m2-review').hidden = true;
     $('#m2-chat').hidden = true;
     $('#m2done').hidden = true;
-    first = null;
+    first = null; mcpReady = false; imgReady = false;
     render();
   }
 

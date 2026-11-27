@@ -419,6 +419,8 @@ function showChoice(spec) {
     d.append(b, pre);
     evBox.appendChild(d);
   }
+  evBox.closest('.c-evwrap').hidden = !evBox.children.length;
+  $('#choice').classList.toggle('no-ev', !evBox.children.length);
   const nudge = $('#c-nudge');
   nudge.textContent = `Hint: ${spec.nudge}`;
   nudge.hidden = true;
@@ -1062,7 +1064,7 @@ async function playMission2() {
   scene.setTheme && scene.setTheme('#04122a', '#0b3a66');
   await runQuiz('m2', 'pre');
   startMission2({
-    $, learn, BY_ID, showResult, sfx, toast, runQuiz, goHub, markDone,
+    $, learn, BY_ID, showResult, showChoice, sfx, toast, runQuiz, goHub, markDone,
   });
 }
 
