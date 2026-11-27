@@ -117,11 +117,17 @@ test('A2: asking questions on the last session never strands the player', async 
 
 test('A6: the prompt is locked while Claude is thinking', async ({ page }) => {
   await startMission2(page);
-  await page.click('#m2-run');
-  await expect(page.locator('#m2-run')).toBeDisabled();
-  const before = await chip(page, 'Give one example').getAttribute('aria-pressed');
-  await chip(page, 'Give one example').click({ force: true });
-  expect(await chip(page, 'Give one example').getAttribute('aria-pressed')).toBe(before);
+  // Click Send, then the chip and Send again in the same instant, so Claude is surely still thinking.
+  const r = await page.evaluate(() => {
+    const c = [...document.querySelectorAll('#m2-parts .m2-chip')].find(e => e.textContent.includes('Give one example'));
+    const before = c.getAttribute('aria-pressed');
+    document.querySelector('#m2-run').click();
+    const thinking = document.querySelector('#m2-out-h').textContent.includes('thinking');
+    const sendLocked = document.querySelector('#m2-run').disabled;
+    c.click(); document.querySelector('#m2-run').click();
+    return { thinking, sendLocked, same: c.getAttribute('aria-pressed') === before };
+  });
+  expect(r).toEqual({ thinking: true, sendLocked: true, same: true });
   await page.waitForFunction(() => !document.querySelector('#m2-out-h').textContent.includes('thinking'));
   await closeResults(page);
   await expect(page.locator('#m2-runs')).toHaveText(/^5 of 6/);

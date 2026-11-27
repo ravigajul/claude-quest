@@ -1,10 +1,10 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127163723';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127163723';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127163723';
-import { startMission2 } from './mission2.js?v=20261127163723';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127163723';
-import { track, statsOn } from './stats.js?v=20261127163723';
+import { MISSION as M } from './mission.js?v=20261127164823';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127164823';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127164823';
+import { startMission2 } from './mission2.js?v=20261127164823';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127164823';
+import { track, statsOn } from './stats.js?v=20261127164823';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -16,7 +16,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127163723');
+    const mod = await import('./scene3d.js?v=20261127164823');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
