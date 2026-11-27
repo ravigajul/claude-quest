@@ -332,6 +332,7 @@ export function startMission2(api) {
 
     // Clarifying questions come back instead of test cases, once.
     if (on.has('clarify') && !answered) {
+      if (!first) first = { prompt: buildPrompt(), coverage: 0, invented: 0, asked: true, run: runs };
       answered = true;
       on.add('answers');
       $('#m2-out-h').textContent = `Session ${runs}: Claude asked before writing`;
@@ -410,7 +411,10 @@ export function startMission2(api) {
     const final = { prompt: buildPrompt(), coverage: REQS.length };
     const f = first || { prompt: final.prompt, coverage: REQS.length, invented: 0 };
     $('#od-title').textContent = 'Priya imported your 10 test cases.';
-    $('#od-sub').textContent = `It took you ${runs} of ${MAX_RUNS} sessions. Your first prompt got ${f.coverage} of 10 requirements${f.invented ? ` and made up ${f.invented} rule${f.invented > 1 ? 's' : ''}` : ''}. Your final prompt got all 10 and made up nothing.`;
+    $('#od-sub').textContent = `It took you ${runs} of ${MAX_RUNS} sessions. ` + (f.asked
+      ? 'Your first prompt had Claude ask Priya questions before writing anything, which is how her rules got into your tests.'
+      : `Your first prompt got ${f.coverage} of 10 requirements${f.invented ? ` and made up ${f.invented} rule${f.invented > 1 ? 's' : ''}` : ''}.`) +
+      ' Your final prompt got all 10 and made up nothing.';
     const stats = $('#od-stats'); stats.textContent = '';
     const stat = (label, a, b) => {
       const d = document.createElement('div'); d.className = 'od-stat';

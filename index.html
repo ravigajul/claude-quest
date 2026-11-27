@@ -639,7 +639,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 @media (max-width: 900px) { .od-cols { grid-template-columns: 1fr; } }
 .od-good { border-color: #7dffb2; }
 .od-learn { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr)); gap: .6rem; }
-.od-learn li { display: grid; gap: .25rem; padding: .7rem .8rem; border-radius: 8px; background: rgba(255,255,255,.04); border: 1px solid rgba(125,255,178,.35); font-size: calc(.88rem * var(--rs)); line-height: 1.45; color: #d6e9fb; }
+.od-learn li { align-content: start; display: grid; gap: .25rem; padding: .7rem .8rem; border-radius: 8px; background: rgba(255,255,255,.04); border: 1px solid rgba(125,255,178,.35); font-size: calc(.88rem * var(--rs)); line-height: 1.45; color: #d6e9fb; }
 .od-learn b { color: #fff; font-size: calc(1rem * var(--rs)); }
 .od-learn b::before { content: "\2605  "; color: #7dffb2; }
 
@@ -678,6 +678,8 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 .m2-chip .new-tag { margin-left: .5rem; font-family: var(--f-mono); font-size: .65rem; font-weight: 700; padding: .05rem .35rem; border-radius: 3px; background: #7dffb2; color: #04122a; }
 #choice.no-ev .c-cols { grid-template-columns: 1fr !important; }
 #choice.no-ev .c-card { max-width: 44rem; }
+.od-card-h { display: flex; justify-content: space-between; align-items: center; gap: .8rem; flex-wrap: wrap; }
+.od-card-h .btn { padding: .45rem .9rem; }
 </style>
 </head>
 <body>
@@ -821,13 +823,13 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
     <div id="od-stats" class="od-stats"></div>
     <div class="od-cols">
       <div class="m2-card"><span class="r-lbl">Your first prompt</span><pre id="od-first" class="m2-pre"></pre></div>
-      <div class="m2-card od-good"><span class="r-lbl">Your final prompt · keep it as a template</span><pre id="od-final" class="m2-pre"></pre></div>
+      <div class="m2-card od-good"><div class="od-card-h"><span class="r-lbl">Your final prompt · keep it as a template</span><button id="od-copy" class="btn solid" type="button">Copy prompt</button></div><pre id="od-final" class="m2-pre"></pre></div>
     </div>
     <div class="m2-card">
       <span class="r-lbl">What you learned · and how to do it at work</span>
       <ul id="od-learn" class="od-learn"></ul>
     </div>
-    <div class="btn-row"><button id="od-copy" class="btn solid" type="button">Copy my final prompt</button><button id="od-hub" class="btn" type="button">Back to missions</button><button id="od-again" class="btn" type="button">Play again</button></div>
+    <div class="btn-row"><button id="od-hub" class="btn" type="button">Back to missions</button><button id="od-again" class="btn" type="button">Play again</button></div>
     <p class="feedback">Created by <b>Ravi Gajul</b>, built together with Claude.</p>
   </div>
 </section>
@@ -996,7 +998,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 
 <div id="toast" class="toast" role="status"></div>
 
-<script type="module" src="game/engine.js?v=20261127121515"></script>
+<script type="module" src="game/engine.js?v=20261127121644"></script>
 
 </body>
 </html>
