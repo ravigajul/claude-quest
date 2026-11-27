@@ -1,9 +1,9 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127122712';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127122712';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127122712';
-import { startMission2 } from './mission2.js?v=20261127122712';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127122712';
+import { MISSION as M } from './mission.js?v=20261127123054';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127123054';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127123054';
+import { startMission2 } from './mission2.js?v=20261127123054';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127123054';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -15,7 +15,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127122712');
+    const mod = await import('./scene3d.js?v=20261127123054');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -32,7 +32,7 @@ const fresh = () => ({
   notes: [],            // [{type:'ev'|'diag'|'lesson', id}]
   freeNote: '',
   used: new Set(), usedLoop: new Set(), lessonsEarned: new Set(),
-  blackouts: 0, peak: 0, log: [], hintsUsed: 0, wrongGuesses: 0, lastEv: null,
+  blackouts: 0, peak: 0, ctxItems: [], log: [], hintsUsed: 0, wrongGuesses: 0, lastEv: null,
   // Loop 3 ("make it stick"): unlocked after the first green run
   greenOnce: false, planned: false, diskFull: false, cleaned: false, verified: false,
   skill: false, hook: false, skillLoop: 0, hookLoop: 0,
@@ -177,7 +177,7 @@ function openGuide() {
 const TOUR = [
   { sel: '#hand', t: 'These are your moves', p: 'Click a card to use it. Each card shows what it costs: minutes from your 12, and context it adds to your memory.' },
   { sel: '#clock-wrap', t: 'The clock', p: 'Every day starts at 4:48 PM. At 5:00 the day resets and you forget everything except 3 notes.' },
-  { sel: '.meters .meter', t: 'Your context', p: 'Reading big files fills it fast. If it overflows you black out and lose details, just like Claude when its context window fills up.' },
+  { sel: '.ctxp', t: 'Your context window', p: 'Everything you read lands here, with its size. Big reads fill it fast. Past 70k you slow down; past 100k you black out and lose details, just like Claude when its context fills up. In Claude Code, /context shows the same breakdown.' },
   { sel: '.board', t: 'The evidence board', p: 'Clues you find appear here. You will use them to work out why the tests fail.' },
   { sel: '.progress', t: 'Your goal for the day', p: 'Day 1 can\u2019t be won. Find clues and notice which moves waste time. The checklist here updates as you play.' },
 ];
@@ -226,6 +226,7 @@ function renderHud() {
   $('#ctx-fill').style.width = Math.min(100, (S.ctx / M.capacity) * 100) + '%';
   $('#ctx-fill').dataset.level = S.ctx > M.rotThreshold ? 'hot' : S.ctx > 45 ? 'warm' : 'calm';
   $('#ctx-num').textContent = `${Math.round(S.ctx)}k / ${M.capacity}k`;
+  renderContext();
   $('#ctx-rot').hidden = S.ctx <= M.rotThreshold;
   $('#trust-fill').style.width = S.trust + '%';
   $('#trust-num').textContent = S.trust;
@@ -523,7 +524,8 @@ async function play(c, el) {
   if (c.id === 'readLog' || c.id === 'readRepo') sfx.pour();
 
   await advanceClock(cost);
-  addContext(c.tok);
+  addContext(c.tok, `${c.name} ${c.target}`);
+  bumpContext(c.tok);
   await scene.setLevel(Math.min(1.05, S.ctx / M.capacity), { pour: c.tok >= 10 });
   if (c.id === 'clone' || c.id === 'portal') await wait(reduced ? 0 : 1400);
   renderHud();
@@ -573,7 +575,50 @@ async function play(c, el) {
   renderHand();
 }
 
-function addContext(tok) { S.ctx += tok; S.peak = Math.max(S.peak, S.ctx); }
+const CX_COLORS = ['#7fe3ff', '#b49cff', '#7cf0a8', '#ffb547', '#ff8fd8', '#9fb4ff', '#ffd86b', '#6ee7d8'];
+function addContext(tok, label) {
+  S.ctx += tok; S.peak = Math.max(S.peak, S.ctx);
+  if (label) S.ctxItems.push({ label, tok, c: CX_COLORS[S.ctxItems.length % CX_COLORS.length], fresh: true });
+}
+function renderContext() {
+  const box = document.querySelector('.ctxp');
+  if (!box) return;
+  box.dataset.level = S.ctx > M.rotThreshold ? 'hot' : S.ctx > 45 ? 'warm' : 'calm';
+  $('#cx-used').textContent = `${Math.round(S.ctx)}k`;
+  const segs = $('#cx-segs'), list = $('#cx-list');
+  segs.textContent = ''; list.textContent = '';
+  for (const it of S.ctxItems) {
+    const seg = document.createElement('div');
+    seg.className = 'cx-seg' + (it.fresh ? ' new' : '');
+    seg.style.background = it.c;
+    seg.style.height = Math.min(100, (it.tok / M.capacity) * 100) + '%';
+    seg.title = `${it.label}: ${it.tok}k`;
+    segs.appendChild(seg);
+    const li = document.createElement('li');
+    li.className = (it.fresh ? 'new ' : '') + (it.tok >= 40 ? 'big' : '');
+    const sw = document.createElement('i'); sw.style.background = it.c;
+    const tx = document.createElement('span'); tx.textContent = it.label;
+    const n = document.createElement('b'); n.textContent = `${it.tok}k`;
+    li.append(sw, tx, n);
+    list.appendChild(li);
+    it.fresh = false;
+  }
+  const free = Math.max(0, M.capacity - Math.round(S.ctx));
+  $('#cx-free').textContent = free ? `${free}k free before blackout` : 'Full: blackout';
+}
+function bumpContext(tok, label) {
+  const box = document.querySelector('.ctxp');
+  const target = box && box.offsetParent ? box : $('#ctx-num');
+  if (!target) return;
+  const r = target.getBoundingClientRect();
+  const b = document.createElement('div');
+  b.className = 'cx-bump' + (tok >= 40 ? ' big' : '');
+  b.textContent = `+${tok}k`;
+  b.style.left = `${r.left + 16}px`; b.style.top = `${r.top + (box && box.offsetParent ? 40 : 18)}px`;
+  document.body.appendChild(b);
+  setTimeout(() => b.remove(), 1500);
+  if (box) { box.classList.add('flash'); setTimeout(() => box.classList.remove('flash'), 700); }
+}
 
 async function advanceClock(cost) {
   const target = Math.min(M.endMinute, S.minute + cost);
@@ -731,6 +776,7 @@ async function blackout() {
   await scene.blackout(0.3);
   lostNow.forEach(id => { S.ev.delete(id); S.lost.add(id); });
   S.ctx = 30; S.blackouts++;
+  S.ctxItems = [{ label: 'Compacted summary (details lost)', tok: 30, c: '#ff6b6b', fresh: true }];
   await advanceClock(1);
   document.body.classList.remove('blackout');
   S.log.push('# context full: auto-compacted. Details summarized away.');
@@ -766,6 +812,7 @@ async function hallucinate() {
 
 // ---------- loop lifecycle ----------
 async function startLoop() {
+  S.ctxItems = [{ label: S.loop > 1 ? 'Start: system prompt, Dana\u2019s message, your notes' : 'Start: system prompt and Dana\u2019s message', tok: M.baseContext, c: '#5c6a9e' }];
   S.minute = M.startMinute; S.ctx = M.baseContext; S.fixed = false; S.lastEv = null;
   S.ev = new Set(noted('ev')); S.lost = new Set(); S.usedLoop = new Set(); S.log = [];
   S.diagnosed = noted('diag').size > 0;
