@@ -32,7 +32,7 @@ export const QUIZ = {
     { q: 'Some rules (field length, disabled buttons) only show on the design. Fastest way to give them to Claude?',
       options: ['Describe the design from memory', 'Paste a screenshot of the design', 'Skip them, they are minor', 'Wait for the developer'],
       a: 1, why: 'Claude reads images. A screenshot carries details nobody remembers to type.' },
-    { q: 'You will import the results into Azure DevOps. What should you ask for?',
+    { q: 'You will import the results into your test management tool (Azure DevOps, Jira and so on). What should you ask for?',
       options: ['A short essay', 'Bullet points', 'A CSV with named columns that match the import', 'Markdown headings'],
       a: 2, why: 'Ask for exactly the structure the next tool needs, and the output becomes copy-and-paste ready.' },
   ],

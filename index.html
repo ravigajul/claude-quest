@@ -719,7 +719,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
       <button class="mission m2c" id="go-m2" type="button" data-m="m2">
         <span class="m-num">Mission 2 · new · about 8 min</span>
         <b>The Vague Story</b>
-        <span class="m-pitch">A product owner sends a one-line user story. Build the prompt that turns it into test cases you can import into Azure DevOps.</span>
+        <span class="m-pitch">A product owner sends a one-line user story. Build the prompt that turns it into test cases you can import into Azure DevOps or Jira.</span>
         <span class="m-learn">Specific prompts · examples · structured output · screenshots · role and audience · clarifying questions · no invented facts</span>
         <span class="m-status" id="st-m2"></span>
       </button>
@@ -760,14 +760,19 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
     <div class="m2-grid">
       <div class="m2-col">
         <div class="m2-card">
+          <span class="r-lbl">Your team keeps user stories in · <em class="m2-mode one">pick one</em></span>
+          <div id="m2-tracker" class="m2-chips seg" role="radiogroup" aria-label="Where your user stories live"></div>
+          <p id="m2-tracker-note" class="m2-goal" hidden>Locked for this round. Play again to switch.</p>
+        </div>
+        <div class="m2-card">
           <span class="r-lbl">Priya · product owner</span>
-          <p class="m2-msg">"Can you get test cases for this into Azure DevOps before sprint planning? Thanks!"</p>
+          <p class="m2-msg">"Can you get test cases for this into <span data-t="TOOL">Azure DevOps</span> before sprint planning? Thanks!"</p>
           <p class="m2-story">As a member, I want to apply a promo code at checkout so that I can save money.</p>
         </div>
         <div class="m2-card">
           <span class="r-lbl">Where the details might live</span>
           <ul class="m2-src">
-            <li id="m2-src-ticket"><b>ADO-4821</b> · the ticket, with acceptance criteria. Not in the chat: Claude can only see it through the Azure DevOps MCP connector.</li>
+            <li id="m2-src-ticket"><b data-t="ID">ADO-4821</b> · the ticket, with acceptance criteria. It isn&rsquo;t in the chat: Claude can only read it through a <span data-t="TOOL">Azure DevOps</span> MCP connector.</li>
             <li id="m2-src-design"><b>checkout-promo-design.png</b> · the design. Field limits and button states are only visible there.</li>
             <li id="m2-src-priya"><b>Priya</b> · knows rules nobody wrote down. She answers questions.</li>
           </ul>
@@ -778,7 +783,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
         </div>
         <div class="m2-card">
           <span class="r-lbl">How to win</span>
-          <p class="m2-goal">All 10 requirements covered, nothing invented, steps a manual tester can follow, and importable into Azure DevOps. You have 6 sessions.</p>
+          <p class="m2-goal">All 10 requirements covered, nothing invented, steps a manual tester can follow, and importable into <span data-t="TOOL">Azure DevOps</span>. You have 6 sessions.</p>
         </div>
       </div>
       <div class="m2-col">
@@ -991,7 +996,7 @@ body:has(#m2done:not([hidden])) #hud { opacity: 0 !important; pointer-events: no
 
 <div id="toast" class="toast" role="status"></div>
 
-<script type="module" src="game/engine.js?v=20261127120520"></script>
+<script type="module" src="game/engine.js?v=20261127120905"></script>
 
 </body>
 </html>

@@ -38,7 +38,7 @@ At the end you can download a real `CLAUDE.md`, `SKILL.md` and `settings.json` h
 
 ## Mission 2: The Vague Story
 
-A product owner sends a one-line user story. You build a prompt from parts (role, task, the ADO ticket through MCP, a design screenshot, clarifying questions, an example, the output format and a "don't invent facts" rule) and send it. Each run shows what Claude produces and a QA lead's review: requirements covered, invented rules, whether manual testers can run it, and whether it imports into Azure DevOps. You learn what each part of a prompt does by watching the output change. At the end you keep the prompt as a template.
+A product owner sends a one-line user story. Pick where your team keeps stories (Azure DevOps or Jira), then build a prompt from parts (role, task, the ticket through an MCP connector, a design screenshot, clarifying questions, an example, the output format and a "don't invent facts" rule) and send it. Each run shows what Claude produces and a QA lead's review: requirements covered, invented rules, whether manual testers can run it, and whether it imports into your tracker. Connecting the ticket and attaching the design ask you how to do it for real (`claude mcp add …`, Ctrl+V for images). You learn what each part of a prompt does by watching the output change. At the end you keep the prompt as a template.
 
 ## See what you learned
 

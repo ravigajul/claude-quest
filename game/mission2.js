@@ -29,14 +29,14 @@ const PARTS = [
   { id: 'vague', group: 'task', label: 'Task: "Test this story."', line: 'Test this story.' },
   { id: 'specific', group: 'task', label: 'Task: cover every criterion and edge case', line: 'Write manual test cases that cover every acceptance criterion, boundary and error case for this story.' },
   { id: 'story', fixed: true, label: 'The story', line: `Story: "${STORY}"` },
-  { id: 'ticket', src: true, label: 'Attach ticket ADO-4821 (via MCP)', line: 'Read work item ADO-4821 and its acceptance criteria using the Azure DevOps MCP tools.' },
+  { id: 'ticket', src: true, label: 'Attach ticket {ID} (via MCP)', line: 'Read {ITEM} {ID} and its acceptance criteria using the {TOOL} MCP tools.' },
   { id: 'design', src: true, label: 'Attach the design screenshot', line: '[image: checkout-promo-design.png]' },
   { id: 'answers', src: true, auto: true, label: 'Priya\'s answers (in the conversation)', line: 'Priya\'s answers: codes are not case-sensitive; codes cannot be used on gift cards; one code per order.' },
   { id: 'clarify', label: 'Ask me questions before you start', line: 'Before writing anything, ask me the questions you need answered.' },
   { id: 'example', label: 'Give one example in our format', line: `Use exactly this format and level of detail:\n${EXAMPLE}` },
   { id: 'free', group: 'format', label: 'Output: no format given', line: '' },
   { id: 'table', group: 'format', label: 'Output: a table', line: 'Return the test cases as a table.' },
-  { id: 'ado', group: 'format', label: 'Output: CSV for Azure DevOps import', line: 'Return CSV with the columns: Title, Steps, Expected Result, Source. One row per test case, no extra text.' },
+  { id: 'ado', group: 'format', label: 'Output: CSV for {TOOL} import', line: 'Return CSV with the columns: {COLS}. One row per test case, no extra text.' },
   { id: 'guard', label: 'Only what you can trace; list assumptions', line: 'Only include test cases you can trace to the story, the ticket, the design or my answers. Put anything you would have to assume under "Open questions" instead of writing a test for it.' },
 ];
 
@@ -50,15 +50,34 @@ const GROUPS = [
 
 const MAX_RUNS = 6;
 
+// Where the team's stories live. Every {KEY} in the mission's text is filled from the chosen tracker.
+const TRACKERS = {
+  ado: { name: 'Azure DevOps', TOOL: 'Azure DevOps', ID: 'ADO-4821', ITEM: 'work item',
+    CMD: 'claude mcp add azure-devops -- npx -y @azure-devops/mcp <your-org>',
+    SERVERWHY: 'That registers Microsoft\u2019s Azure DevOps MCP server with Claude Code. You sign in with your own Azure account, and Claude can now read (and, if you allow it, update) work items in any session.',
+    COLS: 'Title, Steps, Expected Result, Source', csvHeader: 'Title,Steps,Expected Result,Source' },
+  jira: { name: 'Jira', TOOL: 'Jira', ID: 'PROMO-482', ITEM: 'Jira issue',
+    CMD: 'claude mcp add --transport http atlassian https://mcp.atlassian.com/v2/mcp',
+    SERVERWHY: 'That connects Atlassian\u2019s official remote MCP server. The first time, /mcp opens your browser so you sign in to Atlassian with your own account. Claude can then read (and, if you allow it, update) Jira issues in any session.',
+    COLS: 'Summary, Test Step, Expected Result, Source', csvHeader: 'Summary,Test Step,Expected Result,Source' },
+};
+let T = TRACKERS.ado;
+const fill = str => str.replace(/\{([A-Z]+)\}/g, (m, k) => (k in T ? T[k] : m));
+const F = x => typeof x === 'string' ? fill(x) : Array.isArray(x) ? x.map(F)
+  : x && typeof x === 'object' ? Object.fromEntries(Object.entries(x).map(([k, v]) => [k, F(v)])) : x;
+
 export function startMission2(api) {
-  const { $, learn, BY_ID, showResult, showChoice, sfx, toast, runQuiz, goHub, markDone } = api;
+  const { $, learn, BY_ID, sfx, toast, runQuiz, goHub, markDone } = api;
+  const showResult = o => api.showResult(F(o));
+  const showChoice = spec => api.showChoice(F(spec));
+  try { T = TRACKERS[localStorage.getItem('cq-tracker')] || TRACKERS.ado; } catch (e) { T = TRACKERS.ado; }
   const on = new Set(['vague', 'free', 'story']);
   let runs = 0, answered = false, prev = null, done = false, first = null, newChip = null, mcpReady = false, imgReady = false;
   const box = $('#m2');
 
   const order = ['role', 'vague', 'specific', 'story', 'ticket', 'design', 'answers', 'clarify', 'example', 'free', 'table', 'ado', 'guard'];
   const part = id => PARTS.find(p => p.id === id);
-  const buildPrompt = () => order.filter(id => on.has(id) && part(id).line).map(id => part(id).line).join('\n\n');
+  const buildPrompt = () => order.filter(id => on.has(id) && part(id).line).map(id => fill(part(id).line)).join('\n\n');
 
   function renderParts() {
     const wrap = $('#m2-parts'); wrap.textContent = '';
@@ -81,7 +100,7 @@ export function startMission2(api) {
         b.className = 'm2-chip' + (on.has(id) ? ' on' : '') + (p.group ? ' radio' : '');
         if (p.group) { b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(on.has(id))); }
         else b.setAttribute('aria-pressed', String(on.has(id)));
-        b.textContent = p.label;
+        b.textContent = fill(p.label);
         if (newChip === id) { b.classList.add('fresh'); const t = document.createElement('span'); t.className = 'new-tag'; t.textContent = 'NEW'; b.appendChild(t); }
         b.onclick = async () => {
           if (done) return;
@@ -100,7 +119,28 @@ export function startMission2(api) {
     }
   }
 
+  function renderTracker() {
+    const row = $('#m2-tracker'); row.textContent = '';
+    for (const [k, t] of Object.entries(TRACKERS)) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'm2-chip radio' + (T === t ? ' on' : '');
+      b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(T === t));
+      b.textContent = t.name;
+      b.disabled = runs > 0 && T !== t;
+      b.onclick = () => {
+        if (T === t || runs > 0) return;
+        T = t; mcpReady = false; on.delete('ticket');
+        try { localStorage.setItem('cq-tracker', k); } catch (e) {}
+        sfx.card(); render();
+      };
+      row.appendChild(b);
+    }
+    $('#m2-tracker-note').hidden = runs === 0;
+    document.querySelectorAll('[data-t]').forEach(el => { el.textContent = T[el.dataset.t]; });
+  }
+
   function render() {
+    renderTracker();
     renderParts();
     $('#m2-prompt').textContent = buildPrompt();
     $('#m2-runs').textContent = `${MAX_RUNS - runs} of ${MAX_RUNS} sessions left`;
@@ -115,15 +155,15 @@ export function startMission2(api) {
 
   // ---------- how-to steps: connecting MCP and giving Claude an image ----------
   const MCP_CHOICE = {
-    question: 'Claude: "I can\u2019t see ADO-4821. No Azure DevOps connector is set up." How do you give Claude access to your tickets?',
+    question: 'Claude: "I can\u2019t see {ID}. No {TOOL} connector is set up." How do you give Claude access to your tickets?',
     nudge: 'MCP servers are added to Claude Code once, from your terminal, and then work in every session.',
     options: [
-      { id: 'add', correct: true, text: 'In your terminal run: claude mcp add azure-devops -- npx -y @azure-devops/mcp <your-org>. Then type /mcp in Claude Code to check it is connected.',
-        why: 'That registers Microsoft\u2019s Azure DevOps MCP server with Claude Code. You sign in with your own Azure account, and Claude can now read (and, if you allow it, update) work items in any session.' },
-      { id: 'password', text: 'Put your Azure DevOps username and password in the prompt so Claude can log in.',
+      { id: 'add', correct: true, text: 'In your terminal run: {CMD}. Then type /mcp in Claude Code to check it is connected and signed in.',
+        why: '{SERVERWHY}' },
+      { id: 'password', text: 'Put your {TOOL} username and password in the prompt so Claude can log in.',
         why: 'Never put credentials in a prompt. They end up in the conversation history, and Claude still has no tool to log in with.' },
       { id: 'url', text: 'Paste the ticket\u2019s URL into the prompt and ask Claude to open it.',
-        why: 'Your Azure DevOps is private. Without a connector Claude can\u2019t sign in, so it gets a login page, or worse, guesses what the ticket says.' },
+        why: 'Your {TOOL} is private. Without a connector Claude can\u2019t sign in, so it gets a login page, or worse, guesses what the ticket says.' },
       { id: 'copy', text: 'Copy the ticket\u2019s text from the browser and paste it into every prompt.',
         why: 'It works for one ticket, but you\u2019ll repeat it for every ticket forever, and it goes stale when the ticket changes. A connector reads the live ticket whenever Claude needs it.' },
     ],
@@ -148,9 +188,9 @@ export function startMission2(api) {
     if (!o.correct) { sfx.glitch(); await showResult({ title: 'That won\u2019t get Claude the ticket', concept: 'MCP connectors', tone: 'bad', body: o.why, found: ['Try again: tick "Attach ticket" to choose differently.'] }); return false; }
     mcpReady = true;
     sfx.clue();
-    await showResult({ title: 'Azure DevOps connected', concept: 'MCP connectors', teach: 'mcp', body: o.why,
-      found: ['Claude can now read ADO-4821 and its acceptance criteria.'],
-      cmd: 'claude mcp add azure-devops -- npx -y @azure-devops/mcp <your-org>' });
+    await showResult({ title: '{TOOL} connected', concept: 'MCP connectors', teach: 'mcp', body: o.why,
+      found: ['Claude can now read {ID} and its acceptance criteria.'],
+      cmd: '{CMD}' });
     return true;
   }
   async function setupImage() {
@@ -195,7 +235,7 @@ export function startMission2(api) {
     }
     let out;
     if (on.has('ado')) {
-      out = 'Title,Steps,Expected Result,Source\n' + g.all.map(c => `"${c.title}","${stepsOf(c)}","${expOf(c)}","${c.real ? c.src : 'none'}"`).join('\n');
+      out = T.csvHeader + '\n' + g.all.map(c => `"${c.title}","${stepsOf(c)}","${expOf(c)}","${c.real ? c.src : 'none'}"`).join('\n');
     } else if (on.has('table')) {
       out = '| Test | Steps | Expected |\n|---|---|---|\n' + g.all.map(c => `| ${c.title} | ${stepsOf(c)} | ${expOf(c)} |`).join('\n');
     } else {
@@ -207,7 +247,7 @@ export function startMission2(api) {
   }
 
   // ---------- review panel ----------
-  const LABEL = id => `"${part(id).label.replace(/^(Task|Output): /, '').replace(/"/g, '')}"`;
+  const LABEL = id => `"${fill(part(id).label).replace(/^(Task|Output): /, '').replace(/"/g, '')}"`;
 
   function renderReview(g, diff) {
     $('#m2-review').hidden = false;
@@ -215,8 +255,9 @@ export function startMission2(api) {
     const row = (ok, title, html) => {
       const li = document.createElement('li'); li.className = ok ? 'ok' : 'bad';
       const ic = document.createElement('span'); ic.className = 'ic'; ic.textContent = ok ? '✓' : '✗';
-      const b = document.createElement('b'); b.textContent = title;
+      const b = document.createElement('b'); b.textContent = fill(title);
       const w = document.createElement('span'); w.className = 'why';
+      html = fill(html);
       // html is built only from our own strings (labels and fixed text), never from user input
       w.innerHTML = html;
       li.append(ic, b, w); ul.appendChild(li);
@@ -248,8 +289,8 @@ export function startMission2(api) {
       : !on.has('example') ? `No ${E('example in our format')}: Claude guessed the detail level and wrote steps like "check that it works".`
       : `${E('Role')} gave manual test cases, and ${E('one example')} made every step concrete.`);
 
-    // 4. Importable into Azure DevOps.
-    row(g.importable, g.importable ? 'Imports into Azure DevOps' : 'Doesn’t import into Azure DevOps',
+    // 4. Importable into {TOOL}.
+    row(g.importable, g.importable ? 'Imports into {TOOL}' : 'Doesn’t import into {TOOL}',
       on.has('ado') ? `${E(LABEL('ado'))} gave the exact columns the import needs.`
       : on.has('table') ? `You picked ${E(LABEL('table'))}. It reads well, but the import needs CSV with named columns.`
       : `You picked ${E(LABEL('free'))}, so Claude wrote chatty text that someone would have to retype.`);
@@ -262,7 +303,7 @@ export function startMission2(api) {
       const parts = [];
       if (diff.added.length) parts.push(`<b>You added</b> ${diff.added.map(id => E(LABEL(id))).join(', ')}`);
       if (diff.removed.length) parts.push(`<b>You removed</b> ${diff.removed.map(id => E(LABEL(id))).join(', ')}`);
-      d.innerHTML = `Since your last run: ${parts.join('. ')}. Requirements ${diff.covBefore} → ${g.coverage}, made-up rules ${diff.invBefore} → ${g.invented.length}.`;
+      d.innerHTML = fill(`Since your last run: ${parts.join('. ')}. Requirements ${diff.covBefore} → ${g.coverage}, made-up rules ${diff.invBefore} → ${g.invented.length}.`);
       d.hidden = false;
     } else d.hidden = true;
   }
@@ -270,12 +311,12 @@ export function startMission2(api) {
   // ---------- run ----------
   const EFFECTS = [
     { id: 'specific', text: 'You asked for every criterion, boundary and error case, so Claude stopped stopping at three.', teach: 'specific' },
-    { id: 'ticket', text: 'Claude pulled ADO-4821 through MCP: four rules from the acceptance criteria are now covered.', teach: null },
+    { id: 'ticket', text: 'Claude pulled {ID} through MCP: four rules from the acceptance criteria are now covered.', teach: null },
     { id: 'design', text: 'Claude read the screenshot: the 12-character limit and the disabled Apply button only exist in the design.', teach: null },
     { id: 'answers', text: 'Priya\'s answers turned two guesses into facts.', teach: null },
     { id: 'role', text: 'Claude now knows who will read this: manual test cases, not Python code.', teach: 'role' },
     { id: 'example', text: 'One example and every step is now concrete enough to execute.', teach: 'examples' },
-    { id: 'ado', text: 'CSV with named columns: it imports straight into Azure DevOps.', teach: 'structure' },
+    { id: 'ado', text: 'CSV with named columns: it imports straight into {TOOL}.', teach: 'structure' },
     { id: 'guard', text: 'No invented rules: things Claude could not trace became open questions instead.', teach: 'grounding' },
   ];
 
