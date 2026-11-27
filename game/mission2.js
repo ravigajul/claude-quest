@@ -72,6 +72,7 @@ export function startMission2(api) {
   const showChoice = spec => api.showChoice(F(spec));
   try { T = TRACKERS[localStorage.getItem('cq-tracker')] || TRACKERS.ado; } catch (e) { T = TRACKERS.ado; }
   const on = new Set(['vague', 'free', 'story']);
+  let inFlight = false;   // true while Claude is "thinking": the prompt can't change and Send can't be pressed again
   let runs = 0, answered = false, prev = null, done = false, first = null, newChip = null, mcpReady = false, imgReady = false;
   const box = $('#m2');
 
@@ -103,7 +104,7 @@ export function startMission2(api) {
         b.textContent = fill(p.label);
         if (newChip === id) { b.classList.add('fresh'); const t = document.createElement('span'); t.className = 'new-tag'; t.textContent = 'NEW'; b.appendChild(t); }
         b.onclick = async () => {
-          if (done) return;
+          if (done || inFlight) return;
           // Attaching the ticket or the design first needs the player to know HOW in Claude Code.
           if (id === 'ticket' && !on.has('ticket') && !mcpReady) { if (!(await setupMcp())) return; }
           if (id === 'design' && !on.has('design') && !imgReady) { if (!(await setupImage())) return; }
@@ -145,7 +146,7 @@ export function startMission2(api) {
     $('#m2-prompt').textContent = buildPrompt();
     $('#m2-runs').textContent = `${MAX_RUNS - runs} of ${MAX_RUNS} sessions left`;
     for (const b of [$('#m2-run'), $('#m2-run-top')]) {
-      b.disabled = done || runs >= MAX_RUNS;
+      b.disabled = done || inFlight || runs >= MAX_RUNS;
       b.textContent = runs === 0 ? 'Send to Claude' : 'Send revised prompt';
     }
     $('#m2-src-ticket').classList.toggle('used', on.has('ticket'));
@@ -321,7 +322,12 @@ export function startMission2(api) {
   ];
 
   async function run() {
-    if (done || runs >= MAX_RUNS) return;
+    if (done || inFlight || runs >= MAX_RUNS) return;
+    inFlight = true;
+    try { await runOnce(); } finally { inFlight = false; render(); }
+  }
+
+  async function runOnce() {
     runs++;
     sfx.card();
     $('#m2-run').disabled = true; $('#m2-run-top').disabled = true;
@@ -335,7 +341,7 @@ export function startMission2(api) {
       if (!first) first = { prompt: buildPrompt(), coverage: 0, invented: 0, asked: true, run: runs };
       answered = true;
       on.add('answers');
-      $('#m2-out-h').textContent = `Session ${runs}: Claude asked before writing`;
+      $('#m2-out-h').textContent = `Session ${runs}: Claude asked before writing (questions don\u2019t use up a session)`;
       $('#m2-out').textContent = 'Before I write anything, a few questions:\n\n1. Are promo codes case-sensitive?\n2. Can a code be used on gift cards?\n3. Can more than one code be used on an order?';
       $('#m2-chat').hidden = false;
       sfx.clue();
@@ -344,6 +350,7 @@ export function startMission2(api) {
         body: 'Instead of guessing, Claude asked Priya 3 questions and she answered them. You don\u2019t need to do anything with them: her answers are now ticked under Context as "Priya\u2019s answers" and go into your next prompt automatically.',
         found: ['Her answers: not case-sensitive · never on gift cards · one code per order', 'Next: click "Send revised prompt". This time Claude writes the tests.'] });
       newChip = 'answers';
+      runs--;   // Claude only asked questions, so this round does not use up a session (and can never strand the player on the last one)
       render();
       return;
     }

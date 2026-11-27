@@ -1,0 +1,11 @@
+{
+  "name": "claude-quest-tests",
+  "private": true,
+  "description": "Playable checks for 5:00 PM Forever. Run before every commit and push: npm test",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

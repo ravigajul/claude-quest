@@ -1,10 +1,10 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127160429';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127160429';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127160429';
-import { startMission2 } from './mission2.js?v=20261127160429';
-import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127160429';
-import { track, statsOn } from './stats.js?v=20261127160429';
+import { MISSION as M } from './mission.js?v=20261127163723';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127163723';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127163723';
+import { startMission2 } from './mission2.js?v=20261127163723';
+import { sfx, initAudio, setMuted, isMuted, wait } from './fx.js?v=20261127163723';
+import { track, statsOn } from './stats.js?v=20261127163723';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -16,7 +16,7 @@ let scene;
 const stub = new Proxy({}, { get: () => () => Promise.resolve() });
 async function boot3d() {
   try {
-    const mod = await import('./scene3d.js?v=20261127160429');
+    const mod = await import('./scene3d.js?v=20261127163723');
     scene = mod.createScene($('#world'));
     scene.onSfx(n => sfx[n] && sfx[n]());
   } catch (e) {
@@ -36,7 +36,7 @@ const fresh = () => ({
   blackouts: 0, peak: 0, ctxItems: [], log: [], hintsUsed: 0, wrongGuesses: 0, lastEv: null,
   // Loop 3 ("make it stick"): unlocked after the first green run
   greenOnce: false, planned: false, diskFull: false, cleaned: false, verified: false,
-  skill: false, hook: false, skillLoop: 0, hookLoop: 0,
+  skill: false, hook: false, skillLoop: 0, hookLoop: 0, stickIntroDone: false,
 });
 const sticking = () => S.greenOnce;
 const S = fresh();
@@ -181,7 +181,7 @@ const TOUR = [
   { sel: '.ctxp', t: 'The jar: Claude\u2019s context window', p: 'Everything Claude reads pours into this jar, with its size. Big reads fill it fast. Past 70k Claude slows down; past 100k it blacks out and loses details. In Claude Code, /context shows the same breakdown.' },
   { sel: '.board', t: 'The evidence board', p: 'Clues Claude finds appear here. This is what Claude knows right now, and it is wiped when the session ends.' },
   { sel: '.progress', t: 'Your goal for the day', p: 'Day 1 can\u2019t be won. Find clues and notice which moves waste time. The checklist here updates as you play.' },
-  { sel: '.side .term', t: 'Messages', p: 'A running log of the session: Dana\u2019s replies, each command Claude ran (its tool calls) and the narrator. From day 2, this is also where Claude reads your notes (CLAUDE.md) at the start of the session.' },
+  { sel: '.side .term', t: 'Messages', p: 'A running log of the session: what the narrator tells you and what Dana replies. From day 2, this is also where Claude reads your notes (CLAUDE.md) at the start of the session. What Claude actually did shows on the card you played and in the pop-up after it.' },
 ];
 // Once per launch, point at "How to play" for a few seconds so players know the tour can be replayed.
 let tourNudged = false;
@@ -328,6 +328,7 @@ function cardState(c) {
   if (S.diagnosed && ['tool', 'power', 'trap'].includes(c.kind) && !c.phase) return 'hidden';
   if (c.loop && S.loop < c.loop) return 'locked';
   if (c.needsEv && !c.needsEv.every(e => S.ev.has(e))) return 'hidden';
+  if (c.id === 'diagnose' && S.loop === 1) return 'hidden';   // day 1 is for clues and notes; the Level 1 goal says you can't fix it today
   if (c.id === 'diagnose') return S.diagnosed ? 'hidden' : S.ev.size >= M.minEvidenceToDiagnose ? 'ready' : 'hidden';
   if (c.id === 'fix') return S.diagnosed && !S.fixed ? 'ready' : 'hidden';
   if (c.id === 'verify') return S.fixed && !S.verified ? 'ready' : 'hidden';
@@ -404,6 +405,14 @@ function objective() {
     if (!has('fail')) return { step: 'Investigate', text: 'Start by finding out exactly what is failing.', hint: l1 ? 'Failures are recorded in the CI log. You do not need all 60,000 lines of it.' : 'The clone (a subagent) can investigate the code in its own context.', card: l1 ? 'grep' : 'clone' };
     return { step: 'Investigate', text: 'One failure. Now find out what makes it fail.', hint: 'The person who asked often knows when it started. Or look at the code the test depends on.', card: 'ask' };
   }
+  if (l1 && S.ev.size < 3) return { step: 'Investigate', text: 'Find at least 3 clues, so tomorrow\u2019s notes are worth reading.', hint: 'The failure names a fixture. Where does it build the promo?', card: !has('morning') ? 'ask' : !has('fixture') ? 'conftest' : 'checkout' };
+  if (l1) {
+    // Day 1 can't be won: once there are enough clues, offer to end the day and write notes.
+    const next = !has('morning') ? 'ask' : !has('fixture') ? 'conftest' : !has('utc') ? 'readLog' : null;
+    return next
+      ? { step: 'Enough for tomorrow', text: 'You have enough clues for good notes. Find more, or skip to 5:00 and write notes.', hint: 'Every extra clue you find today is one tomorrow\u2019s Claude won\u2019t have to look for.', card: next, endDay: true }
+      : { step: 'All clues found', text: 'Claude has every clue. Skip to 5:00 and write the notes for tomorrow\u2019s Claude.', hint: 'Pick the notes that let tomorrow\u2019s Claude skip straight to the cause.', card: null, endDay: true };
+  }
   if (!has('morning')) return { step: 'Investigate or diagnose', text: 'Do you know enough to explain the failure?', hint: 'Dana knows something the logs do not. When did it start?', card: 'ask' };
   if (!has('fixture')) return { step: 'Investigate or diagnose', text: 'Green this morning, red now. What depends on the time?', hint: 'The failure names a fixture. Where does it build the promo?', card: l1 ? 'conftest' : 'clone' };
   if (!has('utc')) return { step: 'Investigate or diagnose', text: 'Something about time breaks this test. What clock is CI using?', hint: l1 ? 'The full log header says how the runner is set up. It is expensive to read.' : 'The answer may be in a ticket, not in the code.', card: l1 ? 'readLog' : 'portal' };
@@ -417,6 +426,7 @@ function renderObjective() {
   $('#obj-step').textContent = o.step;
   $('#obj-text').textContent = o.text;
   $('#obj-hint').textContent = o.hint;
+  $('#obj-end').hidden = !o.endDay || S.busy || S.won;
   document.querySelectorAll('.card.suggest').forEach(c => c.classList.remove('suggest'));
   clearHints();
   const box = $('#objective');
@@ -560,6 +570,7 @@ async function play(c, el) {
   pendingTeach = CARD_TEACHES[c.id] || null;
   const rot = S.ctx > M.rotThreshold ? 1 : 0;
   const cost = costOf(c);
+  const wasUsed = S.used.has(c.id);
   S.used.add(c.id); S.usedLoop.add(c.id);
   if (c.cmd && c.id !== 'verify') { S.log.push(c.cmd); line('cmd', c.cmd, { instant: true }); }
   if (rot) line('sys', 'Claude\u2019s context is past 70%. It is slower: +1 minute.', { instant: true });
@@ -575,7 +586,11 @@ async function play(c, el) {
   if (c.id === 'clone' || c.id === 'portal') await wait(reduced ? 0 : 1400);
   renderHud();
 
-  if (S.ctx > M.capacity) await blackout();
+  if (S.ctx > M.capacity) {
+    // The blackout cancels the action, so an action card (plan, fix, retry...) is not used up.
+    if (c.phase || ['diagnose', 'fix', 'verify', 'retry'].includes(c.id)) { S.usedLoop.delete(c.id); if (!wasUsed) S.used.delete(c.id); }
+    await blackout();
+  }
   else if (c.id === 'retry') await hallucinate();
   else if (c.id === 'diagnose') await diagnose();
   else if (c.id === 'fix') await chooseFix();
@@ -903,6 +918,14 @@ function noteText(n) {
   return M.lessons[n.id].text;
 }
 
+// "Skip to 5:00": only offered on day 1 once there are enough clues.
+async function endDayNow() {
+  if (S.busy || S.won || S.loop !== 1) return;
+  S.busy = true; clearHints(); $('#obj-end').hidden = true; $('#hand').classList.add('busy');
+  await advanceClock(M.endMinute - S.minute);
+  await collapse();
+}
+
 async function collapse() {
   S.busy = true;
   clearHints();
@@ -931,8 +954,11 @@ function showEtch() {
   if (S.used.has('readLog')) lessons.add('grep');
   if (S.used.has('readRepo')) lessons.add('repo');
   if (S.used.has('ask')) lessons.add('ask');
+  for (const n of S.notes) if (n.type === 'lesson') lessons.add(n.id);   // a note kept earlier always stays visible, so it can be removed
   if (!lessons.size) lessons.add('grep');
   for (const id of lessons) opts.push({ type: 'lesson', id, tag: 'lesson', text: M.lessons[id].text });
+  // never let a kept note fill a slot without a tablet on screen
+  for (const k of [...chosen]) if (!opts.some(o => `${o.type}:${o.id}` === k && !o.disabled)) chosen.delete(k);
 
   for (const o of opts) {
     const b = document.createElement('button');
@@ -1246,6 +1272,26 @@ function setupLikes() {
   });
 }
 
+// ---------- keyboard: keep Tab inside the open pop-up; Escape continues or closes where that is safe ----------
+const DIALOGS = ['#exit-dlg', '#tour', '#result', '#choice', '#quiz', '#levelup', '#guide'];
+function openDialog() {
+  for (const s of DIALOGS) { const d = $(s); if (d && !d.hidden && d.getClientRects().length) return d; }
+  return null;
+}
+function setupDialogKeys() {
+  document.addEventListener('keydown', e => {
+    const d = openDialog();
+    if (!d) return;
+    if (e.key === 'Tab') {
+      const f = [...d.querySelectorAll('button, a[href], input, [tabindex]:not([tabindex="-1"])')].filter(x => !x.disabled && x.getClientRects().length);
+      if (!f.length) return;
+      const i = f.indexOf(document.activeElement);
+      if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); }
+      else if (!e.shiftKey && (i === -1 || i === f.length - 1)) { e.preventDefault(); f[0].focus(); }
+    } else if (e.key === 'Escape' && d.id === 'result' && !$('#r-ok').hidden) { e.preventDefault(); $('#r-ok').click(); }
+  });
+}
+
 // ---------- boot ----------
 async function main() {
   await boot3d();
@@ -1255,6 +1301,8 @@ async function main() {
   $('#guide-btn').addEventListener('click', openGuide);
   $('#tour-btn').addEventListener('click', () => { if ($('#tour').hidden) runTour(true); });
   // Leave Mission 1 at any point. The day runs as a long chain of timed steps, so the cleanest way out is a fresh page that opens on the mission list.
+  $('#obj-end').addEventListener('click', endDayNow);
+  setupDialogKeys();
   $('#exit-btn').addEventListener('click', () => { $('#exit-dlg').hidden = false; $('#exit-no').focus({ preventScroll: true }); });
   $('#exit-no').addEventListener('click', () => { $('#exit-dlg').hidden = true; });
   $('#exit-yes').addEventListener('click', () => {

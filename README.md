@@ -6,6 +6,8 @@
 
 Created by **[Ravi Gajul](https://github.com/ravigajul)**, designed and built together with Claude.
 
+![The game screen at 4:55 PM on day 1: the clock, the context jar filling up, the evidence board with three clues, and the cards you play to tell Claude what to do](social.png)
+
 ---
 
 ## The idea
@@ -81,10 +83,22 @@ python3 -m http.server 8000
 
 To see how many people try the game and how far they get, this site counts anonymous events with GoatCounter: visits, mission started, day reached, mission finished, knowledge-check scores, and the 👍/👎 at the end. It sets **no cookies** and collects **no personal data** (no names, no emails, no IP addresses kept). Your progress itself is saved only in your own browser (localStorage).
 
+The game's fonts are loaded from **Google Fonts**, so Google receives your IP address when the page loads, as on most websites that use Google Fonts.
+
+## How it was built
+
+Ravi designed the game and directed the work; Claude (in Claude Code) wrote the code with him, one feedback round at a time. The full roadmap, design decisions and change log are in [PLAN.md](PLAN.md).
+
+Every change is checked by automated play tests before it ships (`tests/`, using Playwright): a bot plays both missions to the end, and the checks cover the phone layout, keyboard use and past bugs. GitHub Actions runs them on every push, and the site only deploys when they pass.
+
+```bash
+cd tests && npm install && npx playwright install chromium && npm test
+```
+
 ## Feedback
 
 This is a prototype. At the end of each mission you can tap 👍 or 👎, or use **Tell Ravi what you think**. Ideas and bug reports are welcome as [issues](https://github.com/ravigajul/claude-quest/issues).
 
 ## License
 
-MIT © 2026 Ravi Gajul. Three.js is MIT licensed by its authors.
+MIT © 2026 Ravi Gajul (see [LICENSE](LICENSE)). Third-party code keeps its own license: Three.js (MIT, `vendor/three/LICENSE`) and the GoatCounter counter script (ISC, header in `vendor/goatcounter/count.js`).

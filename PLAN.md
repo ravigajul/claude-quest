@@ -270,3 +270,21 @@ More time-loop missions (API contract drift, a flaky E2E suite, a security revie
   - Small phones (≤560px): cards and evidence tiles go 2 per row.
   - "Your job" panel: the cue and key text span the full width. Below 1180px the cue is in the flow, so it no longer covers the title.
   - Jar panel: overflow-y auto (it used to spill under "Your job"). From 821 to 1180px the dashed-line notes are hidden.
+- 2026-11-27 (v2.0) review fixes + tests + gates:
+  - Game fixes:
+    - A1: day 1 can't be diagnosed. After 3 clues the player can "Skip to 5:00 and write notes" (#obj-end).
+    - A2: Claude's question round in Mission 2 doesn't use up a session.
+    - A3: an action card cancelled by a blackout isn't used up.
+    - A4: the tour's Messages text is truthful.
+    - A5: a note kept on an earlier day stays visible and removable.
+    - A6: Mission 2 locks the prompt and Send while Claude is thinking.
+    - stickIntroDone is reset by fresh().
+  - Keyboard: Tab is trapped in the open pop-up, and Escape continues the result pop-up.
+  - Phones: card explanations are shown on touch screens.
+  - Layout: the jar's dashed-line notes are hidden up to 1300px; job titles leave room for the "Ask Claude" cue.
+  - Repo: plain MIT LICENSE (third-party note moved to the README); pages_head.html holds the link-preview tags plus og:image social.png (1200×630); the README has a screenshot, "How it was built" and a Google Fonts privacy note.
+  - Tests: tests/ uses Playwright (game, phone, files specs; see tests/README.md). Run with `cd tests && npm test`, about 2.5 minutes.
+  - Gates:
+    - Claude Code PreToolUse hook tests/commit-gate.sh, registered in ~/.claude/settings.json, blocks git commit/push of this repo when the tests fail.
+    - GitHub Actions has a `test` job that the `build` and `deploy` jobs need.
+  - Skill: .claude/skills/game-review/SKILL.md (the full review procedure). CLAUDE.md is added in this folder.
