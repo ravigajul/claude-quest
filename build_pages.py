@@ -40,6 +40,8 @@ for f in ('LICENSE', 'social.png', 'pages_head.html', '.gitignore', 'CLAUDE.md',
 # tests/ and the review skill travel with the repo, so GitHub Actions (and anyone who clones it) can run them
 shutil.rmtree(dst / 'tests', ignore_errors=True)
 shutil.copytree(SRC / 'tests', dst / 'tests', ignore=shutil.ignore_patterns('node_modules', 'test-results', 'playwright-report', '.DS_Store'))
+shutil.rmtree(dst / 'promo', ignore_errors=True)
+shutil.copytree(SRC / 'promo', dst / 'promo', ignore=shutil.ignore_patterns('out', '.DS_Store'))   # promo video scripts, not the video
 shutil.rmtree(dst / 'docs', ignore_errors=True)
 shutil.copytree(SRC / 'docs', dst / 'docs')   # lessons, roadmap, deploy, stats, change log
 (dst / '.github' / 'workflows').mkdir(parents=True, exist_ok=True)

@@ -30,3 +30,13 @@ test('no private email in any shipped file', () => {
   const files = ['index.html', 'README.md', 'PLAN.md', ...fs.readdirSync(path.join(root, 'game')).map(f => 'game/' + f)];
   for (const f of files) expect(read(f), f).not.toMatch(/ravigajul2201|@gmail\.com/);
 });
+
+test('promo video: every screen the recording script clicks still exists in the game', () => {
+  const rec = fs.readFileSync(path.join(root, 'promo/record.js'), 'utf8');
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const ids = [...new Set([...rec.matchAll(/'#([a-z0-9-]+)/g)].map(m => m[1]))].filter(id => !id.startsWith('card-'));
+  expect(ids.length).toBeGreaterThan(10);
+  const missing = ids.filter(id => !html.includes(`id="${id}"`));
+  expect(missing, 'promo/record.js clicks screens that no longer exist; update it and re-record').toEqual([]);
+  expect(fs.readFileSync(path.join(root, 'game/engine.js'), 'utf8')).toContain('`Day ${S.loop}`');   // record.js reads "Day 1"
+});

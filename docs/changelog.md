@@ -262,3 +262,5 @@ More time-loop missions (API contract drift, a flaky E2E suite, a security revie
   - Ravi's sound board round 1 (F9) is applied: tick +5 dB; card, clue and win −4 dB; pour, blackout and portal redesigned.
   - Hybrid sound: recorded CC0 takes from Kenney (wooden tick, soft drop for cards, impact for blackout), level-matched, with the hand-made voices as fallback. The sound board lets Ravi try recorded A/B/C or hand-made per slot (L13).
   - Ravi's round 2 (F10): every sound rated Better. Uses recorded tick B, card C and clue A; typing, wrong answer and blackout are hand-made.
+- 2026-11-27 **Promo video** for LinkedIn (1080x1080, 36 s, captions burned in, game sounds + original music in the game's key). Rebuild with `node promo/record.js` then `node promo/make.js` (tests/serve.js running); output in promo/out (not shipped). files.spec.js checks the recording script still matches the game.
+  - Posted on LinkedIn: https://lnkd.in/p/eGXgm3Ej (linked from the README).

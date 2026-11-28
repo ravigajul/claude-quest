@@ -1,11 +1,11 @@
 // Game engine: loop state machine, evidence, diagnosis, memory between loops, Mirror + CLAUDE.md save file.
-import { MISSION as M } from './mission.js?v=20261127185114';
-import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127185114';
-import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127185114';
-import { startMission2 } from './mission2.js?v=20261127185114';
-import { startMission3 } from './mission3.js?v=20261127185114';
-import { sfx, initAudio, soundLevel, setSoundLevel, wait } from './fx.js?v=20261127185114';
-import { track, statsOn } from './stats.js?v=20261127185114';
+import { MISSION as M } from './mission.js?v=20261127193953';
+import { GUIDE, MISSIONS, BY_ID, CARD_TEACHES } from './guide.js?v=20261127193953';
+import { runQuiz, postScore, QUIZ } from './quiz.js?v=20261127193953';
+import { startMission2 } from './mission2.js?v=20261127193953';
+import { startMission3 } from './mission3.js?v=20261127193953';
+import { sfx, initAudio, soundLevel, setSoundLevel, wait } from './fx.js?v=20261127193953';
+import { track, statsOn } from './stats.js?v=20261127193953';
 
 const $ = sel => document.querySelector(sel);
 const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -19,7 +19,7 @@ const BOOT3D_TIMEOUT_MS = 10000;   // never let a slow or stuck 3D download keep
 async function boot3d() {
   try {
     const mod = await Promise.race([
-      import('./scene3d.js?v=20261127185114'),
+      import('./scene3d.js?v=20261127193953'),
       new Promise((_, no) => setTimeout(() => no(new Error('3D took too long to load')), BOOT3D_TIMEOUT_MS)),
     ]);
     scene = mod.createScene($('#world'));

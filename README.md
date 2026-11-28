@@ -4,6 +4,8 @@
 
 ▶ **Play it:** https://ravigajul.github.io/claude-quest/
 
+🎬 **Watch the 36-second trailer:** [on LinkedIn](https://lnkd.in/p/eGXgm3Ej)
+
 Created by **[Ravi Gajul](https://github.com/ravigajul)**, designed and built together with Claude.
 
 ![The game screen at 4:55 PM on day 1: the clock, the context jar filling up, the evidence board with three clues, and the cards you play to tell Claude what to do](social.png)
